@@ -2,684 +2,931 @@
 <html lang="lv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Macaroon Garden</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macaroon Garden — Makroni pēc pasūtījuma Latvijā</title>
+<meta name="description" content="Macaroon Garden — handcrafted French macarons pēc pasūtījuma. Piegāde Rīgā. Pasūti savus sapņu makronus!">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,500;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>(function(){ emailjs.init("YHTsjioMXMQ917e10"); })();</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script data-cfasync="false" crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script data-cfasync="false" crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script data-cfasync="false" src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
 <style>
-:root{
-  --c1:#FAF5EE;--c2:#F3EBE0;
-  --rose:#E8A8B4;--rose-d:#C4798A;--rose-l:#F5D5DC;
-  --sage:#8FAF7E;--sage-l:#C8DBC0;
-  --lav:#B8A5CC;--lav-l:#DDD5EC;
-  --car:#C8956C;--car-l:#F0DECE;
-  --lem:#D4BC5A;--lem-l:#FBF5C0;
-  --dark:#2A1810;--brown:#7B4F3A;--text:#3D2518;--muted:#8A6A5A;
+:root {
+    --rose:    #E8A4B8;
+    --rose-d:  #C97A96;
+    --rose-l:  #F5D5E0;
+    --mint:    #A8CFC0;
+    --mint-l:  #D4EDE6;
+    --lav:     #C4B5D4;
+    --lav-l:   #E8E0F0;
+    --cream:   #FDF6EE;
+    --sand:    #F0E6D8;
+    --chocolate:#3D2314;
+    --choc-m:  #6B3F2A;
+    --choc-l:  #A0674A;
+    --text:    #2C1810;
+    --text-m:  #6B4F3A;
+    --white:   #FFFDF9;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{font-family:'Outfit',sans-serif;background:var(--c1);color:var(--text);overflow-x:hidden}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--text);overflow-x:hidden;}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;background:rgba(250,245,238,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(200,149,108,.18)}
-nav.sc{box-shadow:0 2px 16px rgba(42,24,16,.08)}
-.nav-logo{font-family:'Cormorant Garant',serif;font-size:1.2rem;font-weight:700;color:var(--brown);text-decoration:none}
-.nav-logo em{font-style:italic;color:var(--rose-d)}
-.nav-links{display:flex;gap:.1rem;list-style:none}
-.nav-links a{font-size:.75rem;font-weight:600;color:var(--muted);text-decoration:none;padding:.28rem .6rem;border-radius:20px;transition:all .2s;white-space:nowrap}
-.nav-links a:hover{background:var(--rose-l);color:var(--brown)}
-.nav-auth{display:flex;gap:.35rem;align-items:center;flex-shrink:0}
-.bsm{font-family:'Outfit',sans-serif;font-size:.76rem;font-weight:600;padding:.3rem .85rem;border-radius:20px;cursor:pointer;transition:all .2s;border:none;white-space:nowrap}
-.bgh{background:none;border:1.5px solid var(--rose);color:var(--brown)}
-.bgh:hover{background:var(--rose-l)}
-.bso{background:linear-gradient(135deg,var(--rose-d),var(--car));color:#fff;box-shadow:0 2px 10px rgba(196,121,138,.3)}
-.bso:hover{transform:translateY(-1px)}
-.nav-u{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--brown);font-weight:600}
-.nav-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--lav));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.65rem;font-weight:700;flex-shrink:0}
-.bout{background:none;border:none;color:var(--muted);font-size:.72rem;cursor:pointer;padding:.2rem .35rem;border-radius:6px;transition:all .2s;font-family:'Outfit',sans-serif}
-.bout:hover{background:var(--rose-l);color:var(--rose-d)}
+/* ── CURSOR ── */
+body{cursor:none;}
+.cur{position:fixed;width:18px;height:18px;border-radius:50%;background:var(--rose);pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform .15s,background .3s,width .2s,height .2s;mix-blend-mode:multiply;}
+.cur-ring{position:fixed;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--rose-d);pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:left .08s,top .08s,border-color .3s;}
+body:hover .cur{opacity:1;}
 
-/* ── HERO ── */
-#hero{position:relative;min-height:100svh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:50px;transition:background .5s}
-#hero-canvas{position:absolute;inset:0;pointer-events:none;z-index:0}
-.hshape{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;transition:background .6s;pointer-events:none}
-.hero-inner{position:relative;z-index:2;text-align:center;padding:1rem 1.2rem .3rem;max-width:680px;width:100%}
-.hero-tag{display:inline-flex;align-items:center;gap:.4rem;background:#fff;border:1px solid var(--rose-l);color:var(--rose-d);font-size:.7rem;font-weight:600;padding:.28rem .9rem;border-radius:20px;margin-bottom:.8rem;letter-spacing:.7px;text-transform:uppercase;box-shadow:0 2px 10px rgba(232,168,180,.15)}
-.hero h1{font-family:'Cormorant Garant',serif;font-size:clamp(2.2rem,7vw,4.8rem);font-weight:700;line-height:1.08;margin-bottom:.6rem;color:var(--dark)}
-.hero h1 em{font-style:italic;color:var(--rose-d)}
-.hero-sub{font-size:clamp(.82rem,2vw,.95rem);color:var(--muted);max-width:440px;margin:0 auto .8rem;line-height:1.6}
-.hero-btns{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem}
-.bp{display:inline-flex;align-items:center;gap:.35rem;padding:.6rem 1.4rem;background:linear-gradient(135deg,var(--rose-d),var(--car));color:#fff;font-family:'Outfit',sans-serif;font-weight:600;font-size:.85rem;border-radius:28px;text-decoration:none;border:none;cursor:pointer;transition:all .3s;box-shadow:0 4px 18px rgba(196,121,138,.35)}
-.bp:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(196,121,138,.45)}
-.bo{display:inline-flex;align-items:center;gap:.35rem;padding:.6rem 1.4rem;background:#fff;color:var(--brown);font-family:'Outfit',sans-serif;font-weight:600;font-size:.85rem;border-radius:28px;text-decoration:none;border:1.5px solid var(--rose);cursor:pointer;transition:all .3s}
-.bo:hover{background:var(--rose-l);transform:translateY(-2px)}
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:1.2rem 3rem;display:flex;align-items:center;justify-content:space-between;transition:all .4s;}
+nav.scrolled{background:rgba(253,246,238,.94);backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(61,35,20,.08);padding:.8rem 3rem;}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--chocolate);text-decoration:none;letter-spacing:.05em;display:flex;align-items:center;gap:.5rem;}
+.nav-logo span{color:var(--rose-d);}
+.nav-links{display:flex;gap:2.5rem;list-style:none;}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--text-m);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:color .2s;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--rose-d);transition:width .3s;}
+.nav-links a:hover{color:var(--chocolate);}
+.nav-links a:hover::after{width:100%;}
+.nav-cta{background:var(--chocolate)!important;color:var(--cream)!important;padding:.55rem 1.4rem!important;border-radius:50px;}
+.nav-cta::after{display:none!important;}
+.nav-cta:hover{background:var(--choc-m)!important;transform:translateY(-1px);}
 
-/* Mac mode switcher */
-.mac-modes{display:flex;justify-content:center;gap:.65rem;flex-wrap:wrap;padding:.4rem 1rem 1rem;position:relative;z-index:2}
-.mmb{display:flex;flex-direction:column;align-items:center;gap:.3rem;cursor:pointer;background:none;border:none;-webkit-tap-highlight-color:transparent;transition:transform .25s}
-.mmb:hover{transform:translateY(-3px) scale(1.04)}
-.mmb.act{transform:translateY(-5px) scale(1.08)}
-.mcir{width:52px;height:52px;border-radius:50%;position:relative;box-shadow:0 5px 18px rgba(0,0,0,.18);transition:box-shadow .3s;overflow:hidden}
-@media(max-width:400px){.mcir{width:42px;height:42px}}
-.mcir::before{content:'';position:absolute;top:8%;left:10%;width:80%;height:46%;border-radius:50%;background:rgba(255,255,255,.3)}
-.mcir::after{content:'';position:absolute;bottom:8%;left:10%;width:80%;height:46%;border-radius:50%}
-.mmb.act .mcir{box-shadow:0 7px 24px rgba(0,0,0,.25)}
-.mlbl{font-size:.65rem;font-weight:600;color:var(--muted);white-space:nowrap;transition:color .3s}
-.mmb.act .mlbl{color:var(--brown)}
-.mode-hint{font-size:.68rem;color:var(--muted);text-align:center;letter-spacing:.4px;opacity:.65;padding-bottom:.8rem;position:relative;z-index:2;line-height:1.5;max-width:340px;margin:-.4rem auto 0}
+/* ── HERO — centered single-column like reference ── */
+.hero{
+    min-height:100vh;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(160deg,#F9EEF3 0%,#F2EBF7 40%,#EBF4EE 100%);
+    padding:0 1.5rem 80px;/* leave space for stats bar */
+    text-align:center;
+}
+#hero-canvas{position:absolute;inset:0;z-index:1;pointer-events:none;}
+.hero-bg-pattern{position:absolute;inset:0;z-index:0;opacity:.03;background-image:radial-gradient(circle,var(--chocolate) 1px,transparent 1px);background-size:28px 28px;}
 
-/* STATS */
-.stats{background:var(--dark);padding:1rem .8rem;z-index:1;position:relative}
-.stats-g{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;max-width:640px;margin:0 auto;text-align:center}
-@media(max-width:400px){.stats-g{grid-template-columns:repeat(2,1fr);gap:.7rem}}
-.sn{font-family:'Cormorant Garant',serif;font-size:1.9rem;font-weight:700;color:var(--lem);line-height:1}
-.sl{color:rgba(255,255,255,.5);font-size:.64rem;font-weight:500;margin-top:.2rem;text-transform:uppercase;letter-spacing:1px}
+/* Centered content column */
+.hero-inner{
+    position:relative;z-index:3;
+    display:flex;flex-direction:column;align-items:center;
+    padding-top:7rem;
+    max-width:680px;width:100%;
+}
 
-/* SECTIONS */
-section{position:relative;z-index:1}
-.sec{padding:2rem .9rem 1.8rem}
-.sec-hd{text-align:center;margin-bottom:1.3rem}
-.sec-tag{display:inline-block;background:var(--rose-l);color:var(--rose-d);font-weight:600;font-size:.68rem;padding:.22rem .8rem;border-radius:20px;margin-bottom:.4rem;letter-spacing:1px;text-transform:uppercase}
-.sec-t{font-family:'Cormorant Garant',serif;font-size:clamp(1.5rem,4vw,2.4rem);font-weight:700;color:var(--dark);line-height:1.15}
-.sec-t em{font-style:italic;color:var(--rose-d)}
-.sec-s{font-size:.85rem;color:var(--muted);margin-top:.4rem;line-height:1.6;max-width:420px;margin-left:auto;margin-right:auto}
+/* Tag pill */
+.hero-tag{
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:rgba(255,255,255,.7);backdrop-filter:blur(10px);
+    border:1px solid rgba(200,120,150,.25);border-radius:50px;
+    padding:.4rem 1.1rem;
+    font-size:.72rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--text-m);margin-bottom:1.8rem;
+}
 
-/* FLAVORS */
-.flg{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;max-width:820px;margin:0 auto}
-@media(max-width:580px){.flg{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:580px){.flg .fc:last-child{grid-column:span 2;max-width:180px;margin:0 auto;width:100%}}
-.fc{background:#fff;border-radius:16px;padding:1rem .7rem .8rem;text-align:center;transition:all .3s cubic-bezier(.175,.885,.32,1.275);cursor:pointer;border:1.5px solid transparent}
-.fc:hover{transform:translateY(-5px);border-color:var(--fc,var(--rose));box-shadow:0 10px 25px rgba(0,0,0,.09)}
-.fmac{width:54px;height:54px;border-radius:50%;margin:0 auto .7rem;position:relative;box-shadow:0 4px 16px rgba(0,0,0,.14);transition:transform .3s}
-.fmac::before{content:'';position:absolute;top:8%;left:10%;width:80%;height:46%;border-radius:50%;background:rgba(255,255,255,.3)}
-.fmac::after{content:'';position:absolute;bottom:8%;left:10%;width:80%;height:46%;border-radius:50%;opacity:.75}
-.fc:hover .fmac{transform:rotate(-7deg) scale(1.08)}
-.fc h3{font-family:'Cormorant Garant',serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.25rem}
-.fc p{font-size:.72rem;color:var(--muted);line-height:1.45;margin-bottom:.5rem}
-.fbadge{display:inline-block;font-size:.62rem;font-weight:600;padding:.18rem .65rem;border-radius:12px;text-transform:uppercase;letter-spacing:.3px}
+/* H1 */
+.hero-h1{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(2.6rem,7vw,4.2rem);
+    font-weight:700;line-height:1.15;color:var(--chocolate);
+    margin-bottom:.9rem;
+}
+.hero-h1 em{font-style:italic;font-weight:400;color:var(--chocolate);}
 
-/* BUILDER */
-#builder-app .bwrap{max-width:820px;margin:0 auto}
-.bsizes{display:grid;grid-template-columns:repeat(6,1fr);gap:.4rem;margin-bottom:1rem}
-@media(max-width:480px){.bsizes{grid-template-columns:repeat(3,1fr)}}
-.szb{background:#fff;border:1.5px solid var(--c2);border-radius:10px;padding:.45rem .3rem;text-align:center;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
-.szb:hover{border-color:var(--rose);background:var(--rose-l)}
-.szb.act{background:linear-gradient(135deg,var(--rose-d),var(--car));border-color:transparent;color:#fff}
-.szn{font-family:'Cormorant Garant',serif;font-size:1.45rem;font-weight:700;line-height:1;display:block}
-.szl{font-size:.62rem;font-weight:600;opacity:.7;display:block;text-transform:uppercase;letter-spacing:.4px}
-.bcols{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;align-items:start}
-@media(max-width:540px){.bcols{grid-template-columns:1fr}}
-.panel{background:#fff;border-radius:16px;padding:1rem;box-shadow:0 3px 16px rgba(42,24,16,.06);border:1px solid rgba(200,149,108,.1)}
-.pnlhd{font-family:'Cormorant Garant',serif;font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:.7rem;padding-bottom:.5rem;border-bottom:1px solid var(--c2);display:flex;align-items:center;gap:.35rem}
-.fpb{display:flex;align-items:center;gap:.5rem;background:var(--c1);border:1.5px solid var(--c2);border-radius:9px;padding:.48rem .65rem;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif;text-align:left;width:100%;margin-bottom:.35rem}
-.fpb:hover:not(:disabled){transform:translateX(3px);border-color:var(--rose);background:var(--rose-l)}
-.fpb:disabled{opacity:.4;cursor:not-allowed}
-.fdot{width:24px;height:24px;border-radius:50%;flex-shrink:0;box-shadow:0 2px 7px rgba(0,0,0,.14)}
-.fpnm{font-weight:600;font-size:.8rem;color:var(--dark);display:block}
-.fpct{font-size:.68rem;color:var(--muted)}
-.fpadd{margin-left:auto;font-size:.95rem;color:var(--rose-d);font-weight:700}
-.boxvis{text-align:center}
-.bvt{font-family:'Cormorant Garant',serif;font-size:1.05rem;font-weight:700;color:var(--dark);margin-bottom:.15rem}
-.bvs{font-size:.72rem;color:var(--muted);margin-bottom:.7rem}
-.mgrid{display:grid;gap:6px;margin:0 auto .7rem;width:fit-content}
-.mslot{border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;transition:all .25s;border:1.5px dashed var(--c2)}
-.mslot.filled{border:none;box-shadow:0 3px 10px rgba(0,0,0,.13);animation:popIn .25s ease;cursor:pointer}
-@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
-.bctr{font-size:.8rem;color:var(--muted);margin-bottom:.6rem}
-.bctr strong{color:var(--brown)}
-.fsum{background:var(--c1);border-radius:9px;padding:.5rem .7rem;margin-bottom:.7rem;font-size:.72rem;line-height:1.75}
-.fsrow{display:flex;align-items:center;gap:.35rem;color:var(--text)}
-.fsd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.bcta{width:100%;padding:.7rem;background:linear-gradient(135deg,var(--rose-d),var(--car));color:#fff;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.84rem;cursor:pointer;transition:all .3s;box-shadow:0 3px 14px rgba(196,121,138,.3);display:flex;align-items:center;justify-content:center;gap:.35rem}
-.bcta:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(196,121,138,.45)}
-.bcta:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.clrl{display:block;text-align:center;margin-top:.4rem;font-size:.72rem;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;font-family:'Outfit',sans-serif}
+/* Sub */
+.hero-sub{
+    font-size:.98rem;color:var(--text-m);line-height:1.75;
+    max-width:420px;margin:0 auto 2rem;font-weight:400;
+}
 
-/* BOOKING */
-.bkg-g{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;max-width:820px;margin:0 auto}
-@media(max-width:600px){.bkg-g{grid-template-columns:1fr}}
-.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem}
-.cal-nav{background:var(--c2);border:1px solid var(--rose-l);border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:.85rem;transition:all .2s;display:flex;align-items:center;justify-content:center;color:var(--brown)}
-.cal-nav:hover{background:var(--rose-l)}
-.cal-mn{font-family:'Cormorant Garant',serif;font-size:1rem;font-weight:700;color:var(--dark);text-transform:capitalize}
-.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.cal-dh{text-align:center;font-weight:600;font-size:.62rem;color:var(--car);padding:.25rem 0;text-transform:uppercase;letter-spacing:.3px}
-.cd{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;transition:all .2s;font-weight:600;font-size:.76rem;border:1.5px solid transparent;min-height:30px;color:var(--text)}
-.cd.empty{cursor:default}
-.cd.past{opacity:.2;cursor:not-allowed}
-.cd.avail:hover{background:var(--rose-l);border-color:var(--rose);transform:scale(1.06)}
-.cd.sel{background:linear-gradient(135deg,var(--rose-d),var(--car));color:#fff;border-color:transparent;transform:scale(1.1);box-shadow:0 3px 12px rgba(196,121,138,.4)}
-.cd.tring{border-color:var(--sage)!important}
-.cdots{display:flex;gap:2px;margin-top:1px;justify-content:center}
-.cdot{width:4px;height:4px;border-radius:50%;background:var(--rose-d);opacity:.8}
-.cd.sel .cdot{background:rgba(255,255,255,.8)}
-.ccnt{font-size:.56rem;font-weight:700;color:var(--rose-d);line-height:1}
-.cd.sel .ccnt{color:#fff}
-.leg{display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap}
-.lgi{display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:var(--muted);font-weight:500}
-.lgd{width:7px;height:7px;border-radius:50%}
-.flbl{display:block;font-weight:600;font-size:.68rem;color:var(--muted);margin-bottom:.28rem;text-transform:uppercase;letter-spacing:.6px}
-.finp,.fsel,.fta{width:100%;padding:.55rem .8rem;border:1.5px solid var(--c2);border-radius:9px;font-family:'Outfit',sans-serif;font-size:.85rem;color:var(--text);background:var(--c1);transition:all .2s;outline:none}
-.finp:focus,.fsel:focus,.fta:focus{border-color:var(--rose);background:#fff;box-shadow:0 0 0 3px rgba(232,168,180,.12)}
-.fta{min-height:62px;resize:vertical}
-.fgrp{margin-bottom:.72rem}
-.chip{display:flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,var(--rose-l),var(--lav-l));border-radius:9px;padding:.48rem .75rem;font-size:.78rem;color:var(--brown);font-weight:600;margin-bottom:.7rem;flex-wrap:wrap}
-.infoc{background:var(--c1);border:1.5px dashed var(--rose-l);border-radius:9px;padding:.48rem .75rem;font-size:.76rem;color:var(--muted);margin-bottom:.7rem;text-align:center}
-.fboxsum{background:var(--sage-l);border-radius:9px;padding:.5rem .75rem;font-size:.75rem;color:var(--dark);margin-bottom:.7rem;border:1px solid var(--sage)}
-.fboxsum strong{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.4px;color:#4A7A40;margin-bottom:.2rem}
-.subb{width:100%;padding:.8rem;background:linear-gradient(135deg,var(--rose-d),var(--car));color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;border:none;border-radius:11px;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:.45rem;box-shadow:0 4px 16px rgba(196,121,138,.3);margin-top:.3rem}
-.subb:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 22px rgba(196,121,138,.45)}
-.subb:disabled{opacity:.45;cursor:not-allowed;transform:none}
-.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-.errb{background:#fee8ec;border:1px solid #f4c0ca;border-radius:9px;padding:.55rem .75rem;color:#c0485a;font-size:.78rem;margin-bottom:.7rem}
-.okb{background:linear-gradient(135deg,var(--rose-d),var(--car));color:#fff;border-radius:16px;padding:1.8rem 1.2rem;text-align:center;max-width:820px;margin:0 auto}
-.okb h2{font-family:'Cormorant Garant',serif;font-size:1.7rem;margin-bottom:.6rem}
-.lp{background:linear-gradient(135deg,var(--rose-l),var(--lav-l));border-radius:11px;padding:.8rem;text-align:center;margin-bottom:.7rem}
-.lp p{font-size:.82rem;color:var(--brown);font-weight:600;margin-bottom:.45rem}
+/* CTA buttons */
+.hero-btns{display:flex;gap:.85rem;flex-wrap:wrap;justify-content:center;margin-bottom:2.8rem;}
+.btn-main{
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:var(--rose-d);color:white;
+    padding:.8rem 1.8rem;border-radius:50px;
+    font-weight:600;font-size:.9rem;text-decoration:none;
+    border:none;cursor:pointer;
+    box-shadow:0 6px 20px rgba(200,120,150,.35);
+    transition:all .3s;
+}
+.btn-main:hover{background:var(--choc-m);transform:translateY(-2px);box-shadow:0 10px 28px rgba(200,120,150,.4);}
+.btn-sec{
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:white;color:var(--chocolate);
+    padding:.8rem 1.8rem;border-radius:50px;
+    font-weight:600;font-size:.9rem;text-decoration:none;
+    border:1.5px solid rgba(61,35,20,.18);cursor:pointer;
+    transition:all .3s;
+}
+.btn-sec:hover{border-color:var(--rose-d);color:var(--rose-d);transform:translateY(-2px);}
 
-/* TESTI */
-.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;max-width:820px;margin:0 auto}
-@media(max-width:580px){.tgrid{grid-template-columns:1fr}}
-.tc{background:#fff;border-radius:14px;padding:1.2rem;position:relative;border:1px solid rgba(200,149,108,.12);transition:all .3s;overflow:hidden}
-.tc:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(42,24,16,.09)}
-.tc::before{content:'"';position:absolute;top:.1rem;right:.9rem;font-family:'Cormorant Garant',serif;font-size:4.5rem;color:var(--rose-l);line-height:1}
-.stars{color:var(--car);font-size:.9rem;margin-bottom:.5rem}
-.ttxt{font-style:italic;color:var(--muted);line-height:1.65;margin-bottom:.7rem;font-size:.82rem;position:relative;z-index:1}
-.tauth{font-family:'Cormorant Garant',serif;font-weight:700;font-size:.92rem;color:var(--brown)}
-.trole{font-size:.68rem;color:var(--muted)}
+/* Macaron flavour circles */
+.mac-flavours{display:flex;gap:1.4rem;justify-content:center;align-items:flex-end;margin-bottom:1.6rem;flex-wrap:wrap;}
+.mac-circle{display:flex;flex-direction:column;align-items:center;gap:.5rem;cursor:pointer;}
+.mac-ball{
+    width:72px;height:72px;border-radius:50%;
+    box-shadow:0 8px 24px rgba(0,0,0,.12),inset 0 -6px 12px rgba(0,0,0,.08),inset 0 4px 8px rgba(255,255,255,.4);
+    transition:all .3s;position:relative;overflow:hidden;
+}
+.mac-ball::after{
+    content:'';position:absolute;top:15%;left:18%;
+    width:35%;height:25%;border-radius:50%;
+    background:rgba(255,255,255,.45);
+    filter:blur(2px);
+}
+.mac-circle:hover .mac-ball{transform:translateY(-6px) scale(1.08);box-shadow:0 14px 30px rgba(0,0,0,.18);}
+.mac-circle.active .mac-ball{transform:translateY(-8px) scale(1.12);box-shadow:0 16px 34px rgba(0,0,0,.2);}
+.mac-lbl{font-size:.75rem;font-weight:600;color:var(--text-m);letter-spacing:.02em;}
+.mac-hint{font-size:.75rem;color:var(--text-m);opacity:.65;margin-top:.2rem;}
 
-/* INSTAGRAM */
-.igg{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;max-width:640px;margin:0 auto 1.3rem}
-@media(max-width:450px){.igg{grid-template-columns:repeat(2,1fr)}}
-.igt{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;cursor:pointer}
-.igi{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;transition:transform .4s}
-.igt:hover .igi{transform:scale(1.12)}
-.igov{position:absolute;inset:0;background:linear-gradient(to top,rgba(42,24,16,.5),transparent);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:.6rem}
-.igt:hover .igov{opacity:1}
-.igov span{color:#fff;font-size:.68rem;font-weight:600}
-.igcta{max-width:540px;margin:0 auto;background:linear-gradient(135deg,var(--dark),var(--brown));border-radius:18px;padding:1.8rem 1.3rem;text-align:center;color:#fff;position:relative;overflow:hidden}
-.igcta h3{font-family:'Cormorant Garant',serif;font-size:1.6rem;margin-bottom:.5rem}
-.igcta p{opacity:.7;margin-bottom:1rem;line-height:1.55;font-size:.84rem;position:relative;z-index:1}
-.igbtn{display:inline-flex;align-items:center;gap:.45rem;padding:.65rem 1.4rem;background:linear-gradient(135deg,#E1306C,#833AB4,#F56040);color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:.84rem;border-radius:28px;text-decoration:none;transition:all .3s;box-shadow:0 4px 16px rgba(225,48,108,.35);position:relative;z-index:1}
-.igbtn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(225,48,108,.45)}
-.igcta::before{content:'';position:absolute;top:-35px;right:-35px;width:140px;height:140px;background:radial-gradient(circle,rgba(232,168,180,.25),transparent);border-radius:50%}
+/* Right-side mode switcher pill */
+.hero-mode-switcher{
+    position:absolute;right:2rem;top:50%;transform:translateY(-50%);
+    z-index:5;
+}
+.mode-pill{
+    background:rgba(255,255,255,.8);backdrop-filter:blur(10px);
+    border:1px solid rgba(200,120,150,.3);border-radius:50px;
+    padding:.5rem 1rem;display:flex;align-items:center;gap:.5rem;
+    cursor:pointer;transition:all .3s;font-size:.76rem;font-weight:500;
+    color:var(--text-m);white-space:nowrap;
+    box-shadow:0 4px 14px rgba(200,120,150,.15);
+}
+.mode-pill:hover{background:white;border-color:var(--rose-d);transform:translateX(-2px);}
+.mode-pill-ico{font-size:.95rem;}
 
-/* FOOTER */
-footer{background:var(--dark);color:rgba(255,255,255,.5);padding:2rem 1.2rem 1.2rem;position:relative;z-index:1}
-.fg{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:1.5rem;max-width:780px;margin:0 auto 1.5rem}
-@media(max-width:500px){.fg{grid-template-columns:1fr 1fr}}
-.flo{font-family:'Cormorant Garant',serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.5rem}
-.flo em{font-style:italic;color:var(--rose)}
-.fdsc{font-size:.78rem;line-height:1.6;max-width:190px}
-.fcol h4{color:#fff;font-size:.7rem;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:.7rem;font-weight:600}
-.fcol ul{list-style:none}
-.fcol ul li{margin-bottom:.35rem}
-.fcol ul li a{color:rgba(255,255,255,.45);text-decoration:none;font-size:.78rem;transition:color .2s}
-.fcol ul li a:hover{color:var(--rose)}
-.fbot{border-top:1px solid rgba(255,255,255,.07);padding-top:1rem;display:flex;justify-content:space-between;align-items:center;max-width:780px;margin:0 auto;font-size:.72rem;flex-wrap:wrap;gap:.4rem}
-.fsoc a{color:rgba(255,255,255,.45);text-decoration:none;font-size:.78rem;transition:color .2s}
-.fsoc a:hover{color:var(--rose)}
+/* Stats bar — pinned bottom, full width */
+.hero-stats{
+    position:absolute;bottom:0;left:0;right:0;
+    z-index:4;background:var(--chocolate);
+    display:flex;
+}
+.hst{flex:1;padding:.9rem 1rem;text-align:center;border-right:1px solid rgba(255,255,255,.08);}
+.hst:last-child{border-right:none;}
+.hst-n{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--rose-l);display:block;line-height:1;}
+.hst-l{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:.2rem;display:block;}
 
-/* MODAL */
-.mov{position:fixed;inset:0;background:rgba(42,24,16,.6);backdrop-filter:blur(5px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:.8rem;animation:fov .25s ease}
-@keyframes fov{from{opacity:0}to{opacity:1}}
-.modal{background:#fff;border-radius:20px;padding:1.8rem 1.5rem;width:100%;max-width:360px;position:relative;animation:min .25s ease}
-@keyframes min{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
-.mx{position:absolute;top:.8rem;right:.9rem;background:var(--c1);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.95rem;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .2s}
-.mx:hover{background:var(--rose-l);color:var(--rose-d)}
-.modal h2{font-family:'Cormorant Garant',serif;font-size:1.6rem;font-weight:700;color:var(--dark);margin-bottom:.25rem}
-.modal>p{color:var(--muted);font-size:.82rem;margin-bottom:1rem}
-.mtabs{display:flex;background:var(--c1);border-radius:9px;padding:3px;margin-bottom:1.1rem;gap:2px}
-.mtab{flex:1;text-align:center;padding:.38rem;border-radius:7px;cursor:pointer;font-weight:600;font-size:.82rem;color:var(--muted);transition:all .2s;border:none;background:none;font-family:'Outfit',sans-serif}
-.mtab.act{background:#fff;color:var(--brown);box-shadow:0 2px 7px rgba(42,24,16,.09)}
-.ml{display:block;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.25rem}
-.mi{width:100%;padding:.6rem .85rem;border:1.5px solid var(--c2);border-radius:9px;font-family:'Outfit',sans-serif;font-size:.88rem;color:var(--text);background:var(--c1);outline:none;transition:all .2s;margin-bottom:.6rem}
-.mi:focus{border-color:var(--rose);background:#fff;box-shadow:0 0 0 3px rgba(232,168,180,.12)}
-.msub{width:100%;padding:.75rem;background:linear-gradient(135deg,var(--rose-d),var(--car));color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;border:none;border-radius:11px;cursor:pointer;transition:all .3s;box-shadow:0 3px 14px rgba(196,121,138,.3);margin-top:.15rem}
-.msub:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(196,121,138,.4)}
-.merr{background:#fee8ec;border:1px solid #f4c0ca;border-radius:8px;padding:.5rem .75rem;color:#c0485a;font-size:.78rem;margin-bottom:.7rem}
-.msw{text-align:center;margin-top:.7rem;font-size:.78rem;color:var(--muted)}
-.msw button{background:none;border:none;color:var(--rose-d);font-weight:600;cursor:pointer;font-size:.78rem;font-family:'Outfit',sans-serif}
+@media(max-width:768px){
+    .hero{padding-bottom:72px;}
+    .mac-ball{width:56px;height:56px;}
+    .mac-flavours{gap:.9rem;}
+    .hero-mode-switcher{display:none;}
+    .hst-n{font-size:1.2rem;}
+}
 
-/* Reveal */
-.rv{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease}
-.rv.vis{opacity:1;transform:none}
+/* ── ABOUT STRIP ── */
+.about-strip{background:var(--sand);padding:5rem 6rem;display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;}
+.about-tag{font-size:.72rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--rose-d);margin-bottom:1rem;display:flex;align-items:center;gap:.8rem;}
+.about-tag::before{content:'';width:30px;height:1px;background:var(--rose-d);}
+.about-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.2rem);font-weight:300;color:var(--chocolate);line-height:1.2;margin-bottom:1.2rem;}
+.about-h2 em{font-style:italic;color:var(--rose-d);}
+.about-p{color:var(--text-m);line-height:1.9;font-weight:300;margin-bottom:1rem;font-size:.95rem;}
+.about-right{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.feat-card{background:white;border-radius:20px;padding:1.8rem 1.5rem;border:1px solid rgba(200,120,150,.12);transition:all .3s;}
+.feat-card:hover{transform:translateY(-4px);border-color:var(--rose);box-shadow:0 12px 30px rgba(200,120,150,.12);}
+.feat-ico{font-size:2rem;display:block;margin-bottom:.8rem;}
+.feat-card h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--chocolate);margin-bottom:.4rem;}
+.feat-card p{font-size:.82rem;color:var(--text-m);line-height:1.7;}
+
+/* ── FLAVOURS ── */
+.flavours-sec{padding:6rem;background:var(--white);}
+.sec-center{text-align:center;margin-bottom:4rem;}
+.sec-tag{font-size:.72rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--rose-d);display:flex;align-items:center;justify-content:center;gap:.8rem;margin-bottom:1rem;}
+.sec-tag::before,.sec-tag::after{content:'';flex:1;max-width:60px;height:1px;background:var(--rose);}
+.sec-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,4vw,3.5rem);font-weight:300;color:var(--chocolate);line-height:1.1;}
+.sec-h2 em{font-style:italic;color:var(--rose-d);}
+.sec-sub{color:var(--text-m);font-weight:300;font-size:.95rem;margin-top:.7rem;max-width:480px;margin-left:auto;margin-right:auto;}
+.flavours-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1.5rem;max-width:1100px;margin:0 auto;}
+.flav-card{background:white;border:1px solid var(--sand);border-radius:24px;padding:2rem 1.2rem;text-align:center;transition:all .4s;cursor:pointer;position:relative;overflow:hidden;}
+.flav-card::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(200,120,150,.06));opacity:0;transition:opacity .3s;}
+.flav-card:hover{transform:translateY(-8px);border-color:var(--rose);box-shadow:0 20px 50px rgba(200,120,150,.15);}
+.flav-card:hover::before{opacity:1;}
+.flav-emoji{font-size:3rem;display:block;margin-bottom:.8rem;}
+.flav-name{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--chocolate);margin-bottom:.4rem;}
+.flav-desc{font-size:.78rem;color:var(--text-m);line-height:1.6;}
+.flav-badge{position:absolute;top:.8rem;right:.8rem;background:var(--rose);color:white;font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .6rem;border-radius:50px;}
+
+/* ── GALLERY TEASER ── */
+.gallery-sec{padding:4rem 6rem;background:var(--sand);}
+.gallery-row{display:flex;gap:1rem;align-items:center;justify-content:center;flex-wrap:wrap;}
+.gallery-mac{font-size:clamp(2rem,5vw,4rem);display:inline-block;animation:galleryBob 3s ease-in-out infinite;cursor:default;}
+.gallery-mac:nth-child(even){animation-delay:.4s;}
+.gallery-mac:nth-child(3n){animation-delay:.8s;}
+@keyframes galleryBob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-12px) rotate(3deg)}}
+.gallery-cta{text-align:center;margin-top:2.5rem;}
+.gallery-cta a{display:inline-flex;align-items:center;gap:.6rem;color:var(--chocolate);font-weight:500;font-size:.88rem;text-decoration:none;border-bottom:1px solid var(--chocolate);padding-bottom:2px;transition:all .3s;}
+.gallery-cta a:hover{color:var(--rose-d);border-color:var(--rose-d);}
+
+/* ── BOOKING ── */
+.booking-sec{padding:6rem;background:var(--white);}
+.bk-wrap{max-width:1100px;margin:0 auto;}
+.bk-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:3rem;}
+.b-panel{background:white;border:1px solid var(--sand);border-radius:24px;padding:2rem;}
+.panel-ttl{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--chocolate);margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem;}
+
+/* Calendar */
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.cal-btn{background:var(--sand);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .2s;color:var(--chocolate);}
+.cal-btn:hover{background:var(--rose-l);}
+.cal-month{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--chocolate);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-hd{text-align:center;font-size:.68rem;font-weight:600;color:var(--rose-d);padding:.35rem 0;text-transform:uppercase;letter-spacing:.05em;}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;transition:all .2s;font-size:.8rem;font-weight:500;border:1px solid transparent;min-height:34px;position:relative;}
+.cal-day.empty{background:none;cursor:default;}
+.cal-day.past{opacity:.2;cursor:not-allowed;}
+.cal-day.avail{background:var(--mint-l);border-color:rgba(168,207,192,.4);color:var(--chocolate);}
+.cal-day.avail:hover{background:var(--mint);transform:scale(1.1);}
+.cal-day.busy{background:var(--rose-l);border-color:rgba(232,164,184,.4);color:var(--chocolate);cursor:not-allowed;}
+.cal-day.full{background:rgba(200,120,150,.1);border-color:var(--rose);color:var(--rose-d);cursor:not-allowed;}
+.cal-day.sel{background:var(--chocolate);color:var(--cream);border-color:transparent;transform:scale(1.12);box-shadow:0 6px 16px rgba(61,35,20,.3);z-index:2;}
+.cal-day.disabled{opacity:.25;cursor:not-allowed;}
+.cal-dots{display:flex;gap:1.5px;margin-top:2px;position:absolute;bottom:3px;}
+.cal-dot{width:4px;height:4px;border-radius:50%;background:var(--rose-d);}
+.cal-count{font-size:.55rem;font-weight:700;color:var(--rose-d);position:absolute;bottom:1px;}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;font-size:.75rem;}
+.leg-item{display:flex;align-items:center;gap:.35rem;font-weight:500;color:var(--text-m);}
+.leg-dot{width:10px;height:10px;border-radius:3px;}
+
+/* Form */
+.f-group{margin-bottom:.85rem;}
+.f-label{display:block;font-weight:500;font-size:.72rem;color:var(--chocolate);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.07em;}
+.f-input,.f-area{width:100%;padding:.65rem 1rem;border:1px solid var(--sand);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--text);background:var(--cream);transition:border-color .2s;}
+.f-input:focus,.f-area:focus{outline:none;border-color:var(--rose-d);background:white;}
+.f-area{min-height:80px;resize:vertical;}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+/* Dropdown */
+.dd-wrap{position:relative;}
+.dd-trigger{width:100%;padding:.65rem 1rem;border:1px solid var(--sand);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--text);background:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:.5rem;transition:border-color .2s;user-select:none;}
+.dd-trigger.open,.dd-trigger:hover{border-color:var(--rose-d);background:white;}
+.dd-trigger .dd-arrow{transition:transform .2s;color:var(--rose-d);font-size:.7rem;}
+.dd-trigger.open .dd-arrow{transform:rotate(180deg);}
+.dd-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid var(--rose-l);border-radius:12px;z-index:200;box-shadow:0 12px 30px rgba(61,35,20,.1);max-height:210px;overflow-y:auto;}
+.dd-item{display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--cream);font-size:.88rem;}
+.dd-item:last-child{border-bottom:none;}
+.dd-item:hover{background:var(--rose-l);}
+.dd-item.dd-sel{background:rgba(232,164,184,.2);}
+.dd-item .chk{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--rose);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.dd-item.dd-sel .chk{background:var(--rose-d);border-color:var(--rose-d);color:white;}
+/* Time picker */
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-top:.4rem;}
+.time-chip{padding:.45rem .3rem;border:1px solid var(--sand);border-radius:8px;cursor:pointer;text-align:center;font-size:.75rem;font-weight:500;color:var(--text-m);transition:all .2s;}
+.time-chip:hover{border-color:var(--rose);color:var(--chocolate);}
+.time-chip.sel{background:var(--chocolate);border-color:var(--chocolate);color:var(--cream);}
+.time-chip.taken{opacity:.3;cursor:not-allowed;text-decoration:line-through;}
+/* Submit */
+.sub-btn{width:100%;padding:1rem;background:var(--chocolate);color:var(--cream);border:none;border-radius:14px;font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:600;cursor:pointer;transition:all .3s;margin-top:.5rem;letter-spacing:.03em;}
+.sub-btn:hover:not(:disabled){background:var(--choc-m);transform:translateY(-2px);box-shadow:0 10px 25px rgba(61,35,20,.3);}
+.sub-btn:disabled{opacity:.4;cursor:not-allowed;}
+.sel-chip{background:var(--rose-l);border:1px solid var(--rose);border-radius:10px;padding:.7rem 1rem;margin-bottom:1rem;font-size:.85rem;color:var(--chocolate);font-weight:500;}
+.info-chip{background:var(--sand);border-radius:10px;padding:.7rem 1rem;font-size:.82rem;color:var(--text-m);margin-bottom:1rem;border-left:3px solid var(--rose);}
+.err-box{background:rgba(200,100,120,.1);border:1px solid var(--rose-d);border-radius:10px;padding:.8rem 1rem;color:var(--rose-d);font-size:.85rem;margin-bottom:1rem;}
+.ok-box{background:var(--chocolate);color:var(--cream);border-radius:24px;padding:3rem 2rem;text-align:center;}
+.ok-box h2{font-family:'Cormorant Garamond',serif;font-size:2rem;margin-bottom:.8rem;}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(253,246,238,.4);border-top-color:var(--cream);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.4rem;}
+.big-spin{display:inline-block;width:40px;height:40px;border:3px solid var(--rose-l);border-top-color:var(--rose-d);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap{text-align:center;padding:3rem;}
+
+/* ── CONTACT ── */
+.contact-sec{padding:5rem 6rem;background:var(--sand);}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;max-width:1000px;margin:0 auto;align-items:start;}
+.c-item{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.8rem;}
+.c-ico{width:44px;height:44px;border-radius:12px;flex-shrink:0;background:white;border:1px solid rgba(200,120,150,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.c-item h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1rem;color:var(--chocolate);margin-bottom:.25rem;}
+.c-item a,.c-item p{color:var(--text-m);font-size:.88rem;text-decoration:none;transition:color .2s;}
+.c-item a:hover{color:var(--rose-d);}
+.ig-box{background:white;border-radius:20px;padding:2rem;border:1px solid rgba(200,120,150,.15);text-align:center;}
+.ig-box h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--chocolate);margin-bottom:.5rem;}
+.ig-box p{color:var(--text-m);font-size:.88rem;margin-bottom:1.5rem;line-height:1.7;}
+.ig-btn{display:inline-flex;align-items:center;gap:.6rem;background:linear-gradient(135deg,#E1306C,#833AB4);color:white;padding:.7rem 1.5rem;border-radius:50px;font-weight:600;font-size:.85rem;text-decoration:none;transition:all .3s;}
+.ig-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(225,48,108,.3);}
+
+/* ── FOOTER ── */
+footer{background:var(--chocolate);color:rgba(253,246,238,.6);padding:2.5rem 6rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.foot-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--rose-l);}
+.foot-links{display:flex;gap:2rem;}
+.foot-links a{color:rgba(253,246,238,.5);text-decoration:none;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;transition:color .2s;}
+.foot-links a:hover{color:var(--rose-l);}
+
+/* ── HERO CANVAS PARTICLE FX ── */
+/* Animated macarons falling/floating, defined in JS */
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(10px);background:var(--chocolate);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;padding:.65rem 1.8rem;border-radius:50px;z-index:9999;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── ANIMATIONS ── */
+@keyframes emojiBurst{0%{opacity:1;transform:translate(-50%,-50%) translate(0,0) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) translate(var(--dx),var(--dy)) scale(0.2)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+    .hero{padding-bottom:72px;}
+    .about-strip{grid-template-columns:1fr;gap:3rem;padding:4rem 3rem;}
+    .flavours-grid{grid-template-columns:repeat(3,1fr);}
+    .bk-grid,.contact-grid{grid-template-columns:1fr;}
+    .flavours-sec,.booking-sec,.contact-sec,.gallery-sec{padding:4rem 3rem;}
+}
+@media(max-width:768px){
+    nav{padding:.8rem 1.5rem;}
+    .nav-links{display:none;}
+    .hero{padding-bottom:60px;}
+    .hero-inner{padding-top:5.5rem;}
+    .mac-ball{width:54px;height:54px;}
+    .mac-flavours{gap:.85rem;}
+    .hero-mode-switcher{display:none;}
+    .hst-n{font-size:1.2rem;}
+    .about-strip{padding:3rem 1.5rem;}
+    .flavours-grid{grid-template-columns:repeat(2,1fr);}
+    .flavours-sec,.booking-sec,.contact-sec,.gallery-sec{padding:3rem 1.5rem;}
+    footer{padding:2rem 1.5rem;}
+}
 </style>
 </head>
 <body>
 
-<nav id="nav">
-  <a href="#" class="nav-logo">🌿 <em>Macaroon</em> Garden</a>
-  <ul class="nav-links">
-    <li><a href="#flavors">Garšas</a></li>
-    <li><a href="#builder">Kaste</a></li>
-    <li><a href="#booking">Pasūtīt</a></li>
-  </ul>
-  <div class="nav-auth" id="navAuth">
-    <button class="bsm bgh" onclick="openModal('login')">Ieiet</button>
-    <button class="bsm bso" onclick="openModal('register')">Reģistrēties</button>
-  </div>
+<!-- Custom cursor -->
+<div class="cur" id="cur"></div>
+<div class="cur-ring" id="cur-ring"></div>
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav id="main-nav">
+    <a href="#home" class="nav-logo">🌿 <em style="font-style:italic;color:var(--rose-d);">Macaroon</em> <span style="color:var(--chocolate);font-style:normal;">Garden</span></a>
+    <ul class="nav-links">
+        <li><a href="#flavours">Garšas</a></li>
+        <li><a href="#about">Kaste</a></li>
+        <li><a href="#booking">Pasūtīt</a></li>
+    </ul>
+    <div style="display:flex;gap:.7rem;align-items:center;">
+        <a href="#contact" style="display:inline-flex;align-items:center;padding:.5rem 1.2rem;border-radius:50px;border:1.5px solid rgba(61,35,20,.2);font-size:.82rem;font-weight:500;color:var(--chocolate);text-decoration:none;transition:all .2s;">Ieiet</a>
+        <a href="#booking" style="display:inline-flex;align-items:center;padding:.5rem 1.2rem;border-radius:50px;background:var(--rose-d);font-size:.82rem;font-weight:600;color:white;text-decoration:none;transition:all .2s;box-shadow:0 4px 12px rgba(200,120,150,.3);">Reģistrēties</a>
+    </div>
 </nav>
 
-<!-- ── INTERACTIVE HERO ── -->
-<section id="hero" style="background:linear-gradient(150deg,#FFF8F2,#F8EEF4,#EEF0FA)">
-  <canvas id="hero-canvas"></canvas>
-  <div class="hshape" id="hs1" style="width:350px;height:350px;top:-70px;right:-70px;background:#F5D5DC"></div>
-  <div class="hshape" id="hs2" style="width:280px;height:280px;bottom:-50px;left:-50px;background:#C8DBC0"></div>
-  <div class="hshape" id="hs3" style="width:200px;height:200px;top:35%;left:35%;background:#DDD5EC"></div>
+<!-- HERO -->
+<section class="hero" id="home">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-bg-pattern"></div>
 
-  <div class="hero-inner">
-    <div class="hero-tag">🌸 Handcrafted · Latvija · Pēc pasūtījuma</div>
-    <h1>Katra <em id="heroEm">garša</em> —<br>tavs mazs brīnums</h1>
-    <p class="hero-sub" id="heroSub">Delikāti franču makaroni gatavoti ar mīlestību. Izvēlies garšas noskaņu zemāk.</p>
-    <div class="hero-btns">
-      <a href="#booking" class="bp">🌿 Pasūtīt tagad</a>
-      <a href="#builder" class="bo">✨ Savākt kasti</a>
+    <div class="hero-inner">
+        <!-- Tag -->
+        <div class="hero-tag">🌸 Handcrafted · Latvija · Pēc pasūtījuma</div>
+
+        <!-- H1 -->
+        <h1 class="hero-h1">Katra <em>garša</em> —<br>tavs mazs brīnums</h1>
+
+        <!-- Sub -->
+        <p class="hero-sub">Delikāti franču macaroni gatavoti ar mīlestību. Izvēlies garšas noskaņu zemāk.</p>
+
+        <!-- Buttons -->
+        <div class="hero-btns">
+            <a href="#booking" class="btn-main">🌿 Pasūtīt tagad</a>
+            <a href="#flavours" class="btn-sec">✨ Savākt kasti</a>
+        </div>
+
+        <!-- Macaron flavour circles — interactive -->
+        <div class="mac-flavours" id="mac-flavours">
+            <div class="mac-circle active" data-idx="0" onclick="setMacFlavour(0)">
+                <div class="mac-ball" style="background:radial-gradient(circle at 35% 35%,#F2B8CB,#D4748E)"></div>
+                <span class="mac-lbl">Rozūdens</span>
+            </div>
+            <div class="mac-circle" data-idx="1" onclick="setMacFlavour(1)">
+                <div class="mac-ball" style="background:radial-gradient(circle at 35% 35%,#A8D4B0,#6FA87A)"></div>
+                <span class="mac-lbl">Pistācija</span>
+            </div>
+            <div class="mac-circle" data-idx="2" onclick="setMacFlavour(2)">
+                <div class="mac-ball" style="background:radial-gradient(circle at 35% 35%,#C8B8DC,#9A85BE)"></div>
+                <span class="mac-lbl">Lavanda</span>
+            </div>
+            <div class="mac-circle" data-idx="3" onclick="setMacFlavour(3)">
+                <div class="mac-ball" style="background:radial-gradient(circle at 35% 35%,#C4956A,#8B5E3C)"></div>
+                <span class="mac-lbl">Šokolāde</span>
+            </div>
+            <div class="mac-circle" data-idx="4" onclick="setMacFlavour(4)">
+                <div class="mac-ball" style="background:radial-gradient(circle at 35% 35%,#EEE880,#C8C038)"></div>
+                <span class="mac-lbl">Citrons</span>
+            </div>
+        </div>
+
+        <p class="mac-hint">Uzklikšķini uz makarona lai mainītu garšas noskaņu ✦ klikšķis vai ekrāna skāriens veido ziedus</p>
     </div>
-  </div>
 
-  <div class="mac-modes" id="macModes">
-    <button class="mmb act" onclick="setMode('rose',this)">
-      <div class="mcir" style="background:#E8A8B4"></div>
-      <span class="mlbl">Rožūdens</span>
-    </button>
-    <button class="mmb" onclick="setMode('pistachio',this)">
-      <div class="mcir" style="background:#8FAF7E"></div>
-      <span class="mlbl">Pistācija</span>
-    </button>
-    <button class="mmb" onclick="setMode('lavender',this)">
-      <div class="mcir" style="background:#B8A5CC"></div>
-      <span class="mlbl">Lavanda</span>
-    </button>
-    <button class="mmb" onclick="setMode('chocolate',this)">
-      <div class="mcir" style="background:#C8956C"></div>
-      <span class="mlbl">Šokolāde</span>
-    </button>
-    <button class="mmb" onclick="setMode('lemon',this)">
-      <div class="mcir" style="background:#D4BC5A"></div>
-      <span class="mlbl">Citrons</span>
-    </button>
-  </div>
-  <p class="mode-hint">Uzklikšķini uz makarona lai mainītu garšas noskaņu ✦ klikšķis vai ekrāna skāriens veido ziedus</p>
+    <!-- Mode pill — right side -->
+    <div class="hero-mode-switcher">
+        <div class="mode-pill" onclick="setMacFlavour((window._macIdx+1)%5)">
+            <span class="mode-pill-ico" id="mode-pill-ico">🌿</span>
+            <span id="mode-pill-lbl">Nākamā garša</span>
+        </div>
+    </div>
+
+    <!-- Stats bar — full width bottom -->
+    <div class="hero-stats">
+        <div class="hst"><span class="hst-n">500+</span><span class="hst-l">Klienti</span></div>
+        <div class="hst"><span class="hst-n">5</span><span class="hst-l">Garšas</span></div>
+        <div class="hst"><span class="hst-n">100%</span><span class="hst-l">Dabīgas</span></div>
+        <div class="hst"><span class="hst-n">24h</span><span class="hst-l">Piegāde</span></div>
+    </div>
 </section>
 
-<!-- STATS -->
-<div class="stats">
-  <div class="stats-g">
-    <div><div class="sn">500+</div><div class="sl">Klienti</div></div>
-    <div><div class="sn">5</div><div class="sl">Garšas</div></div>
-    <div><div class="sn">100%</div><div class="sl">Dabīgas</div></div>
-    <div><div class="sn">24h</div><div class="sl">Piegāde</div></div>
-  </div>
-</div>
-
-<!-- FLAVORS -->
-<section class="sec" id="flavors" style="background:var(--c2)">
-  <div class="sec-hd rv">
-    <span class="sec-tag">🌸 Garšas</span>
-    <h2 class="sec-t">Piecu <em>garšu</em> dārzs</h2>
-    <p class="sec-s">Katrs makaronis stāsta savu stāstu.</p>
-  </div>
-  <div class="flg">
-    <div class="fc rv" style="--fc:#E8A8B4" onclick="scrollBuilder('rose')">
-      <div class="fmac" style="background:#E8A8B4"><div style="position:absolute;bottom:8%;left:10%;width:80%;height:46%;border-radius:50%;background:#d4899a;opacity:.7"></div></div>
-      <h3>Rožūdens</h3><p>Floral, maigs, romantisks</p>
-      <span class="fbadge" style="background:#F5D5DC;color:#C4798A">Bestseller 🌹</span>
+<!-- ABOUT -->
+<section id="about" class="about-strip">
+    <div>
+        <div class="about-tag">Mūsu stāsts</div>
+        <h2 class="about-h2">Katrs macarons ir <em>mākslas darbs</em></h2>
+        <p class="about-p">Macaroon Garden dzima no aizrautības ar franču konditorēju mākslu. Mēs ticam, ka katrs macarons ir maza prieka brīža — kraukšķīgs apvalks, maiga pildīšana, perfekta balanss.</p>
+        <p class="about-p">Visi makroni veidoti pēc pasūtījuma — svaigi, rokām gatavoti, no dabīgām sastāvdaļām. Skatiet mūs Instagram, lai redzētu jaunāko!</p>
+        <a href="https://www.instagram.com/macarongardenlv" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.6rem;color:var(--chocolate);font-weight:500;font-size:.88rem;text-decoration:none;border-bottom:1px solid var(--chocolate);padding-bottom:2px;margin-top:.5rem;">📸 @macarongardenlv ↗</a>
     </div>
-    <div class="fc rv" style="--fc:#8FAF7E;transition-delay:.07s" onclick="scrollBuilder('pistachio')">
-      <div class="fmac" style="background:#8FAF7E"><div style="position:absolute;bottom:8%;left:10%;width:80%;height:46%;border-radius:50%;background:#5a8a4a;opacity:.6"></div></div>
-      <h3>Pistācija</h3><p>Nutty, krēmisks, elegants</p>
-      <span class="fbadge" style="background:#C8DBC0;color:#4A7A40">Klasika 🌿</span>
+    <div class="about-right">
+        <div class="feat-card"><span class="feat-ico">🥚</span><h3>Dabīgas izejvielas</h3><p>Tikai labākās mandeles, dabīgie pārtikas krāsvielas un svaigākie augļi.</p></div>
+        <div class="feat-card"><span class="feat-ico">🎁</span><h3>Dāvanu komplekti</h3><p>Skaisti iepakotas dāvanu kastes — ideāli dzimšanas dienām un svētkiem.</p></div>
+        <div class="feat-card"><span class="feat-ico">✍️</span><h3>Pēc pasūtījuma</h3><p>Jūsu garšu izvēle, krāsu pallete, skaits. Viss pēc Jūsu vēlmēm.</p></div>
+        <div class="feat-card"><span class="feat-ico">🚚</span><h3>Piegāde Rīgā</span><p>Svaigi piegādāti līdz Jūsu durvīm īstajā brīdī.</p></div>
     </div>
-    <div class="fc rv" style="--fc:#B8A5CC;transition-delay:.14s" onclick="scrollBuilder('lavender')">
-      <div class="fmac" style="background:#B8A5CC"><div style="position:absolute;bottom:8%;left:10%;width:80%;height:46%;border-radius:50%;background:#8a6aaa;opacity:.6"></div></div>
-      <h3>Lavanda</h3><p>Aromātisks, relaksējošs</p>
-      <span class="fbadge" style="background:#DDD5EC;color:#7A5A9A">Ekskluzīvs 💜</span>
-    </div>
-    <div class="fc rv" style="--fc:#C8956C;transition-delay:.21s" onclick="scrollBuilder('chocolate')">
-      <div class="fmac" style="background:#C8956C"><div style="position:absolute;bottom:8%;left:10%;width:80%;height:46%;border-radius:50%;background:#8a5a3a;opacity:.6"></div></div>
-      <h3>Šokolāde</h3><p>Intensīvs, baudīgs</p>
-      <span class="fbadge" style="background:#F0DECE;color:#7B4F3A">Favorīts 🍫</span>
-    </div>
-    <div class="fc rv" style="--fc:#D4BC5A;transition-delay:.28s" onclick="scrollBuilder('lemon')">
-      <div class="fmac" style="background:#D4BC5A"><div style="position:absolute;bottom:8%;left:10%;width:80%;height:46%;border-radius:50%;background:#a09020;opacity:.6"></div></div>
-      <h3>Citrons</h3><p>Dzirkstošs, svaigs</p>
-      <span class="fbadge" style="background:#FBF5C0;color:#8A7A20">Sezonāls 🍋</span>
-    </div>
-  </div>
 </section>
 
-<!-- BOX BUILDER -->
-<section class="sec" id="builder" style="background:var(--c1)">
-  <div class="sec-hd rv">
-    <span class="sec-tag">✨ Interaktīvs</span>
-    <h2 class="sec-t">Sajauc savu <em>kastīti</em></h2>
-    <p class="sec-s">Izvēlies izmēru, pievienoji garšas — sastāvs automātiski parādās pasūtījumā.</p>
-  </div>
-  <div id="builder-app"></div>
+<!-- FLAVOURS -->
+<section id="flavours" class="flavours-sec">
+    <div class="sec-center">
+        <div class="sec-tag">Garšu kolekcija</div>
+        <h2 class="sec-h2">Izvēlieties savu <em>iecienīto</em></h2>
+        <p class="sec-sub">Katrs macarons — savs raksturs, sava sajūta. Vai Jums patīk klasika vai eksotika?</p>
+    </div>
+    <div class="flavours-grid">
+        <div class="flav-card"><span class="flav-badge">Klasika</span><span class="flav-emoji">🌹</span><div class="flav-name">Roze & Aveņu</div><div class="flav-desc">Maigs rožu krēms ar svaigām avenēm. Romantiski un delikāti.</div></div>
+        <div class="flav-card"><span class="flav-emoji">🍫</span><div class="flav-name">Beļģu Šokolāde</div><div class="flav-desc">Tumšā Beļģijas šokolāde ar krēmīgu ganache pildījumu.</div></div>
+        <div class="flav-card"><span class="flav-badge">Populārs</span><span class="flav-emoji">🍋</span><div class="flav-name">Citronu Kūrds</div><div class="flav-desc">Skābais citronu kūrds ar sviesta krēmu — perfekti sabalansēts.</div></div>
+        <div class="flav-card"><span class="flav-emoji">🫐</span><div class="flav-name">Mellenes & Lavanda</div><div class="flav-desc">Melleņu ievārījums ar Provansas lavandas aromātu.</div></div>
+        <div class="flav-card"><span class="flav-emoji">🥜</span><div class="flav-name">Pistācija & Vaniļa</div><div class="flav-desc">Saldo pistāciju pasta ar Madagaskaras vaniļas krēmu.</div></div>
+    </div>
+</section>
+
+<!-- GALLERY TEASER -->
+<section class="gallery-sec" id="gallery">
+    <div class="sec-center" style="margin-bottom:2rem;">
+        <div class="sec-tag">Vizuālā pasaule</div>
+        <h2 class="sec-h2" style="font-size:2.2rem;">Makronu <em>dārzs</em></h2>
+    </div>
+    <div class="gallery-row">
+        <span class="gallery-mac">🌸</span><span class="gallery-mac">🍪</span><span class="gallery-mac">🌹</span>
+        <span class="gallery-mac">🍋</span><span class="gallery-mac">🫐</span><span class="gallery-mac">🍫</span>
+        <span class="gallery-mac">🌷</span><span class="gallery-mac">🥜</span><span class="gallery-mac">💐</span>
+        <span class="gallery-mac">🌿</span><span class="gallery-mac">✨</span><span class="gallery-mac">🎀</span>
+    </div>
+    <div class="gallery-cta">
+        <a href="https://www.instagram.com/macarongardenlv" target="_blank" rel="noopener">📸 Skatiet vairāk Instagram @macarongardenlv ↗</a>
+    </div>
 </section>
 
 <!-- BOOKING -->
-<section class="sec" id="booking" style="background:var(--c2)">
-  <div class="sec-hd rv">
-    <span class="sec-tag">📅 Rezervācija</span>
-    <h2 class="sec-t">Pasūti <em>piegādi</em></h2>
-    <p class="sec-s">Datums, laiks un garša — mēs nogādāsim pie Tavām durvīm.</p>
-  </div>
-  <div id="booking-app"></div>
+<section class="booking-sec" id="booking">
+    <div class="bk-wrap">
+        <div class="sec-center">
+            <div class="sec-tag">Rezervācija</div>
+            <h2 class="sec-h2">Pasūtiet <em>savus makronus</em></h2>
+            <p class="sec-sub">Izvēlieties piegādes datumu, laiku un garšas — mēs parūpēsimies par visu pārējo.</p>
+        </div>
+        <div id="booking-app"></div>
+    </div>
 </section>
 
-<!-- TESTIMONIALS -->
-<section class="sec" id="reviews" style="background:var(--c1)">
-  <div class="sec-hd rv">
-    <span class="sec-tag">💬 Atsauksmes</span>
-    <h2 class="sec-t">Ko saka <em>klienti</em></h2>
-  </div>
-  <div class="tgrid">
-    <div class="tc rv"><div class="stars">★★★★★</div><p class="ttxt">Lavandas garša ir fantastiska! Kāzām pasūtīju piramīdu ar 90 makaroniem — viesi bija sajūsmā.</p><div class="tauth">Linda K.</div><div class="trole">Kāzu pasākums</div></div>
-    <div class="tc rv" style="transition-delay:.1s"><div class="stars">★★★★★</div><p class="ttxt">Korporatīvam pasākumam pasūtīju 200 makaronus uzņēmuma krāsās. Perfekts izpildījums, punktuāla piegāde!</p><div class="tauth">Mārtiņš B.</div><div class="trole">Korporatīvs pasākums</div></div>
-    <div class="tc rv" style="transition-delay:.2s"><div class="stars">★★★★★</div><p class="ttxt">Dāvana mātei — 12 makaronu kaste. Viņa teica: labākā dāvana mūžā! Iepakojums maģisks.</p><div class="tauth">Anna S.</div><div class="trole">Dāvana ģimenei</div></div>
-  </div>
-</section>
-
-<!-- INSTAGRAM -->
-<section class="sec" id="instagram" style="background:var(--c2)">
-  <div class="sec-hd rv">
-    <span class="sec-tag">📱 @macarongardenlv</span>
-    <h2 class="sec-t">Sekojiet mūsu <em>dārzam</em></h2>
-  </div>
-  <div class="igg rv">
-    <div class="igt" style="background:linear-gradient(135deg,#F5D5DC,#E8A8B4)"><div class="igi">🌹</div><div class="igov"><span>Rožūdens</span></div></div>
-    <div class="igt" style="background:linear-gradient(135deg,#C8DBC0,#8FAF7E)"><div class="igi">🌿</div><div class="igov"><span>Pistācija</span></div></div>
-    <div class="igt" style="background:linear-gradient(135deg,#DDD5EC,#B8A5CC)"><div class="igi">💜</div><div class="igov"><span>Lavanda</span></div></div>
-    <div class="igt" style="background:linear-gradient(135deg,#F0DECE,#C8956C)"><div class="igi">🍫</div><div class="igov"><span>Šokolāde</span></div></div>
-    <div class="igt" style="background:linear-gradient(135deg,#FBF5C0,#D4BC5A)"><div class="igi">🍋</div><div class="igov"><span>Citrons</span></div></div>
-    <div class="igt" style="background:linear-gradient(135deg,#F5D5DC,#DDD5EC)"><div class="igi">🎁</div><div class="igov"><span>Dāvanas</span></div></div>
-    <div class="igt" style="background:linear-gradient(135deg,#C8DBC0,#DDD5EC)"><div class="igi">🌸</div><div class="igov"><span>Pavasaris</span></div></div>
-    <div class="igt" style="background:linear-gradient(135deg,#F0DECE,#F5D5DC)"><div class="igi">✨</div><div class="igov"><span>Kāzas</span></div></div>
-  </div>
-  <div class="igcta rv">
-    <h3>Iedvesmojies katru dienu</h3>
-    <p>Seko mums un esi pirmā, kas uzzina par jaunākajām garšām un ekskluzīvajiem piedāvājumiem.</p>
-    <a href="https://www.instagram.com/macarongardenlv?igsh=MWZrejRwcHpqb2dtNA==" target="_blank" class="igbtn">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-      @macarongardenlv
-    </a>
-  </div>
+<!-- CONTACT -->
+<section class="contact-sec" id="contact">
+    <div class="sec-center" style="margin-bottom:3rem;">
+        <div class="sec-tag">Kontakti</div>
+        <h2 class="sec-h2">Sazinieties <em>ar mums</em></h2>
+    </div>
+    <div class="contact-grid">
+        <div>
+            <div class="c-item"><div class="c-ico">📱</div><div><h3>WhatsApp</h3><a href="https://wa.me/371">Rakstiet mums WhatsApp</a></div></div>
+            <div class="c-item"><div class="c-ico">📧</div><div><h3>E-pasts</h3><a href="/cdn-cgi/l/email-protection#d2bbbcb4bd92bfb3b1b3a0bdbdbcb5b3a0b6b7bcfcbea4"><span class="__cf_email__" data-cfemail="8be2e5ede4cbe6eae8eaf9e4e4e5eceaf9efeee5a5e7fd">[email&#160;protected]</span></a></div></div>
+            <div class="c-item"><div class="c-ico">📍</div><div><h3>Atrašanās vieta</h3><p>Rīga, Latvija<br><span style="font-size:.78rem;opacity:.7;">Piegāde visa Rīgas teritorijā</span></p></div></div>
+            <div class="c-item"><div class="c-ico">⏰</div><div><h3>Darba laiks</h3><p>P–Sk 9:00–20:00<br><span style="font-size:.78rem;opacity:.7;">Pasūtījumus pieņemam 24/7</span></p></div></div>
+        </div>
+        <div class="ig-box">
+            <div style="font-size:3rem;margin-bottom:1rem;">📸</div>
+            <h3>Sekojiet mums</h3>
+            <p>Skatiet jaunākos makronus, procesus un iedvesmu mūsu Instagram profilā. Katru nedēļu jauni darbi!</p>
+            <a href="https://www.instagram.com/macarongardenlv?igsh=MWZrejRwcHpqb2dtNA==" target="_blank" rel="noopener" class="ig-btn">
+                <span>@macarongardenlv</span> ↗
+            </a>
+        </div>
+    </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="fg">
-    <div>
-      <div class="flo">🌿 <em>Macaroon</em> Garden</div>
-      <p class="fdsc">Handcrafted makaroni pēc pasūtījuma Latvijā.</p>
+    <div class="foot-logo">🌸 Macaroon Garden</div>
+    <div class="foot-links">
+        <a href="#about">Par mums</a>
+        <a href="#flavours">Garšas</a>
+        <a href="#booking">Pasūtīt</a>
+        <a href="https://www.instagram.com/macarongardenlv" target="_blank">Instagram</a>
     </div>
-    <div class="fcol">
-      <h4>Lapas</h4>
-      <ul><li><a href="#flavors">Garšas</a></li><li><a href="#builder">Kastītes</a></li><li><a href="#booking">Pasūtīt</a></li></ul>
-    </div>
-    <div class="fcol">
-      <h4>Kontakti</h4>
-      <ul><li><a href="https://www.instagram.com/macarongardenlv" target="_blank">Instagram</a></li><li><a href="#">Rīga, Latvija</a></li></ul>
-    </div>
-  </div>
-  <div class="fbot">
-    <span>© 2025 Macaroon Garden · Gatavots ar 🌸</span>
-    <div class="fsoc"><a href="https://www.instagram.com/macarongardenlv?igsh=MWZrejRwcHpqb2dtNA==" target="_blank">Instagram</a></div>
-  </div>
+    <p style="font-size:.72rem;opacity:.4;">© 2026 Macaroon Garden. Radīts ar 🌸 Rīgā.</p>
 </footer>
 
-<!-- AUTH MODAL -->
-<div id="authModal" style="display:none" class="mov" onclick="closeOv(event)">
-  <div class="modal">
-    <button class="mx" onclick="closeModal()">✕</button>
-    <h2>Laipni lūdzam 🌸</h2>
-    <p>Piesakies, lai izsekotu pasūtījumiem</p>
-    <div class="mtabs">
-      <button class="mtab act" id="t1" onclick="swTab('login')">Ieiet</button>
-      <button class="mtab" id="t2" onclick="swTab('register')">Reģistrēties</button>
-    </div>
-    <div id="mErr" class="merr" style="display:none"></div>
-    <div id="mLogin">
-      <label class="ml">E-pasts</label><input type="email" class="mi" id="lE" placeholder="epasts@gmail.com">
-      <label class="ml">Parole</label><input type="password" class="mi" id="lP" placeholder="••••••••">
-      <button class="msub" onclick="doLogin()">Ieiet kontā</button>
-      <p class="msw">Nav konta? <button onclick="swTab('register')">Reģistrēties</button></p>
-    </div>
-    <div id="mReg" style="display:none">
-      <label class="ml">Vārds</label><input type="text" class="mi" id="rN" placeholder="Tavs vārds">
-      <label class="ml">E-pasts</label><input type="email" class="mi" id="rE" placeholder="epasts@gmail.com">
-      <label class="ml">Parole</label><input type="password" class="mi" id="rP" placeholder="Vismaz 6 simboli">
-      <button class="msub" onclick="doReg()">Izveidot kontu 🌿</button>
-      <p class="msw">Jau ir konts? <button onclick="swTab('login')">Ieiet</button></p>
-    </div>
-  </div>
-</div>
+<!-- CURSOR JS -->
+<script data-cfasync="false">
+const cur=document.getElementById('cur');
+const curR=document.getElementById('cur-ring');
+let rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+    cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+    rx+=(e.clientX-rx)*.12;ry+=(e.clientY-ry)*.12;
+    curR.style.left=rx+'px';curR.style.top=ry+'px';
+});
+document.addEventListener('mousedown',()=>cur.style.transform='translate(-50%,-50%) scale(.7)');
+document.addEventListener('mouseup',()=>cur.style.transform='translate(-50%,-50%) scale(1)');
+window.addEventListener('scroll',()=>document.getElementById('main-nav').classList.toggle('scrolled',window.scrollY>60));
 
-<script>
-/* ── HERO CANVAS ── */
-const cvs=document.getElementById('hero-canvas');
-const ctx=cvs.getContext('2d');
-let pts=[],W,H;
-function rsz(){W=cvs.width=cvs.offsetWidth;H=cvs.height=cvs.offsetHeight;}
-window.addEventListener('resize',rsz);rsz();
+// HERO CANVAS — falling petal particles
+const canvas=document.getElementById('hero-canvas');
+const ctx=canvas.getContext('2d');
+let hParts=[];
+const PETAL_EMOJIS=['\u{1F338}','\u{1F337}','\u{1F339}','\u{1F490}','\u{1F33F}','\u2728','\u{1F4AB}','\u{1F380}','\u{1F33A}'];
 
-const MODES={
-  rose:     {bg:'linear-gradient(150deg,#FFF8F2,#F8EEF4,#EEF0FA)',s1:'#F5D5DC',s2:'#C8DBC0',t:'garša',sub:'Delikāts rožūdens krēms ar svaigiem aveņu akcentiem.',cols:['#E8A8B4','#F5D5DC','#DDD5EC']},
-  pistachio:{bg:'linear-gradient(150deg,#F8FFF5,#EDF8E8,#F0FAF8)',s1:'#C8DBC0',s2:'#DDD5EC',t:'pistācija',sub:'Bagātīgs pistācijas ganiache ar Madagaskaras vaniliju.',cols:['#8FAF7E','#C8DBC0','#E8A8B4']},
-  lavender: {bg:'linear-gradient(150deg,#FAF5FF,#F0EAFF,#EEF0FA)',s1:'#DDD5EC',s2:'#E8A8B4',t:'lavanda',sub:'Provansas lavanda ar vietējo bišu medu.',cols:['#B8A5CC','#DDD5EC','#F5D5DC']},
-  chocolate:{bg:'linear-gradient(150deg,#FFF8F2,#FFF0E8,#FAECE0)',s1:'#F0DECE',s2:'#F5D5DC',t:'šokolāde',sub:'Tumšā Beļģijas šokolāde ar sāļo karameli.',cols:['#C8956C','#F0DECE','#E8A8B4']},
-  lemon:    {bg:'linear-gradient(150deg,#FFFFF0,#FDFAE0,#F8FFF2)',s1:'#FBF5C0',s2:'#C8DBC0',t:'citrons',sub:'Spilgts Sicīlijas citrons ar ingvera pieskārienu.',cols:['#D4BC5A','#FBF5C0','#C8DBC0']},
+function rsz(){
+    const h=document.getElementById('home');
+    canvas.width=h.offsetWidth||window.innerWidth;
+    canvas.height=h.offsetHeight||window.innerHeight;
+}
+window.addEventListener('resize',rsz);
+setTimeout(rsz,100);
+
+function mkPart(x,y){
+    const burst=(y!==undefined);
+    return {
+        x:x!==undefined?x:Math.random()*(canvas.width||window.innerWidth),
+        y:y!==undefined?y:-20,
+        e:PETAL_EMOJIS[Math.floor(Math.random()*PETAL_EMOJIS.length)],
+        size:12+Math.random()*18,
+        vx:(Math.random()-.5)*.6,
+        vy:burst?-(1+Math.random()*2):(0.25+Math.random()*.5),
+        rot:Math.random()*Math.PI*2, rs:(Math.random()-.5)*.025,
+        a:.7+Math.random()*.3,
+        w:Math.random()*Math.PI*2, ws:.01+Math.random()*.01,
+        burst:burst
+    };
+}
+
+let fN=0;
+function drawCanvas(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    fN++;
+    if(fN%100===0){hParts.push(mkPart());if(hParts.length>50)hParts.splice(0,3);}
+    hParts=hParts.filter(p=>{
+        p.w+=p.ws;p.x+=p.vx+Math.sin(p.w)*.4;
+        p.y+=p.vy;p.rot+=p.rs;
+        if(p.burst){p.a-=.018;p.vy+=.05;}
+        const fade=p.burst?p.a:Math.min(1,(canvas.height-p.y)/canvas.height*4);
+        ctx.save();
+        ctx.globalAlpha=Math.max(0,p.a*fade);
+        ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+        ctx.font=p.size+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(p.e,0,0);
+        ctx.restore();
+        if(p.burst)return p.a>0;
+        return p.y<canvas.height+40;
+    });
+    requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+// Click on hero background -> burst
+document.getElementById('home').addEventListener('click',function(e){
+    if(e.target.closest('.hero-inner')||e.target.closest('.hero-mode-switcher'))return;
+    for(let i=0;i<10;i++)hParts.push(mkPart(e.clientX,e.clientY));
+});
+document.getElementById('home').addEventListener('touchstart',function(e){
+    const t=e.touches[0];
+    for(let i=0;i<10;i++)hParts.push(mkPart(t.clientX,t.clientY));
+},{passive:true});
+
+// Macaron flavour modes
+const MAC_FLAVS=[
+    {name:'Rozūdens', bg:'linear-gradient(160deg,#FBF0F4 0%,#F5E4F0 50%,#F0EAF8 100%)', next:'Pistācija'},
+    {name:'Pistācija', bg:'linear-gradient(160deg,#EFF7F0 0%,#E2F0E8 50%,#EEF5EA 100%)', next:'Lavanda'},
+    {name:'Lavanda',  bg:'linear-gradient(160deg,#F3F0FA 0%,#EAE4F5 50%,#F0EEF8 100%)', next:'Šokolāde'},
+    {name:'Šokolāde', bg:'linear-gradient(160deg,#FAF3EC 0%,#F2E6D8 50%,#EEE8E0 100%)', next:'Citrons'},
+    {name:'Citrons',  bg:'linear-gradient(160deg,#FAFAEC 0%,#F5F2D8 50%,#F0EEE2 100%)', next:'Rozūdens'},
+];
+window._macIdx=0;
+
+window.setMacFlavour=function(idx){
+    window._macIdx=idx;
+    const m=MAC_FLAVS[idx];
+    document.getElementById('home').style.background=m.bg;
+    document.querySelectorAll('.mac-circle').forEach((c,i)=>c.classList.toggle('active',i===idx));
+    document.getElementById('mode-pill-ico').textContent=['\u{1F338}','\u{1F33F}','\u{1F49C}','\u{1F36B}','\u{1F34B}'][idx];
+    document.getElementById('mode-pill-lbl').textContent=m.next;
+    // burst emojis at circle
+    const circle=document.querySelector('.mac-circle[data-idx="'+idx+'"]');
+    if(circle){
+        const rc=circle.getBoundingClientRect();
+        const cx=rc.left+rc.width/2,cy=rc.top+rc.height/2;
+        const emArr=['\u{1F338}','\u2728','\u{1F4AB}','\u{1F337}','\u{1F339}'];
+        for(let i=0;i<12;i++){
+            const el=document.createElement('span');
+            el.textContent=emArr[Math.floor(Math.random()*emArr.length)];
+            const a=Math.random()*Math.PI*2,d=40+Math.random()*70;
+            el.style.cssText='position:fixed;left:'+cx+'px;top:'+cy+'px;font-size:'+(12+Math.random()*14)+'px;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);animation:emojiBurst .9s ease-out forwards;--dx:'+Math.cos(a)*d+'px;--dy:'+Math.sin(a)*d+'px;';
+            document.body.appendChild(el);
+            setTimeout(()=>el.remove(),1000);
+        }
+    }
 };
-let cm='rose';
 
-function spw(x,y,col,n=16){
-  for(let i=0;i<n;i++){
-    const a=(Math.PI*2/n)*i+Math.random()*.6;
-    const sp=1.5+Math.random()*3.5;
-    pts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.2,r:4+Math.random()*7,col,life:1,dec:.015+Math.random()*.025,rot:Math.random()*Math.PI*2,rv:(Math.random()-.5)*.14});
-  }
-}
-function drMac(x,y,r,c){
-  ctx.save();
-  ctx.fillStyle=c;ctx.globalAlpha=.82;
-  ctx.beginPath();ctx.ellipse(x,y+r*.1,r,r*.58,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=ltn(c,28);ctx.globalAlpha=.65;
-  ctx.beginPath();ctx.ellipse(x,y-r*.1,r,r*.58,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#fff';ctx.globalAlpha=.28;
-  ctx.beginPath();ctx.ellipse(x-r*.2,y-r*.22,r*.32,r*.17,-.4,0,Math.PI*2);ctx.fill();
-  ctx.restore();
-}
-function ltn(h,a){let c=parseInt(h.slice(1),16),r=Math.min(255,((c>>16)&0xff)+a),g=Math.min(255,((c>>8)&0xff)+a),b=Math.min(255,(c&0xff)+a);return`rgb(${r},${g},${b})`;}
-function anim(){
-  ctx.clearRect(0,0,W,H);
-  pts=pts.filter(p=>{
-    p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life-=p.dec;p.rot+=p.rv;
-    if(p.life<=0)return false;
-    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.globalAlpha=p.life*.8;
-    drMac(0,0,p.r,p.col);ctx.restore();return true;
-  });
-  requestAnimationFrame(anim);
-}
-anim();
-
-document.getElementById('hero').addEventListener('click',e=>{
-  const rc=cvs.getBoundingClientRect(),m=MODES[cm];
-  spw(e.clientX-rc.left,e.clientY-rc.top,m.cols[0],16);
-  spw(e.clientX-rc.left,e.clientY-rc.top,m.cols[1],8);
-  spw(e.clientX-rc.left,e.clientY-rc.top,m.cols[2],5);
-});
-document.getElementById('hero').addEventListener('touchend',e=>{
-  const t=e.changedTouches[0],rc=cvs.getBoundingClientRect(),m=MODES[cm];
-  spw(t.clientX-rc.left,t.clientY-rc.top,m.cols[0],14);
-  spw(t.clientX-rc.left,t.clientY-rc.top,m.cols[1],6);
-});
-let lm=0;
-document.getElementById('hero').addEventListener('mousemove',e=>{
-  if(Date.now()-lm<100)return;lm=Date.now();
-  const rc=cvs.getBoundingClientRect(),m=MODES[cm];
-  spw(e.clientX-rc.left,e.clientY-rc.top,m.cols[Math.floor(Math.random()*3)],3);
-});
-
-function setMode(mode,btn){
-  cm=mode;const m=MODES[mode];
-  document.querySelectorAll('.mmb').forEach(b=>b.classList.remove('act'));
-  btn.classList.add('act');
-  document.getElementById('hero').style.background=m.bg;
-  document.getElementById('hs1').style.background=m.s1;
-  document.getElementById('hs2').style.background=m.s2;
-  document.getElementById('heroEm').textContent=m.t;
-  document.getElementById('heroSub').textContent=m.sub;
-  const rc2=btn.querySelector('.mcir').getBoundingClientRect();
-  const hrc=cvs.getBoundingClientRect();
-  spw(rc2.left+rc2.width/2-hrc.left,rc2.top+rc2.height/2-hrc.top,m.cols[0],22);
-  spw(rc2.left+rc2.width/2-hrc.left,rc2.top+rc2.height/2-hrc.top,m.cols[1],10);
-}
-function scrollBuilder(f){
-  document.getElementById('builder').scrollIntoView({behavior:'smooth'});
-  setTimeout(()=>{if(window._sbf)window._sbf(f);},600);
+function showToast(txt){
+    const t=document.getElementById('toast');
+    t.textContent=txt;t.classList.add('show');
+    clearTimeout(window._tt);
+    window._tt=setTimeout(()=>t.classList.remove('show'),2000);
 }
 
-window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('sc',scrollY>36));
-const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('vis')),{threshold:.1});
-document.querySelectorAll('.rv').forEach(el=>io.observe(el));
-
-/* ── AUTH ── */
-let curU=null;
-try{const s=localStorage.getItem('mg_u');if(s){curU=JSON.parse(s);upNav();}}catch(e){}
-function gU(){try{return JSON.parse(localStorage.getItem('mg_us')||'[]');}catch{return[];}}
-function sU(u){localStorage.setItem('mg_us',JSON.stringify(u));}
-function openModal(t){document.getElementById('authModal').style.display='flex';swTab(t);clrE();}
-function closeModal(){document.getElementById('authModal').style.display='none';}
-function closeOv(e){if(e.target.id==='authModal')closeModal();}
-function swTab(t){
-  document.getElementById('mLogin').style.display=t==='login'?'block':'none';
-  document.getElementById('mReg').style.display=t==='register'?'block':'none';
-  document.getElementById('t1').classList.toggle('act',t==='login');
-  document.getElementById('t2').classList.toggle('act',t==='register');
-  clrE();
-}
-function shE(m){const e=document.getElementById('mErr');e.textContent=m;e.style.display='block';}
-function clrE(){document.getElementById('mErr').style.display='none';}
-function doReg(){
-  const n=document.getElementById('rN').value.trim();
-  const e=document.getElementById('rE').value.trim().toLowerCase();
-  const p=document.getElementById('rP').value;
-  if(!n)return shE('Ievadi vārdu.');
-  if(!e.includes('@'))return shE('Nederīgs e-pasts.');
-  if(p.length<6)return shE('Parole — vismaz 6 simboli.');
-  const us=gU();if(us.find(u=>u.e===e))return shE('Šis e-pasts jau reģistrēts.');
-  const u={n,e,p};us.push(u);sU(us);lgU(u);
-}
-function doLogin(){
-  const e=document.getElementById('lE').value.trim().toLowerCase();
-  const p=document.getElementById('lP').value;
-  const u=gU().find(u=>u.e===e&&u.p===p);
-  if(!u)return shE('Nepareizs e-pasts vai parole.');
-  lgU(u);
-}
-function lgU(u){curU=u;localStorage.setItem('mg_u',JSON.stringify(u));closeModal();upNav();if(window._rb)window._rb();}
-function doLogout(){curU=null;localStorage.removeItem('mg_u');upNav();if(window._rb)window._rb();}
-function upNav(){
-  const el=document.getElementById('navAuth');
-  if(curU){
-    const ini=curU.n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
-    el.innerHTML=`<div class="nav-u"><div class="nav-av">${ini}</div>${curU.n.split(' ')[0]}</div><button class="bout" onclick="doLogout()">Iziet</button>`;
-  }else{
-    el.innerHTML=`<button class="bsm bgh" onclick="openModal('login')">Ieiet</button><button class="bsm bso" onclick="openModal('register')">Reģistrēties</button>`;
-  }
-}
-window.getBookings=()=>{try{return JSON.parse(localStorage.getItem('mg_bk')||'{}');}catch{return{};}};
-window.addBooking=(ds)=>{const b=window.getBookings();b[ds]=(b[ds]||0)+1;localStorage.setItem('mg_bk',JSON.stringify(b));};
-window._boxFlavors=null;
+// init random flavour
+setMacFlavour(Math.floor(Math.random()*5));
 </script>
 
-<!-- BOX BUILDER -->
-<script type="text/babel">
-const {useState,useEffect}=React;
-const FLS=[
-  {id:'rose',      nm:'Rožūdens & Avenes',   c:'#E8A8B4',e:'🌹'},
-  {id:'pistachio', nm:'Pistācija & Vanilija', c:'#8FAF7E',e:'🌿'},
-  {id:'lavender',  nm:'Lavanda & Medus',      c:'#B8A5CC',e:'💜'},
-  {id:'chocolate', nm:'Šokolāde & Karamele',  c:'#C8956C',e:'🍫'},
-  {id:'lemon',     nm:'Citrons & Ingvers',    c:'#D4BC5A',e:'🍋'},
+<!-- REACT BOOKING -->
+<script data-cfasync="false" type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+const SB_URL = 'https://ibnvqljclchzlbvfwugj.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlibnZxbGpjbGNoemxidmZ3dWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNDM4MjIsImV4cCI6MjA4NjgxOTgyMn0.oQqSvLbbDcWDpgJdDYde11sd6SX96snBIYs1FzfcCvo';
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+const FLAVOURS = [
+    {id:'rose',    e:'🌹', n:'Roze & Aveņu'},
+    {id:'choc',    e:'🍫', n:'Beļģu Šokolāde'},
+    {id:'lemon',   e:'🍋', n:'Citronu Kūrds'},
+    {id:'blueberry',e:'🫐',n:'Mellenes & Lavanda'},
+    {id:'pistachio',e:'🥜',n:'Pistācija & Vaniļa'},
 ];
-const SZS=[4,9,12,18,24,30];
-function gCols(s){if(s<=4)return 2;if(s<=9)return 3;if(s<=12)return 4;return 6;}
-function gSS(s){if(s<=9)return 42;if(s<=12)return 38;if(s<=18)return 34;return 28;}
 
-function Builder(){
-  const [sz,setSz]=useState(12);
-  const [box,setBox]=useState([]);
-  const [hint,setHint]=useState('');
+const DELIVERY_TIMES = [
+    '10:00','11:00','12:00','13:00',
+    '14:00','15:00','16:00','17:00',
+    '18:00','19:00',
+];
 
-  useEffect(()=>{
-    window._sbf=(fid)=>{const f=FLS.find(x=>x.id===fid);if(f&&box.length<sz)setBox(b=>[...b,f]);};
-  },[box,sz]);
-  useEffect(()=>{window._boxFlavors=box.length>0?box:null;if(window._rb)window._rb();},[box]);
+const CFG = { minDays:2, maxDays:90, maxPerDay:5 };
 
-  const chgSz=(s)=>{setSz(s);if(box.length>s)setBox(b=>b.slice(0,s));setHint('');};
-  const add=(f)=>{if(box.length>=sz){setHint('Kaste pilna! Izvēlies lielāku izmēru.');return;}setBox([...box,f]);setHint('');};
-  const rm=(i)=>setBox(box.filter((_,x)=>x!==i));
-  const clear=()=>{setBox([]);setHint('');};
+function ds(yr,mo,day){ return `${yr}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; }
 
-  const cnts=FLS.reduce((a,f)=>({...a,[f.id]:box.filter(b=>b.id===f.id).length}),{});
-  const cols=gCols(sz),ss=gSS(sz);
-
-  return(
-    <div className="bwrap">
-      <p style={{fontSize:'.72rem',fontWeight:600,textTransform:'uppercase',letterSpacing:'.7px',color:'var(--muted)',marginBottom:'.4rem'}}>1. Izmērs</p>
-      <div className="bsizes">
-        {SZS.map(s=><button key={s} className={`szb${sz===s?' act':''}`} onClick={()=>chgSz(s)}><span className="szn">{s}</span><span className="szl">mac.</span></button>)}
-      </div>
-      <p style={{fontSize:'.72rem',fontWeight:600,textTransform:'uppercase',letterSpacing:'.7px',color:'var(--muted)',marginBottom:'.5rem'}}>2. Garšas</p>
-      <div className="bcols">
-        <div>
-          {FLS.map(f=>(
-            <button key={f.id} className="fpb" onClick={()=>add(f)} disabled={box.length>=sz}
-              style={{borderColor:cnts[f.id]>0?f.c:'var(--c2)',background:cnts[f.id]>0?f.c+'18':''}}>
-              <div className="fdot" style={{background:f.c}}/>
-              <div><span className="fpnm">{f.e} {f.nm}</span><span className="fpct">{cnts[f.id]>0?`${cnts[f.id]}× pievienots`:'Klikšķini, lai pievienotu'}</span></div>
-              <span className="fpadd">+</span>
-            </button>
-          ))}
-          {hint&&<p style={{fontSize:'.72rem',color:'var(--rose-d)',marginTop:'.25rem',fontWeight:600}}>{hint}</p>}
-        </div>
-        <div className="boxvis panel">
-          <div className="bvt">🎁 {sz}-makaronu kaste</div>
-          <div className="bvs">{box.length===0?'Kaste tukša':box.length===sz?'✨ Gatava!':box.length===1?'1 pievienots':`${box.length} pievienoti`}</div>
-          <div className="mgrid" style={{gridTemplateColumns:`repeat(${cols},${ss}px)`}}>
-            {Array(sz).fill(null).map((_,i)=>{
-              const mac=box[i];
-              return mac
-                ?<div key={i} className="mslot filled" style={{width:ss,height:ss,background:mac.c}} onClick={()=>rm(i)} title="Noņemt"/>
-                :<div key={i} className="mslot" style={{width:ss,height:ss}}/>;
-            })}
-          </div>
-          <div className="bctr">Kastītē: <strong>{box.length}/{sz}</strong></div>
-          {box.length>0&&(
-            <div className="fsum">
-              {FLS.filter(f=>cnts[f.id]>0).map(f=>(
-                <div key={f.id} className="fsrow"><div className="fsd" style={{background:f.c}}/>{f.e} {f.nm} — <strong>×{cnts[f.id]}</strong></div>
-              ))}
+// ── Multi-select Dropdown ──
+function Dropdown({label, value, options, onChange, placeholder}){
+    const [open,setOpen]=useState(false);
+    const ref=useRef();
+    useEffect(()=>{
+        const fn=(e)=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};
+        document.addEventListener('mousedown',fn);
+        return()=>document.removeEventListener('mousedown',fn);
+    },[]);
+    const toggle=(id)=>{
+        const arr=Array.isArray(value)?value:[];
+        onChange(arr.includes(id)?arr.filter(x=>x!==id):[...arr,id]);
+    };
+    const sel=options.filter(o=>Array.isArray(value)&&value.includes(o.id));
+    const txt=sel.length>0?sel.map(o=>`${o.e} ${o.n}`).join(', '):placeholder;
+    return (
+        <div className="f-group dd-wrap" ref={ref}>
+            <label className="f-label">{label}</label>
+            <div className={`dd-trigger${open?' open':''}`} onClick={()=>setOpen(!open)}>
+                <span style={{opacity:sel.length>0?1:.5,fontSize:'.85rem',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{txt}</span>
+                <span className="dd-arrow">▾</span>
             </div>
-          )}
-          <button className="bcta" disabled={box.length===0}
-            onClick={()=>{if(box.length>0)document.getElementById('booking').scrollIntoView({behavior:'smooth'})}}>
-            {box.length===0?'← Pievieno garšas':`Pasūtīt kasti (${box.length}/${sz}) →`}
-          </button>
-          {box.length>0&&<button className="clrl" onClick={clear}>Iztīrīt kasti</button>}
+            {open&&(
+                <div className="dd-menu">
+                    {options.map(o=>{
+                        const isSel=Array.isArray(value)&&value.includes(o.id);
+                        return (
+                            <div key={o.id} className={`dd-item${isSel?' dd-sel':''}`} onClick={()=>toggle(o.id)}>
+                                <div className="chk">{isSel?'✓':''}</div>
+                                <span style={{fontSize:'1.1rem'}}>{o.e}</span>
+                                <span style={{fontWeight:isSel?600:400}}>{o.n}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
-      </div>
-    </div>
-  );
+    );
 }
-ReactDOM.render(<Builder/>,document.getElementById('builder-app'));
+
+function BookingApp(){
+    const [cal,setCal]=useState(new Date());
+    const [bookings,setBk]=useState([]);
+    const [loading,setLoading]=useState(true);
+    const [selDate,setSD]=useState(null);
+    const [selFlavs,setSF]=useState([]);
+    const [selTime,setSTime]=useState(null);
+    const [form,setForm]=useState({name:'',email:'',phone:'',qty:12,notes:''});
+    const [submitting,setSub]=useState(false);
+    const [success,setOk]=useState(false);
+    const [error,setErr]=useState(null);
+
+    const loadBk=useCallback(async()=>{
+        try{
+            const{data,error}=await sb.from('macaroon_orders').select('delivery_date,delivery_time');
+            if(error)throw error;
+            setBk(data||[]);
+        }catch(e){console.error(e);}
+        finally{setLoading(false);}
+    },[]);
+
+    useEffect(()=>{loadBk();},[loadBk]);
+
+    const ordersOnDay=(d)=>bookings.filter(b=>b.delivery_date===d);
+    const timesOnDay=(d)=>bookings.filter(b=>b.delivery_date===d).map(b=>b.delivery_time);
+
+    const isAvail=(day)=>{
+        const yr=cal.getFullYear(),mo=cal.getMonth();
+        const date=new Date(yr,mo,day);
+        const today=new Date();today.setHours(0,0,0,0);
+        const min=new Date(today);min.setDate(min.getDate()+CFG.minDays);
+        const max=new Date(today);max.setDate(max.getDate()+CFG.maxDays);
+        if(date<min||date>max)return false;
+        return ordersOnDay(ds(yr,mo,day)).length<CFG.maxPerDay;
+    };
+
+    const calInfo=()=>{
+        const yr=cal.getFullYear(),mo=cal.getMonth();
+        const first=new Date(yr,mo,1);
+        let dow=first.getDay();if(dow===0)dow=7;
+        return{total:new Date(yr,mo+1,0).getDate(),start:dow-1};
+    };
+
+    const handleSubmit=async()=>{
+        if(!selDate)return setErr('Lūdzu izvēlieties piegādes datumu!');
+        if(!selTime)return setErr('Lūdzu izvēlieties piegādes laiku!');
+        if(selFlavs.length===0)return setErr('Lūdzu izvēlieties vismaz vienu garšu!');
+        if(!form.name||!form.email||!form.phone)return setErr('Lūdzu aizpildiet visus * laukus!');
+        setSub(true);setErr(null);
+        try{
+            const{error:dbErr}=await sb.from('macaroon_orders').insert([{
+                delivery_date:selDate,
+                delivery_time:selTime,
+                client_name:form.name,
+                client_email:form.email,
+                client_phone:form.phone,
+                flavours:selFlavs.join(','),
+                quantity:parseInt(form.qty),
+                notes:form.notes
+            }]);
+            if(dbErr)throw dbErr;
+            try{
+                const flavNames=selFlavs.map(f=>FLAVOURS.find(x=>x.id===f)?.n).join(', ');
+                await emailjs.send('service_d52bopv','template_azl3ud8',{
+                    to_email:form.email,client_name:form.name,
+                    client_email:form.email,client_phone:form.phone,
+                    booking_date:selDate,host_name:'Macaroon Garden',
+                    event_type:flavNames,guest_count:form.qty,
+                    notes:`Piegāde: ${selTime}. ${form.notes||''}`
+                });
+            }catch(e){console.warn(e);}
+            await loadBk();
+            setOk(true);
+        }catch(e){
+            console.error(e);
+            setErr('Kļūda! Lūdzu zvaniet vai rakstiet Instagram @macarongardenlv');
+        }finally{setSub(false);}
+    };
+
+    if(loading)return(
+        <div className="loading-wrap">
+            <div className="big-spin"></div>
+            <p style={{marginTop:'1rem',color:'var(--rose-d)',fontWeight:500,fontSize:'.9rem'}}>Ielādē kalendāru...</p>
+        </div>
+    );
+
+    if(success){
+        const flavNames=selFlavs.map(f=>FLAVOURS.find(x=>x.id===f)?.n).join(', ');
+        return(
+            <div className="ok-box">
+                <div style={{fontSize:'3.5rem',marginBottom:'1rem'}}>🌸</div>
+                <h2>Paldies, {form.name}!</h2>
+                <p style={{opacity:.8,marginBottom:'.5rem',fontSize:'.95rem'}}>Jūsu pasūtījums saņemts! Sazināsimies tuvākajā laikā.</p>
+                <p style={{opacity:.7,marginBottom:'.4rem',fontSize:'.85rem'}}>📅 {selDate} · ⏰ {selTime}</p>
+                <p style={{opacity:.7,marginBottom:'2rem',fontSize:'.85rem'}}>{flavNames} · {form.qty} gab.</p>
+                <button style={{background:'rgba(253,246,238,.15)',border:'1px solid rgba(253,246,238,.3)',color:'var(--cream)',padding:'.65rem 1.5rem',borderRadius:'50px',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontSize:'.88rem'}}
+                    onClick={()=>{setOk(false);setSD(null);setSF([]);setSTime(null);setForm({name:'',email:'',phone:'',qty:12,notes:''});}}>
+                    Jauns pasūtījums
+                </button>
+            </div>
+        );
+    }
+
+    const{total,start}=calInfo();
+    const yr=cal.getFullYear(),mo=cal.getMonth();
+    const takenTimes=selDate?timesOnDay(selDate):[];
+
+    return(
+        <div className="bk-grid">
+            {/* LEFT — calendar */}
+            <div className="b-panel">
+                <div className="panel-ttl">📅 Piegādes datums</div>
+                <div className="cal-hdr">
+                    <button className="cal-btn" onClick={()=>{const d=new Date(cal);d.setMonth(d.getMonth()-1);setCal(d);}}>‹</button>
+                    <div className="cal-month">{cal.toLocaleDateString('lv-LV',{month:'long',year:'numeric'})}</div>
+                    <button className="cal-btn" onClick={()=>{const d=new Date(cal);d.setMonth(d.getMonth()+1);setCal(d);}}>›</button>
+                </div>
+                <div className="cal-grid">
+                    {['P','O','T','C','Pk','S','Sv'].map(d=><div key={d} className="cal-hd">{d}</div>)}
+                    {Array(start).fill(null).map((_,i)=><div key={`e${i}`} className="cal-day empty"></div>)}
+                    {Array(total).fill(null).map((_,i)=>{
+                        const day=i+1;
+                        const date=new Date(yr,mo,day);
+                        const today=new Date();today.setHours(0,0,0,0);
+                        const isPast=date<today;
+                        const d=ds(yr,mo,day);
+                        const avail=isAvail(day);
+                        const cnt=ordersOnDay(d).length;
+                        const isSel=selDate===d;
+                        const isFull=cnt>=CFG.maxPerDay;
+                        let cls='cal-day';
+                        if(isPast)cls+=' past';
+                        else if(isSel)cls+=' sel';
+                        else if(isFull)cls+=' full';
+                        else if(avail)cls+=' avail';
+                        else cls+=' disabled';
+                        return(
+                            <div key={day} className={cls} onClick={()=>{if(!isPast&&avail)setSD(d);}}>
+                                <div>{day}</div>
+                                {/* Dots or count indicator */}
+                                {!isPast&&cnt>0&&!isSel&&(
+                                    cnt<=3
+                                        ? <div className="cal-dots">{Array(cnt).fill(null).map((_,i)=><div key={i} className="cal-dot"></div>)}</div>
+                                        : <div className="cal-count">{cnt}</div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+                <div className="legend">
+                    <div className="leg-item"><div className="leg-dot" style={{background:'var(--mint-l)',border:'1px solid var(--mint)'}}></div>Pieejams</div>
+                    <div className="leg-item"><div className="leg-dot" style={{background:'rgba(200,120,150,.15)',border:'1px solid var(--rose)'}}></div>Pilns</div>
+                    <div className="leg-item"><div className="leg-dot" style={{background:'var(--chocolate)'}}></div>Izvēlēts</div>
+                </div>
+                {selDate&&(
+                    <div style={{marginTop:'1.5rem'}}>
+                        <label className="f-label">⏰ Piegādes laiks *</label>
+                        <div className="time-grid">
+                            {DELIVERY_TIMES.map(t=>{
+                                const taken=takenTimes.includes(t);
+                                return(
+                                    <div key={t} className={`time-chip${selTime===t?' sel':''}${taken?' taken':''}`}
+                                        onClick={()=>{if(!taken)setSTime(t);}}>
+                                        {t}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* RIGHT — form */}
+            <div className="b-panel">
+                <div className="panel-ttl">🌸 Pasūtījuma info</div>
+                {!selDate&&<div className="info-chip">← Izvēlieties piegādes datumu pa kreisi</div>}
+                {selDate&&selTime&&<div className="sel-chip">📅 {selDate} · ⏰ {selTime}</div>}
+                {selDate&&!selTime&&<div className="info-chip">⏰ Lūdzu izvēlieties piegādes laiku</div>}
+                {error&&<div className="err-box">❌ {error}</div>}
+
+                <div className="f-row">
+                    <div className="f-group"><label className="f-label">Vārds *</label><input type="text" className="f-input" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Jūsu vārds"/></div>
+                    <div className="f-group"><label className="f-label">Telefons *</label><input type="tel" className="f-input" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} placeholder="+371"/></div>
+                </div>
+                <div className="f-group"><label className="f-label">E-pasts *</label><input type="email" className="f-input" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="epasts@gmail.com"/></div>
+                <div className="f-group"><label className="f-label">Skaits (gab.)</label><input type="number" className="f-input" value={form.qty} min="6" max="200" step="6" onChange={e=>setForm({...form,qty:e.target.value})}/></div>
+
+                <Dropdown
+                    label="🌹 Garšas (var izvēlēties vairākas) *"
+                    value={selFlavs}
+                    options={FLAVOURS}
+                    onChange={setSF}
+                    placeholder="Izvēlieties garšas..."
+                />
+
+                <div className="f-group"><label className="f-label">Piegādes adrese</label><input type="text" className="f-input" value={form.address||''} onChange={e=>setForm({...form,address:e.target.value})} placeholder="Iela, māja, dzīvoklis, Rīga"/></div>
+                <div className="f-group"><label className="f-label">Papildu vēlmes</label><textarea className="f-area" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} placeholder="Krāsu preferences, dāvanu iepakojums, īpašas vēlmes..."></textarea></div>
+
+                <button className="sub-btn" onClick={handleSubmit} disabled={submitting||!selDate||!selTime||selFlavs.length===0}>
+                    {submitting?<><span className="spin"></span>Apstrādā...</>:'🌸 Nosūtīt pasūtījumu'}
+                </button>
+                <p style={{fontSize:'.72rem',color:'                <p style={{fontSize:'.72rem',color:'var(--text-m)',textAlign:'center',marginTop:'.6rem',opacity:.7}}>Sazināsimies 24h laikā · @macarongardenlv</p>
+            </div>
+        </div>
+    );
+}
+
+ReactDOM.render(<BookingApp/>, document.getElementById('booking-app'));
 </script>
 
 <!-- BOOKING -->
@@ -836,5 +1083,13 @@ function Booking(){
 }
 ReactDOM.render(<Booking/>,document.getElementById('booking-app'));
 </script>
+
+  <script>
+  window.cbConfig = {
+    chatId: "2e86be3c-18ca-43cf-80cd-ecd5f18ae3d0"
+  };
+</script>
+<script src="https://app.chatbit.co/embed.min.js" defer></script>
+  
 </body>
 </html>
