@@ -70,8 +70,7 @@ nav.scrolled{background:rgba(253,246,238,.96);backdrop-filter:blur(20px);box-sha
 .mac-circle.active .mac-ball{transform:translateY(-9px) scale(1.13);box-shadow:0 16px 32px rgba(0,0,0,.2);}
 .mac-lbl{font-size:.73rem;font-weight:600;color:var(--text-m);}
 .hero-hint{font-size:.72rem;color:var(--text-m);opacity:.6;}
-.hero-mode-pill{position:absolute;right:1.8rem;top:50%;transform:translateY(-50%);z-index:5;display:flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);border:1px solid rgba(200,120,150,.28);border-radius:50px;padding:.45rem .95rem;font-size:.74rem;font-weight:500;color:var(--text-m);cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(200,120,150,.14);transition:all .25s;}
-.hero-mode-pill:hover{background:#fff;border-color:var(--rose-d);transform:translateY(-50%) translateX(-2px);}
+
 .hero-stats{position:absolute;bottom:0;left:0;right:0;z-index:10;background:var(--chocolate);display:flex;}
 .hst{flex:1;padding:.85rem .5rem;text-align:center;border-right:1px solid rgba(255,255,255,.07);}
 .hst:last-child{border-right:none;}
@@ -276,7 +275,7 @@ footer{background:var(--chocolate);color:rgba(253,246,238,.55);padding:2.2rem 6r
   .hero-inner{padding:5.5rem 1.2rem 5rem;}
   .mac-ball{width:54px;height:54px;}
   .mac-flavours{gap:.85rem;}
-  .hero-mode-pill{display:none;}
+
   .hst-n{font-size:1.1rem;}
   .hst{padding:.72rem .4rem;}
   .about-strip{padding:3rem 1.4rem;}
@@ -344,9 +343,7 @@ footer{background:var(--chocolate);color:rgba(253,246,238,.55);padding:2.2rem 6r
     </div>
     <p class="hero-hint">Uzklikšķini uz makarona, lai mainītu garšas noskaņu</p>
   </div>
-  <div class="hero-mode-pill" id="mode-pill" tabindex="0">
-    <span id="pill-ico">🌸</span><span id="pill-lbl">Nākamā garša</span>
-  </div>
+
   <div class="hero-stats">
     <div class="hst"><span class="hst-n">500+</span><span class="hst-l">Klienti</span></div>
     <div class="hst"><span class="hst-n">5</span><span class="hst-l">Garšas</span></div>
@@ -571,7 +568,7 @@ footer{background:var(--chocolate);color:rgba(253,246,238,.55);padding:2.2rem 6r
     requestAnimationFrame(draw);
   })();
   document.getElementById('home').addEventListener('click', function(e){
-    if(e.target.closest('.hero-inner') || e.target.closest('.hero-mode-pill')) return;
+    if(e.target.closest('.hero-inner')) return;
     for(var i = 0; i < 10; i++) P.push(mkP(e.clientX, e.clientY));
   });
 
@@ -591,8 +588,7 @@ footer{background:var(--chocolate);color:rgba(253,246,238,.55);padding:2.2rem 6r
     document.querySelectorAll('.mac-circle').forEach(function(c, i){
       c.classList.toggle('active', i === idx);
     });
-    document.getElementById('pill-ico').textContent = f.pill;
-    document.getElementById('pill-lbl').textContent = f.next;
+
     var circ = document.querySelector('.mac-circle[data-idx="' + idx + '"]');
     if(circ){
       var rc = circ.getBoundingClientRect();
@@ -613,8 +609,7 @@ footer{background:var(--chocolate);color:rgba(253,246,238,.55);padding:2.2rem 6r
     c.addEventListener('click', function(){ window.setFlavour(parseInt(c.dataset.idx)); });
     c.addEventListener('keydown', function(e){ if(e.key==='Enter') window.setFlavour(parseInt(c.dataset.idx)); });
   });
-  var pill = document.getElementById('mode-pill');
-  pill.addEventListener('click', function(){ window.setFlavour((window._mIdx + 1) % 5); });
+
   setFlavour(Math.floor(Math.random() * 5));
 
   /* Toast */
