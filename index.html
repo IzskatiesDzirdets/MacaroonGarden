@@ -1,17 +1,285 @@
 <!doctype html>
 <html lang="lv">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/webp" href="/favicon.webp" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Macaroon Garden — Rokām Gatavota Greznība</title>
-    <meta name="description" content="Macaroon Garden — franču makarūnu ateljē Rīgā. Katrs makarūns rokām veidots, katra garša — sava kompozīcija." />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macaroon Garden — Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --espresso:#140F0D; --espresso2:#1F1613; --espresso3:#2A1E19;
+  --gold:#C9A15A; --gold-soft:#E4C98A; --blush:#E3A6B4; --blush-deep:#C97F92;
+  --sage:#8CA37C; --ivory:#F3E9DD; --ivory-dim:#C9BEB2;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--espresso);color:var(--ivory);font-family:'Manrope',sans-serif;overflow-x:hidden;}
+.font-display{font-family:'Fraunces',serif;}
+.font-mono{font-family:'JetBrains Mono',monospace;}
+::selection{background:var(--gold);color:var(--espresso);}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.6rem;
+  animation:navIn .8s cubic-bezier(.16,1,.3,1);}
+@keyframes navIn{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:none}}
+.nav-brand{display:flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ivory);}
+.nav-brand img{width:36px;height:36px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.15);}
+.nav-brand span{font-size:1.05rem;letter-spacing:.02em;}
+.nav-cta{border:1px solid rgba(201,161,90,.4);background:rgba(201,161,90,.1);color:var(--gold);
+  padding:.55rem 1.2rem;border-radius:999px;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;
+  text-decoration:none;transition:transform .2s,background .2s;}
+.nav-cta:hover{transform:scale(1.04);background:rgba(201,161,90,.2);}
+
+.spacer{position:relative;height:600vh;}
+.sticky{position:sticky;top:0;height:100vh;overflow:hidden;}
+#canvas-wrap{position:absolute;inset:0;}
+#three-canvas{display:block;width:100%;height:100%;}
+
+.hero-copy{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:0 1.5rem;pointer-events:none;}
+.eyebrow{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(201,161,90,.85);margin-bottom:1rem;}
+.headline{font-size:clamp(2.1rem,6.5vw,5rem);line-height:.98;margin:0;max-width:52rem;}
+.headline em{font-style:italic;color:var(--blush);}
+.scroll-cue{position:absolute;bottom:2.4rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;
+  align-items:center;gap:.5rem;color:rgba(201,161,90,.6);}
+.scroll-cue .txt{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;}
+.scroll-cue .line{width:1px;height:2rem;background:linear-gradient(to bottom,var(--gold),transparent);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+.fcard{position:absolute;width:min(76vw,20rem);opacity:0;transform:translateY(24px) scale(.95);
+  transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1);pointer-events:none;}
+.fcard.on{opacity:1;transform:none;}
+.fcard-inner{border-radius:18px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);
+  backdrop-filter:blur(18px);box-shadow:0 8px 40px rgba(0,0,0,.45);padding:1.4rem 1.5rem;}
+.fcard-eyebrow{font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;margin:0 0 .5rem;}
+.fcard-title{font-size:1.15rem;margin:0 0 .5rem;line-height:1.3;}
+.fcard-body{font-size:.85rem;line-height:1.55;color:var(--ivory-dim);margin:0;}
+.tone-blush{color:var(--blush);} .tone-gold{color:var(--gold);} .tone-sage{color:var(--sage);}
+
+.pos-0{left:4%;top:15%;} .pos-1{right:4%;top:17%;} .pos-2{left:50%;transform:translateX(-50%) translateY(24px) scale(.95);bottom:7%;}
+.pos-2.on{transform:translateX(-50%) translateY(0) scale(1);}
+.pos-3{left:5%;bottom:13%;} .pos-4{right:5%;bottom:15%;} .pos-5{left:50%;transform:translateX(-50%) translateY(24px) scale(.95);top:6%;}
+.pos-5.on{transform:translateX(-50%) translateY(0) scale(1);}
+@media (max-width:860px){ .fcard{display:none;} .spacer{height:auto;} .sticky{position:relative;height:88vh;} }
+
+.mobile-list{display:none;padding:3.5rem 1.3rem;background:var(--espresso);}
+@media (max-width:860px){ .mobile-list{display:block;} }
+.mobile-list .lbl{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(201,161,90,.85);text-align:center;margin-bottom:1.6rem;}
+.mobile-list .fcard-inner{margin-bottom:1rem;}
+
+.closing{padding:6rem 1.5rem 8rem;text-align:center;}
+.closing .eyebrow{margin-bottom:1.1rem;}
+.closing h2{font-size:clamp(1.8rem,5vw,3rem);line-height:1.15;margin:0 0 1.2rem;}
+.closing h2 em{font-style:italic;color:var(--blush);}
+.closing p{max-width:30rem;margin:0 auto;color:var(--ivory-dim);}
+.closing a.cta{display:inline-block;margin-top:2.2rem;background:var(--gold);color:var(--espresso);
+  padding:.95rem 2.1rem;border-radius:999px;text-decoration:none;font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;box-shadow:0 10px 40px rgba(201,161,90,.35);
+  transition:transform .2s;}
+.closing a.cta:hover{transform:scale(1.05);}
+
+footer{border-top:1px solid rgba(255,255,255,.08);padding:2.4rem 1.5rem;text-align:center;}
+footer img{width:30px;height:30px;border-radius:50%;object-fit:cover;margin-bottom:.6rem;}
+footer p{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(201,161,90,.4);margin:0;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-brand">
+    <img src="https://raw.githubusercontent.com/IzskatiesDzirdets/MacaroonGarden/main/assets/logo.webp" alt="Macaroon Garden" onerror="this.style.display='none'">
+    <span class="font-display">Macaroon Garden</span>
+  </a>
+  <a class="nav-cta font-mono" href="https://macarongarden.netlify.app/#booking">Pasūtīt</a>
+</nav>
+
+<div class="spacer" id="spacer">
+  <div class="sticky">
+    <div id="canvas-wrap"><canvas id="three-canvas"></canvas></div>
+
+    <div class="hero-copy">
+      <p class="eyebrow font-mono" id="sub">Macaroon Garden — Rīga</p>
+      <h1 class="headline font-display" id="headline">Katrs makarūns <em>sadalās</em>,<br>lai parādītu, kas tajā ir.</h1>
+    </div>
+    <div class="scroll-cue" id="cue"><span class="txt font-mono">Ritini</span><span class="line"></span></div>
+
+    <div id="cards"></div>
+  </div>
+</div>
+
+<div class="mobile-list">
+  <p class="lbl">Kas ir katrā makarūnā</p>
+  <div id="mobile-cards"></div>
+</div>
+
+<section class="closing">
+  <p class="eyebrow font-mono">Rīga · Pēc pasūtījuma</p>
+  <h2 class="font-display">Uzcel savu kastīti,<br><em>nevis izvēlies no plaukta.</em></h2>
+  <p>Izvēlies garšas, daudzumu un piegādes dienu — mēs ceptu tavu kastīti tajā pašā nedēļā un piegādājam Rīgā.</p>
+  <a class="cta" href="https://macarongarden.netlify.app/#builder">Sākt veidot kastīti</a>
+</section>
+
+<footer>
+  <img src="https://raw.githubusercontent.com/IzskatiesDzirdets/MacaroonGarden/main/assets/logo.webp" alt="" onerror="this.style.display='none'">
+  <p>Macaroon Garden · Rīga</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+const FEATURES = [
+  { id:'shellTop', tone:'blush', geometry:'shell', color:0xE3A6B4, dir:[-2.6,1.6,0.8], win:[0.03,0.32], pos:0,
+    eyebrow:'Virsčaumala', title:'Rokām veidots, ne štancēts',
+    body:'Katra čaumala tiek pipota ar roku un žāvēta 24 stundas pirms cepšanas — tāpēc katrā makarūnā ir sava, nelīdzena, dzīva forma.' },
+  { id:'shellBottom', tone:'gold', geometry:'shell', color:0xE4C98A, dir:[2.6,1.4,-0.6], win:[0.08,0.37], pos:1, rotY:Math.PI,
+    eyebrow:'Apakšējā čaumala', title:'Franču mandeļu milti',
+    body:'Tikai smalki maltas franču mandeles un dabīgi pigmenti — bez mākslīgo krāsvielu pēcgaršas, bez saīsinājumiem receptē.' },
+  { id:'filling', tone:'sage', geometry:'filling', color:0xF1DCC0, dir:[0,-2.4,1.6], win:[0.13,0.42], pos:2,
+    eyebrow:'Pildījums', title:'Katra garša — sava kompozīcija',
+    body:'Ganāša, krēms vai augļu konfitūra tiek veidota katrai garšai atsevišķi, lai pildījums un čaumala sabalansētos, nevis konkurētu.' },
+  { id:'crumbRose', tone:'blush', geometry:'crumb', color:0xC97F92, dir:[-2.2,-1.8,-1.4], win:[0.18,0.47], pos:3,
+    eyebrow:'Rozes smarža', title:'Pēc tavas pasūtījuma',
+    body:'Izvēlies garšas, krāsas un daudzumu savā kastītē — katrs pasūtījums tiek komplektēts individuāli, ne no gatavas veidnes.' },
+  { id:'crumbPistachio', tone:'sage', geometry:'crumb', color:0x8CA37C, dir:[2.4,-1.2,1.8], win:[0.23,0.52], pos:4,
+    eyebrow:'Pistācijas notis', title:'Dāvanu ateljē',
+    body:'Kāzām, dzimšanas dienām, korporatīvām dāvanām — kastīte tiek noformēta atbilstoši reizei, ne pēc vienas veidnes visiem.' },
+  { id:'crumbCocoa', tone:'gold', geometry:'crumb', color:0x6B4A32, dir:[0.2,2.6,-1.8], win:[0.28,0.57], pos:5,
+    eyebrow:'Kakao skaidiņas', title:'Svaigi, ne no saldētavas',
+    body:'Makarūni tiek cepti pasūtījuma nedēļā un piegādāti Rīgā tajā pašā vai nākamajā dienā — nekad no ilgtermiņa krājuma.' },
+];
+
+const cardsWrap = document.getElementById('cards');
+const mobileWrap = document.getElementById('mobile-cards');
+const cardEls = {};
+FEATURES.forEach(f => {
+  const el = document.createElement('div');
+  el.className = `fcard pos-${f.pos}`;
+  el.innerHTML = `<div class="fcard-inner">
+    <p class="fcard-eyebrow font-mono tone-${f.tone}">${f.eyebrow}</p>
+    <h3 class="fcard-title font-display">${f.title}</h3>
+    <p class="fcard-body">${f.body}</p>
+  </div>`;
+  cardsWrap.appendChild(el);
+  cardEls[f.id] = el;
+
+  const mEl = document.createElement('div');
+  mEl.className = 'fcard-inner';
+  mEl.style.marginBottom = '1rem';
+  mEl.innerHTML = `<p class="fcard-eyebrow font-mono tone-${f.tone}">${f.eyebrow}</p>
+    <h3 class="fcard-title font-display">${f.title}</h3>
+    <p class="fcard-body">${f.body}</p>`;
+  mobileWrap.appendChild(mEl);
+});
+
+const canvas = document.getElementById('three-canvas');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(0, 0.6, 5.2);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+function fitCanvas(){
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+fitCanvas();
+window.addEventListener('resize', fitCanvas);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const spot1 = new THREE.SpotLight(0xE4C98A, 3.2, 0, 0.5, 0.6);
+spot1.position.set(3,5,4); scene.add(spot1);
+const spot2 = new THREE.SpotLight(0xE3A6B4, 1.4, 0, 0.7, 0.8);
+spot2.position.set(-4,2,-3); scene.add(spot2);
+
+function makeShell(color){
+  const g = new THREE.Group();
+  const dome = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 48, 32, 0, Math.PI*2, 0, Math.PI/2),
+    new THREE.MeshPhysicalMaterial({ color, roughness:.4, clearcoat:.55, clearcoatRoughness:.3 })
+  );
+  dome.scale.set(1,0.62,1);
+  g.add(dome);
+  const foot = new THREE.Mesh(
+    new THREE.TorusGeometry(1, 0.07, 10, 64),
+    new THREE.MeshPhysicalMaterial({ color, roughness:.55, clearcoat:.25 })
+  );
+  foot.rotation.x = Math.PI/2; foot.position.y = 0.02;
+  g.add(foot);
+  return g;
+}
+function makeFilling(color){
+  return new THREE.Mesh(
+    new THREE.CylinderGeometry(0.92,0.92,0.34,48),
+    new THREE.MeshPhysicalMaterial({ color, roughness:.28, clearcoat:.4 })
+  );
+}
+function makeCrumb(color){
+  return new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.22, 1),
+    new THREE.MeshPhysicalMaterial({ color, roughness:.55, flatShading:true })
+  );
+}
+
+const pieceGroups = {};
+FEATURES.forEach(f => {
+  const wrap = new THREE.Group();
+  if (f.rotY) wrap.rotation.y = f.rotY;
+  let mesh;
+  if (f.geometry === 'shell') mesh = makeShell(f.color);
+  else if (f.geometry === 'filling') mesh = makeFilling(f.color);
+  else mesh = makeCrumb(f.color);
+  wrap.add(mesh);
+  scene.add(wrap);
+  pieceGroups[f.id] = wrap;
+});
+
+let progress = 0;
+const clock = new THREE.Clock();
+function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const calm = 1 - progress * 0.85;
+
+  FEATURES.forEach(f => {
+    const g = pieceGroups[f.id];
+    const [ws, we] = f.win;
+    const local = Math.min(1, Math.max(0, (progress - ws) / (we - ws)));
+    const eased = easeOutCubic(local);
+    g.position.x = f.dir[0]*eased + Math.sin(t*0.6)*0.06*calm;
+    g.position.y = f.dir[1]*eased + Math.sin(t*0.8+1)*0.07*calm;
+    g.position.z = f.dir[2]*eased + Math.cos(t*0.5)*0.06*calm;
+    g.rotation.x = eased * (f.dir[1] > 0 ? 0.6 : -0.6) + Math.sin(t*0.3)*0.05*calm;
+    g.rotation.y += 0.01 * (0.3 + calm*0.7);
+
+    const cardEl = cardEls[f.id];
+    if (cardEl) cardEl.classList.toggle('on', local > 0.35);
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+
+if (window.matchMedia('(min-width: 861px)').matches) {
+  gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.create({
+    trigger: '#spacer',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 0.6,
+    onUpdate: self => { progress = self.progress; },
+  });
+
+  gsap.to(['#sub', '#headline', '#cue'], {
+    opacity: 0, y: -30, ease: 'power2.out',
+    scrollTrigger: { trigger:'#spacer', start:'top top', end:'+=25%', scrub:0.6 }
+  });
+} else {
+  document.getElementById('sub').style.opacity = 1;
+}
+</script>
+</body>
 </html>
