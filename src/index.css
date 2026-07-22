@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- Macaroon Garden — Midnight Pâtisserie palette ---- */
+  --color-espresso:      #140F0D;   /* base background — warm near-black, not pure black */
+  --color-espresso-2:    #1F1613;   /* secondary bg / gradient stop, bordeaux-brown undertone */
+  --color-espresso-3:    #2A1E19;   /* card surfaces */
+  --color-gold:          #C9A15A;   /* brass/champagne accent — the "shell glaze" */
+  --color-gold-soft:     #E4C98A;
+  --color-blush:         #E3A6B4;   /* rose macaron shell */
+  --color-blush-deep:    #C97F92;
+  --color-sage:          #8CA37C;   /* pistachio secondary accent */
+  --color-ivory:         #F3E9DD;   /* primary text on dark */
+  --color-ivory-dim:     #C9BEB2;   /* secondary text on dark */
+
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-body: "Manrope", "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html {
+  background: var(--color-espresso);
+}
+
+body {
+  background: var(--color-espresso);
+  color: var(--color-ivory);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-espresso);
+}
+
+/* Custom scrollbar — quiet, premium */
+::-webkit-scrollbar { width: 9px; }
+::-webkit-scrollbar-track { background: var(--color-espresso); }
+::-webkit-scrollbar-thumb { background: var(--color-espresso-3); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
