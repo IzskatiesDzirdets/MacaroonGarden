@@ -1,17 +1,533 @@
-<!doctype html>
-<html lang="lv">
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="lv">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Macaroon Garden — Rokām darināti makarūni Rīgā</title>
-<meta name="description" content="Macaroon Garden — handcrafted franču makarūni pēc pasūtījuma. Piegāde Rīgā.">
-<link rel="icon" href="/favicon.webp">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Macaroon Garden | Artisanal Confectionery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Manrope:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "aubergine":      "#241019",
+          "aubergine-deep": "#170a10",
+          "aubergine-mid":  "#33161f",
+          "cream":          "#FBF3E7",
+          "cream-dim":      "#F3E7D6",
+          "espresso-ink":   "#241712",
+          "rose":           "#D98FA0",
+          "rose-dim":       "#C97C8D",
+          "pistachio":      "#A7BE86",
+          "pistachio-dim":  "#8FA96C",
+          "gold":           "#D9B26F",
+          "gold-dim":       "#C79A4E",
+          "hairline":       "rgba(251,243,231,0.14)"
+        },
+        borderRadius: {
+          DEFAULT: "0.125rem",
+          lg: "0.25rem",
+          xl: "0.5rem",
+          full: "0.75rem"
+        },
+        spacing: {
+          gutter: "24px",
+          "margin-mobile": "20px",
+          "margin-desktop": "64px",
+          "container-max": "1280px"
+        },
+        fontFamily: {
+          display: ["Fraunces"],
+          body: ["Manrope"],
+          mono: ["JetBrains Mono"]
+        },
+        fontSize: {
+          "display-lg": ["68px", { lineHeight: "1.05", letterSpacing: "-0.02em", fontWeight: "560" }],
+          "display-md": ["44px", { lineHeight: "1.15", letterSpacing: "-0.01em", fontWeight: "550" }],
+          "display-mobile": ["34px", { lineHeight: "1.15", fontWeight: "550" }],
+          "headline": ["21px", { lineHeight: "1.4", fontWeight: "600" }],
+          "body-lg": ["19px", { lineHeight: "1.65", fontWeight: "400" }],
+          "body-md": ["16px", { lineHeight: "1.65", fontWeight: "400" }],
+          "eyebrow": ["11px", { lineHeight: "1.2", letterSpacing: "0.22em", fontWeight: "500" }]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  ::selection { background: #D9B26F; color: #241019; }
+
+  :focus-visible {
+    outline: 2px solid #D9B26F;
+    outline-offset: 3px;
+  }
+
+  .glass-card {
+    background: rgba(23, 10, 16, 0.62);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--tone-border, rgba(251,243,231,0.14));
+    border-radius: 2px;
+  }
+  .glass-card[data-tone="blush"]  { --tone-border: rgba(217,143,160,0.35); }
+  .glass-card[data-tone="gold"]   { --tone-border: rgba(217,178,111,0.35); }
+  .glass-card[data-tone="sage"]   { --tone-border: rgba(167,190,134,0.35); }
+  .tone-dot[data-tone="blush"] { background: #D98FA0; }
+  .tone-dot[data-tone="gold"]  { background: #D9B26F; }
+  .tone-dot[data-tone="sage"]  { background: #A7BE86; }
+  .tone-label[data-tone="blush"] { color: #E8B3C0; }
+  .tone-label[data-tone="gold"]  { color: #E4C68F; }
+  .tone-label[data-tone="sage"]  { color: #BFD2A6; }
+
+  .scroll-indicator { position: relative; }
+  .scroll-indicator::after {
+    content: '';
+    width: 1px;
+    height: 56px;
+    background: linear-gradient(to bottom, transparent, #D9B26F, transparent);
+    position: absolute;
+    bottom: -66px;
+    left: 50%;
+    animation: scrollLine 2.2s ease-in-out infinite;
+  }
+  @keyframes scrollLine {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+
+  .text-glow { text-shadow: 0 0 40px rgba(217,178,111,0.18); }
+
+  canvas { display: block; width: 100% !important; height: 100% !important; }
+
+  .fcard {
+    transition: opacity 0.7s cubic-bezier(0.2,0.8,0.2,1), transform 0.7s cubic-bezier(0.2,0.8,0.2,1);
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  .fcard.on { opacity: 1 !important; transform: translateY(0) !important; }
+
+  .grain {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-indicator::after { animation: none; }
+    .fcard { transition: none; }
+  }
+</style>
 </head>
-<body>
-<div id="root"></div>
-<script type="module" src="/src/main.jsx"></script>
+<body class="bg-aubergine text-cream selection:bg-gold selection:text-aubergine overflow-x-hidden min-h-screen font-body">
+
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-[60] flex justify-between items-center px-margin-mobile md:px-margin-desktop py-5 bg-aubergine-deep/85 backdrop-blur-xl border-b border-hairline">
+  <div class="font-display text-[19px] tracking-tight text-cream">Macaroon&nbsp;Garden</div>
+  <nav class="hidden md:flex items-center gap-10 font-mono text-eyebrow uppercase">
+    <a class="text-cream/60 hover:text-gold transition-colors duration-300" href="#flavours">Garšas</a>
+    <a class="text-cream/60 hover:text-gold transition-colors duration-300" href="#story">Mūsu stāsts</a>
+  </nav>
+  <button class="bg-gold text-aubergine-deep px-6 py-2.5 font-mono text-eyebrow uppercase hover:bg-cream transition-colors duration-300">
+    Pasūtīt
+  </button>
+</header>
+
+<main class="relative">
+
+  <!-- Main Scrollable Section -->
+  <div class="h-[500vh] relative" id="scroll-spacer">
+    <div class="sticky top-0 h-screen w-full overflow-hidden">
+
+      <div class="absolute inset-0 w-full h-full z-0" id="threejs-container"></div>
+      <div class="grain z-[1]"></div>
+
+      <!-- Hero Content -->
+      <div class="relative z-10 h-full flex flex-col items-center justify-center text-center px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto pointer-events-none" id="hero-text">
+        <span class="block font-mono text-eyebrow text-gold mb-5 uppercase">Meistarības Simfonija</span>
+        <h1 class="font-display text-display-mobile md:text-display-lg text-glow text-cream">
+          Katrs makarūns sadalās,<br class="hidden md:block"/> lai parādītu, kas tajā ir.
+        </h1>
+        <div class="scroll-indicator inline-block text-cream/50 font-mono text-eyebrow uppercase mt-14">
+          Ritiniet uz leju
+        </div>
+      </div>
+
+      <!-- Feature Cards -->
+      <div class="absolute inset-0 pointer-events-none hidden md:block z-20" id="cards-container">
+        <div class="fcard pos-0 glass-card absolute top-[14%] left-[7%] p-6 w-72" data-tone="blush">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tone-dot w-1.5 h-1.5 rounded-full" data-tone="blush"></span>
+            <span class="font-mono text-eyebrow tone-label uppercase" data-tone="blush">Virsčaumala</span>
+          </div>
+          <h3 class="font-display text-headline mb-2 text-cream">Rokām veidots, ne štancēts</h3>
+          <p class="font-body text-body-md text-cream/75">Katra čaumala tiek pipota ar roku un žāvēta 24 stundas pirms cepšanas — tāpēc katrā makarūnā ir sava, nelīdzena, dzīva forma.</p>
+        </div>
+
+        <div class="fcard pos-1 glass-card absolute top-[24%] right-[7%] p-6 w-72" data-tone="gold">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tone-dot w-1.5 h-1.5 rounded-full" data-tone="gold"></span>
+            <span class="font-mono text-eyebrow tone-label uppercase" data-tone="gold">Apakšējā čaumala</span>
+          </div>
+          <h3 class="font-display text-headline mb-2 text-cream">Franču mandeļu milti</h3>
+          <p class="font-body text-body-md text-cream/75">Tikai smalki maltas franču mandeles un dabīgi pigmenti — bez mākslīgo krāsvielu pēcgaršas, bez saīsinājumiem receptē.</p>
+        </div>
+
+        <div class="fcard pos-2 glass-card absolute bottom-[34%] left-[9%] p-6 w-72" data-tone="sage">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tone-dot w-1.5 h-1.5 rounded-full" data-tone="sage"></span>
+            <span class="font-mono text-eyebrow tone-label uppercase" data-tone="sage">Pildījums</span>
+          </div>
+          <h3 class="font-display text-headline mb-2 text-cream">Sava kompozīcija</h3>
+          <p class="font-body text-body-md text-cream/75">Ganāša, krēms vai augļu konfitūra tiek veidota katrai garšai atsevišķi, lai pildījums un čaumala sabalansētos.</p>
+        </div>
+
+        <div class="fcard pos-3 glass-card absolute bottom-[14%] right-[9%] p-6 w-72" data-tone="blush">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tone-dot w-1.5 h-1.5 rounded-full" data-tone="blush"></span>
+            <span class="font-mono text-eyebrow tone-label uppercase" data-tone="blush">Rozes smarža</span>
+          </div>
+          <h3 class="font-display text-headline mb-2 text-cream">Pēc tava pasūtījuma</h3>
+          <p class="font-body text-body-md text-cream/75">Izvēlies garšas, krāsas un daudzumu savā kastītē — katrs pasūtījums tiek komplektēts individuāli.</p>
+        </div>
+
+        <div class="fcard pos-4 glass-card absolute top-[44%] left-[4%] p-6 w-72" data-tone="sage">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tone-dot w-1.5 h-1.5 rounded-full" data-tone="sage"></span>
+            <span class="font-mono text-eyebrow tone-label uppercase" data-tone="sage">Pistācijas notis</span>
+          </div>
+          <h3 class="font-display text-headline mb-2 text-cream">Dāvanu ateljē</h3>
+          <p class="font-body text-body-md text-cream/75">Kāzām, dzimšanas dienām, korporatīvām dāvanām — kastīte tiek noformēta atbilstoši reizei.</p>
+        </div>
+
+        <div class="fcard pos-5 glass-card absolute bottom-[30%] right-[4%] p-6 w-72" data-tone="gold">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tone-dot w-1.5 h-1.5 rounded-full" data-tone="gold"></span>
+            <span class="font-mono text-eyebrow tone-label uppercase" data-tone="gold">Kakao skaidiņas</span>
+          </div>
+          <h3 class="font-display text-headline mb-2 text-cream">Svaigi, ne no saldētavas</h3>
+          <p class="font-body text-body-md text-cream/75">Makarūni tiek cepti pasūtījuma nedēļā un piegādāti tajā pašā vai nākamajā dienā.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile fallback info -->
+  <section class="md:hidden px-margin-mobile py-24 bg-aubergine-deep/60 border-t border-hairline space-y-12 relative z-30">
+    <div class="text-center mb-16">
+      <h2 class="font-display text-display-mobile text-cream mb-4">Kas slēpjas iekšpusē?</h2>
+      <div class="w-12 h-px bg-gold mx-auto"></div>
+    </div>
+    <div class="space-y-8">
+      <div class="flex gap-4">
+        <span class="tone-dot w-2 h-2 rounded-full mt-2 shrink-0" data-tone="blush"></span>
+        <div>
+          <h4 class="font-display text-headline text-cream mb-1.5">Mandeļu čaula</h4>
+          <p class="font-body text-body-md text-cream/75">Smalki malta mandeļu masa un gaisīgs bezē.</p>
+        </div>
+      </div>
+      <div class="flex gap-4">
+        <span class="tone-dot w-2 h-2 rounded-full mt-2 shrink-0" data-tone="sage"></span>
+        <div>
+          <h4 class="font-display text-headline text-cream mb-1.5">Krēmīgs pildījums</h4>
+          <p class="font-body text-body-md text-cream/75">Zīdaina ganāša ar izsmalcinātām garšu niansēm.</p>
+        </div>
+      </div>
+      <div class="flex gap-4">
+        <span class="tone-dot w-2 h-2 rounded-full mt-2 shrink-0" data-tone="gold"></span>
+        <div>
+          <h4 class="font-display text-headline text-cream mb-1.5">Sezonas akcents</h4>
+          <p class="font-body text-body-md text-cream/75">Svaigi augļu konfitīri un dabas veltes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About / Story -->
+  <section id="story" class="px-margin-mobile md:px-margin-desktop py-24 max-w-container-max mx-auto z-30 relative bg-aubergine-mid/40">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+      <div>
+        <span class="font-mono text-eyebrow text-gold uppercase block mb-4">Mūsu stāsts</span>
+        <h2 class="font-display text-display-mobile md:text-[38px] text-cream leading-tight mb-6">
+          Katrs makarūns ir <span class="italic text-rose">mazs mākslas darbs</span>
+        </h2>
+        <p class="font-body text-body-md text-cream/75 mb-4">Macaroon Garden dzima no aizrautības ar franču konditorejas mākslu. Ticam, ka katrs makarūns ir mazs prieka brīdis — kraukšķīgs apvalks, maiga pildīšana, perfekts balanss.</p>
+        <p class="font-body text-body-md text-cream/75">Visi makarūni tiek gatavoti pēc pasūtījuma — svaigi, rokām, no dabīgām sastāvdaļām, Rīgā.</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="glass-card p-5" data-tone="blush">
+          <span class="tone-dot w-1.5 h-1.5 rounded-full block mb-3" data-tone="blush"></span>
+          <h3 class="font-display text-headline text-cream mb-1.5">Dabīgas izejvielas</h3>
+          <p class="font-body text-body-md text-cream/70">Franču mandeles, dabīgi pigmenti, svaigi augļi.</p>
+        </div>
+        <div class="glass-card p-5" data-tone="gold">
+          <span class="tone-dot w-1.5 h-1.5 rounded-full block mb-3" data-tone="gold"></span>
+          <h3 class="font-display text-headline text-cream mb-1.5">Dāvanu ateljē</h3>
+          <p class="font-body text-body-md text-cream/70">Kastītes noformētas atbilstoši reizei.</p>
+        </div>
+        <div class="glass-card p-5" data-tone="sage">
+          <span class="tone-dot w-1.5 h-1.5 rounded-full block mb-3" data-tone="sage"></span>
+          <h3 class="font-display text-headline text-cream mb-1.5">Pēc pasūtījuma</h3>
+          <p class="font-body text-body-md text-cream/70">Garšas, krāsas, daudzums — jūsu izvēle.</p>
+        </div>
+        <div class="glass-card p-5" data-tone="blush">
+          <span class="tone-dot w-1.5 h-1.5 rounded-full block mb-3" data-tone="blush"></span>
+          <h3 class="font-display text-headline text-cream mb-1.5">Piegāde Rīgā</h3>
+          <p class="font-body text-body-md text-cream/70">Cepti pasūtījuma nedēļā, piegādāti ātri.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flavours -->
+  <section id="flavours" class="px-margin-mobile md:px-margin-desktop py-24 max-w-container-max mx-auto z-30 relative bg-aubergine">
+    <div class="text-center mb-14">
+      <span class="font-mono text-eyebrow text-gold uppercase block mb-3">Garšu kolekcija</span>
+      <h2 class="font-display text-display-mobile md:text-[38px] text-cream">Izvēlies savu <span class="italic text-rose">iecienīto</span></h2>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="glass-card p-5 text-center relative" data-tone="blush">
+        <span class="absolute right-3 top-3 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase bg-rose text-aubergine-deep">Klasika</span>
+        <span class="tone-dot w-2 h-2 rounded-full mx-auto mb-3" data-tone="blush"></span>
+        <h3 class="font-display text-headline text-cream mb-1">Roze un avenes</h3>
+        <p class="font-body text-[13px] text-cream/70">Maigs rožu krēms ar svaigu aveņu skābumu.</p>
+      </div>
+      <div class="glass-card p-5 text-center" data-tone="gold">
+        <span class="tone-dot w-2 h-2 rounded-full mx-auto mb-3" data-tone="gold"></span>
+        <h3 class="font-display text-headline text-cream mb-1">Beļģu šokolāde</h3>
+        <p class="font-body text-[13px] text-cream/70">Tumšā šokolāde ar zīdainu ganāšu.</p>
+      </div>
+      <div class="glass-card p-5 text-center relative" data-tone="gold">
+        <span class="absolute right-3 top-3 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase bg-gold text-aubergine-deep">Populārs</span>
+        <span class="tone-dot w-2 h-2 rounded-full mx-auto mb-3" data-tone="gold"></span>
+        <h3 class="font-display text-headline text-cream mb-1">Citronu kurds</h3>
+        <p class="font-body text-[13px] text-cream/70">Skābens citrons sviesta krēma apkampienā.</p>
+      </div>
+      <div class="glass-card p-5 text-center" data-tone="sage">
+        <span class="tone-dot w-2 h-2 rounded-full mx-auto mb-3" data-tone="sage"></span>
+        <h3 class="font-display text-headline text-cream mb-1">Mellenes un lavanda</h3>
+        <p class="font-body text-[13px] text-cream/70">Melleņu ievārījums ar lavandas aromātu.</p>
+      </div>
+      <div class="glass-card p-5 text-center" data-tone="sage">
+        <span class="tone-dot w-2 h-2 rounded-full mx-auto mb-3" data-tone="sage"></span>
+        <h3 class="font-display text-headline text-cream mb-1">Pistācija un vaniļa</h3>
+        <p class="font-body text-[13px] text-cream/70">Pistāciju pasta ar vaniļas krēmu.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="relative py-32 md:py-48 px-margin-mobile md:px-margin-desktop text-center overflow-hidden z-30 bg-aubergine">
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[820px] h-[820px] bg-gold/10 rounded-full blur-[130px] -z-10"></div>
+    <div class="max-w-2xl mx-auto space-y-9">
+      <h2 class="font-display text-display-mobile md:text-display-lg text-cream leading-tight">
+        Jūsu individuālā <br/> <span class="italic text-gold">garšu kolekcija</span>
+      </h2>
+      <p class="font-body text-body-lg text-cream/75 max-w-lg mx-auto">
+        Izvēlieties no vairāk nekā 24 unikālām garšām un izveidojiet dāvanu kasti, kas stāsta jūsu stāstu.
+      </p>
+      <div class="pt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <button class="group inline-flex items-center gap-3 bg-gold text-aubergine-deep px-10 py-5 font-mono text-eyebrow uppercase hover:bg-cream transition-colors duration-300">
+          <span>Sākt veidot kastīti</span>
+          <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform duration-300">arrow_forward</span>
+        </button>
+        <a href="#" class="font-mono text-eyebrow uppercase text-cream/60 hover:text-cream border-b border-transparent hover:border-cream/40 transition-colors duration-300 pb-1">
+          Skatīt piegādes zonas
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Collections -->
+  <section class="px-margin-mobile md:px-margin-desktop py-24 max-w-container-max mx-auto z-30 relative bg-aubergine">
+    <div class="mb-12 flex items-end justify-between gap-6 flex-wrap">
+      <div>
+        <span class="font-mono text-eyebrow text-gold uppercase block mb-3">Kolekcijas</span>
+        <h2 class="font-display text-display-mobile md:text-[38px] text-cream">Divi ceļi uz vienu prieku</h2>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter auto-rows-[300px] md:auto-rows-[420px]">
+      <div class="md:col-span-8 relative overflow-hidden group border border-hairline">
+        <div class="absolute inset-0 bg-gradient-to-t from-aubergine-deep/80 via-aubergine-deep/10 to-transparent z-10"></div>
+        <img alt="Klasiskā makarūnu izlase uz koka paplātes" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUkdaKNpIdHEpgcpxeNsRSdB6d5Nyd7ydpiC08E06TPvU-8dhFMPeY2HdCOQzr4hQ_i8tbPaV5xor7eu8oaDkpTxtwbOWG8gpeXV4G9Dis84h-A3qSUYhZso-QwRQYXVBA-2XgIEs4tf0dlnpBuUBAMEgkttoMEH13pLwv6Yde4gSWy6inNZNc2YnYMI6cuIGo-eBFaQe4EaRFKjEVk9OFhFSh5yRLz7R2dfep9So7-mDA0O1snvPd"/>
+        <div class="absolute bottom-8 left-8 z-20">
+          <h3 class="font-display text-display-mobile text-cream drop-shadow-lg">Klasiskā izlase</h3>
+          <p class="font-mono text-eyebrow text-cream/85 uppercase mt-2">Mūsu bestselleri vienuviet</p>
+        </div>
+      </div>
+      <div class="md:col-span-4 relative overflow-hidden group border border-hairline">
+        <div class="absolute inset-0 bg-gradient-to-t from-aubergine-deep/80 via-aubergine-deep/10 to-transparent z-10"></div>
+        <img alt="Sezonas lavandas un medus makarūni" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD87JRLhndUZ3S-BwLHXWJ-Rkuki-Ld_E7bo6UGmj2yJI2M0X2vlsnWMCfa4ZTeb-Sy_kBBXz4zFIZKXHA9i-BiBZ-maO3gYi-XYisb1VGbt6fP7OcoDGVk7_BbkqxILS-XXSCS8MFGKpuzC8HNisDlbh8epkRJmHZotzp0REET1cYtehWQjQ3Xeaiek3i-Q3rZOezm8WPSC9B9Rpvnz7lJehNK65RqCxbr1E2EQ5i1X-TLtHVbjjhH"/>
+        <div class="absolute bottom-8 left-8 z-20">
+          <h3 class="font-display text-headline text-cream drop-shadow-lg">Sezonas garša</h3>
+          <p class="font-mono text-eyebrow text-cream/85 uppercase mt-2">Lavanda &amp; Medus</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="w-full py-12 px-margin-mobile md:px-margin-desktop bg-aubergine-deep border-t border-hairline z-30 relative">
+  <div class="flex flex-col md:flex-row justify-between items-center gap-gutter w-full max-w-container-max mx-auto">
+    <div class="font-display text-[19px] text-cream">Macaroon Garden</div>
+    <div class="flex gap-gutter font-mono text-eyebrow uppercase">
+      <a class="text-cream/60 hover:text-gold transition-colors duration-300" href="#">Privātuma politika</a>
+      <a class="text-cream/60 hover:text-gold transition-colors duration-300" href="#">Piegāde</a>
+      <a class="text-cream/60 hover:text-gold transition-colors duration-300" href="#">Kontakti</a>
+    </div>
+    <div class="font-mono text-eyebrow text-cream/40 text-center md:text-right">
+      © 2024 Macaroon Garden Rīga
+    </div>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<script>
+window.addEventListener('load', () => {
+  gsap.registerPlugin(ScrollTrigger);
+
+  const container = document.getElementById('threejs-container');
+  const heroText = document.getElementById('hero-text');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const FEATURES = [
+    { id:'shellTop',      tone:'blush', geometry:'shell',  color:0xD98FA0, dir:[-2.6,1.6,0.8],  win:[0.03,0.32], pos:0 },
+    { id:'shellBottom',   tone:'gold',  geometry:'shell',  color:0xD9B26F, dir:[2.6,1.4,-0.6],  win:[0.08,0.37], pos:1, rotY:Math.PI },
+    { id:'filling',       tone:'sage',  geometry:'filling',color:0xF1DCC0, dir:[0,-2.4,1.6],    win:[0.13,0.42], pos:2 },
+    { id:'crumbRose',     tone:'blush', geometry:'crumb',  color:0xC97F92, dir:[-2.2,-1.8,-1.4],win:[0.18,0.47], pos:3 },
+    { id:'crumbPistachio',tone:'sage',  geometry:'crumb',  color:0x8CA37C, dir:[2.4,-1.2,1.8],  win:[0.23,0.52], pos:4 },
+    { id:'crumbCocoa',    tone:'gold',  geometry:'crumb',  color:0x6B4A32, dir:[0.2,2.6,-1.8],  win:[0.28,0.57], pos:5 },
+  ];
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, container.clientWidth / container.clientHeight, 0.1, 100);
+  camera.position.set(0, 0.6, 5.2);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+  container.appendChild(renderer.domElement);
+
+  function fitCanvas() {
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  fitCanvas();
+  window.addEventListener('resize', fitCanvas);
+
+  // Lighting — warm gold key + blush rim, tuned for the aubergine backdrop
+  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  const spot1 = new THREE.SpotLight(0xD9B26F, 3.0, 0, 0.5, 0.6);
+  spot1.position.set(3, 5, 4);
+  scene.add(spot1);
+  const spot2 = new THREE.SpotLight(0xD98FA0, 1.6, 0, 0.7, 0.8);
+  spot2.position.set(-4, 2, -3);
+  scene.add(spot2);
+
+  function makeShell(color) {
+    const g = new THREE.Group();
+    const dome = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 48, 32, 0, Math.PI * 2, 0, Math.PI / 2),
+      new THREE.MeshPhysicalMaterial({ color, roughness: 0.4, clearcoat: 0.55, clearcoatRoughness: 0.3 })
+    );
+    dome.scale.set(1, 0.62, 1);
+    g.add(dome);
+    const foot = new THREE.Mesh(
+      new THREE.TorusGeometry(1, 0.07, 10, 64),
+      new THREE.MeshPhysicalMaterial({ color, roughness: 0.55, clearcoat: 0.25 })
+    );
+    foot.rotation.x = Math.PI / 2;
+    foot.position.y = 0.02;
+    g.add(foot);
+    return g;
+  }
+
+  function makeFilling(color) {
+    return new THREE.Mesh(
+      new THREE.CylinderGeometry(0.92, 0.92, 0.34, 48),
+      new THREE.MeshPhysicalMaterial({ color, roughness: 0.28, clearcoat: 0.4 })
+    );
+  }
+
+  function makeCrumb(color) {
+    return new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.22, 1),
+      new THREE.MeshPhysicalMaterial({ color, roughness: 0.55, flatShading: true })
+    );
+  }
+
+  const pieceGroups = {};
+  FEATURES.forEach(f => {
+    const wrap = new THREE.Group();
+    if (f.rotY) wrap.rotation.y = f.rotY;
+    let mesh;
+    if (f.geometry === 'shell') mesh = makeShell(f.color);
+    else if (f.geometry === 'filling') mesh = makeFilling(f.color);
+    else mesh = makeCrumb(f.color);
+    wrap.add(mesh);
+    scene.add(wrap);
+    pieceGroups[f.id] = wrap;
+  });
+
+  let progress = 0;
+  const clock = new THREE.Clock();
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  window.updateAnimationProgress = (p) => { progress = p; };
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    const calm = reduceMotion ? 0 : 1 - Math.min(progress * 0.85, 1);
+
+    FEATURES.forEach(f => {
+      const g = pieceGroups[f.id];
+      const [ws, we] = f.win;
+      const local = Math.min(1, Math.max(0, (progress - ws) / (we - ws)));
+      const eased = easeOutCubic(local);
+
+      g.position.x = f.dir[0] * eased + Math.sin(t * 0.6) * 0.06 * calm;
+      g.position.y = f.dir[1] * eased + Math.sin(t * 0.8 + 1) * 0.07 * calm;
+      g.position.z = f.dir[2] * eased + Math.cos(t * 0.5) * 0.06 * calm;
+      g.rotation.x = eased * (f.dir[1] > 0 ? 0.6 : -0.6) + Math.sin(t * 0.3) * 0.05 * calm;
+      g.rotation.y += reduceMotion ? 0 : 0.01 * (0.3 + calm * 0.7);
+
+      const cardEl = document.querySelector(`.fcard.pos-${f.pos}`);
+      if (cardEl) {
+        if (local > 0.35 && local < 0.95) cardEl.classList.add('on');
+        else cardEl.classList.remove('on');
+      }
+    });
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  ScrollTrigger.create({
+    trigger: "#scroll-spacer",
+    start: "top top",
+    end: "bottom bottom",
+    scrub: 1.2,
+    onUpdate: (self) => {
+      window.updateAnimationProgress(self.progress);
+      if (self.progress > 0.05) {
+        gsap.to(heroText, { opacity: 0, y: -40, duration: 0.4, overwrite: true, pointerEvents: 'none' });
+      } else {
+        gsap.to(heroText, { opacity: 1, y: 0, duration: 0.6, overwrite: true, pointerEvents: 'none' });
+      }
+    }
+  });
+
+  ScrollTrigger.refresh();
+});
+</script>
 </body>
 </html>
