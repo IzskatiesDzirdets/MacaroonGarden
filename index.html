@@ -146,6 +146,13 @@ a.jcard.on:hover{box-shadow:0 18px 50px rgba(201,122,150,.28);transform:translat
 .journey-mobile .jc-eyebrow{margin-bottom:.35rem;}
 .journey-mobile h3{font-family:'Cormorant Garamond',serif;font-size:1.05rem;margin:0 0 .3rem;color:var(--chocolate);}
 .journey-mobile p{font-size:.8rem;color:var(--text-m);margin:0;line-height:1.5;}
+
+.game-sec{padding:5rem 2rem;text-align:center;background:var(--sand);}
+.game-head{max-width:34rem;margin:0 auto 2rem;}
+.game-frame-wrap{max-width:480px;margin:0 auto;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(61,35,20,.18);
+  background:var(--cream);height:min(78vh,700px);}
+.game-frame{width:100%;height:100%;border:none;display:block;}
+@media(max-width:768px){ .game-sec{padding:3rem 1.2rem;} .game-frame-wrap{height:min(75vh,620px);} }
 .hero-photo{width:min(78vw,320px);height:min(78vw,320px);object-fit:cover;border-radius:50%;
   box-shadow:0 30px 70px rgba(61,35,20,.28),0 0 0 8px rgba(255,255,255,.6);margin-bottom:1.4rem;
   animation:heroPhotoIn 1s cubic-bezier(.2,.8,.2,1);transition:transform .5s cubic-bezier(.2,.8,.2,1);}
@@ -413,6 +420,7 @@ html{scroll-behavior:smooth;}
     <li><a href="#flavours">Garšas</a></li>
     <li><a href="#builder">Kastīte</a></li>
     <li><a href="#booking">Pasūtīt</a></li>
+    <li><a href="#game">🍬 Spēle</a></li>
     <li><a href="#contact">Kontakti</a></li>
   </ul>
   <span id="memberPerk" class="member-perk" style="display:none">🌟 −10% tavam pasūtījumam</span>
@@ -429,6 +437,7 @@ html{scroll-behavior:smooth;}
   <a href="#flavours" id="mm1">Garšas</a>
   <a href="#builder" id="mm2">Kastīte</a>
   <a href="#booking" id="mm3">Pasūtīt</a>
+  <a href="#game" id="mm5">🍬 Spēle</a>
   <a href="#contact" id="mm4">Kontakti</a>
   <div style="display:flex;gap:1rem;margin-top:.5rem;">
     <button class="btn-ghost" id="mmLoginBtn">Ieiet</button>
@@ -580,6 +589,17 @@ html{scroll-behavior:smooth;}
   </div>
 </section>
 
+<section id="game" class="game-sec rv">
+  <div class="game-head">
+    <div class="sec-tag">🍬 Mazs pārtraukums</div>
+    <h2 class="sec-h2">Makarūnu <em>Mozaīka</em></h2>
+    <p class="sec-sub">Nebeidzama, atslābinoša puzle — figūras vienmēr ir iespējams izlikt. Ielogojies, lai rezultāts nonāktu līderu sarakstā un cīnītos par balvu.</p>
+  </div>
+  <div class="game-frame-wrap">
+    <iframe src="game.html" title="Makarūnu Mozaīka" class="game-frame" loading="lazy"></iframe>
+  </div>
+</section>
+
 <section class="contact-sec rv" id="contact">
   <div class="sec-center" style="margin-bottom:2.8rem;">
     <div class="sec-tag">Kontakti</div>
@@ -707,7 +727,7 @@ html{scroll-behavior:smooth;}
     hbtn.setAttribute('aria-expanded', o ? 'true' : 'false');
     document.body.style.overflow = o ? 'hidden' : '';
   });
-  ['mm1','mm2','mm3','mm4'].forEach(function(id){
+  ['mm1','mm2','mm3','mm4','mm5'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.addEventListener('click', closeMobile);
   });
