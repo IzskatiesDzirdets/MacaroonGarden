@@ -641,6 +641,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   }
   document.getElementById('goRestart').addEventListener('click', function(){
     document.getElementById('gameOverOverlay').classList.remove('show');
+    clearSavedState();
     if(mode === 'levels') startLevel(currentLevelIdx); else startEndless();
   });
 
@@ -986,6 +987,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     try{
       var key = 'mg_game_state_' + mode + (mode==='levels' ? ('_'+currentLevelIdx) : '');
       localStorage.setItem(key, JSON.stringify({board:board, score:score, tray:tray, levelProgress:levelProgress}));
+    }catch(e){}
+  }
+
+  function clearSavedState(){
+    try{
+      var key = 'mg_game_state_' + mode + (mode==='levels' ? ('_'+currentLevelIdx) : '');
+      localStorage.removeItem(key);
     }catch(e){}
   }
 
