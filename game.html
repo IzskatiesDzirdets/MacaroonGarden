@@ -102,12 +102,12 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
 .login-nudge{background:var(--sand);border-radius:12px;padding:.8rem 1rem;font-size:.78rem;text-align:center;margin-top:.8rem;}
 .login-nudge a{color:var(--rose-d);font-weight:700;text-decoration:none;}
 
-.lvl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;}
+.lvl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem;}
 .lvl-cell{aspect-ratio:1/1;border-radius:12px;background:var(--sand);display:flex;flex-direction:column;align-items:center;
-  justify-content:center;cursor:pointer;font-weight:700;position:relative;border:none;}
+  justify-content:center;cursor:pointer;font-weight:700;position:relative;border:none;gap:.15rem;padding:.3rem;text-align:center;}
 .lvl-cell.done{background:var(--mint);color:#fff;}
-.lvl-cell .lvl-num{font-family:'Cormorant Garamond',serif;font-size:1.3rem;}
-.lvl-cell .lvl-best{font-size:.56rem;opacity:.85;}
+.lvl-cell .lvl-num{font-family:'Cormorant Garamond',serif;font-size:1.5rem;line-height:1;}
+.lvl-cell .lvl-best{font-size:.52rem;opacity:.85;line-height:1.2;}
 
 .win-emoji{font-size:3rem;margin-bottom:.4rem;}
 .win-stat{font-size:.85rem;color:var(--text-m);margin:.3rem 0;}
@@ -182,6 +182,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     <p class="win-stat" id="winBestRow">Tavs labākais: <b id="winBest">—</b></p>
     <button class="msub" id="winNext">Nākamais līmenis →</button>
     <button class="mghost" id="winReplay">Spēlēt vēlreiz</button>
+  </div>
+</div>
+
+<!-- Game over — real risk, for intrigue -->
+<div class="overlay center" id="gameOverOverlay">
+  <div class="sheet">
+    <div class="win-emoji">😮</div>
+    <h2 style="text-align:center">Neviena figūra vairs neder!</h2>
+    <p class="win-stat">Rezultāts: <b id="goScore">0</b></p>
+    <button class="msub" id="goRestart">Spēlēt vēlreiz</button>
   </div>
 </div>
 
@@ -282,6 +292,22 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     return '';
   }
 
+  // Deterministic difficulty estimate (not live analytics — we don't yet track real
+  // attempts) shown as "estimated first-try success" to give a motivating sense of challenge.
+  function seededJitter(idx){ var x = Math.sin(idx*999.123)*10000; return x - Math.floor(x); }
+  function estimatePassRate(idx){
+    var def = getLevelDef(idx);
+    var diff = 0;
+    def.forEach(function(o){
+      if(o.k === 'score') diff += o.n/220;
+      else if(o.k === 'combo') diff += (o.size-1)*o.n*0.45;
+      else if(o.k === 'color') diff += o.n/16;
+    });
+    var base = 88 - diff*5.5;
+    var jitter = (seededJitter(idx)-0.5)*10;
+    return Math.round(Math.max(3, Math.min(93, base+jitter)));
+  }
+
   /* ================= Mode & level state ================= */
   var mode = 'endless'; // 'endless' | 'levels'
   var currentLevelIdx = 0;
@@ -362,19 +388,17 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     for(var r=0;r<SIZE;r++) for(var c=0;c<SIZE;c++) if(canPlaceAt(b, shape, r, c)) return true;
     return false;
   }
-  function generateValidPiece(b){
-    var pool = SHAPES.slice();
-    for(var k=pool.length-1;k>0;k--){ var idx=Math.floor(Math.random()*(k+1)); var t=pool[k]; pool[k]=pool[idx]; pool[idx]=t; }
-    for(var i=0;i<pool.length;i++){
-      if(canPlaceSomewhere(b, pool[i])) return { shape: pool[i], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
-    }
-    return { shape:[[1]], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
+  function randomPiece(){
+    var shape = SHAPES[Math.floor(Math.random()*SHAPES.length)];
+    return { shape: shape, color: COLORS[Math.floor(Math.random()*COLORS.length)] };
   }
-  function ensureTrayValid(){
-    for(var i=0;i<3;i++){
-      if(tray[i] && !canPlaceSomewhere(board, tray[i].shape)) tray[i] = generateValidPiece(board);
-      if(!tray[i]) tray[i] = generateValidPiece(board);
-    }
+  function refillTrayIfEmpty(){
+    var allEmpty = tray.every(function(p){ return !p; });
+    if(!allEmpty) return;
+    for(var i=0;i<3;i++) tray[i] = randomPiece();
+  }
+  function anyTrayPieceFits(){
+    return tray.some(function(p){ return p && canPlaceSomewhere(board, p.shape); });
   }
 
   /* ================= Tray rendering ================= */
@@ -478,6 +502,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     startLevel(currentLevelIdx);
   });
 
+  function showGameOver(){
+    document.getElementById('goScore').textContent = score;
+    document.getElementById('gameOverOverlay').classList.add('show');
+  }
+  document.getElementById('goRestart').addEventListener('click', function(){
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    if(mode === 'levels') startLevel(currentLevelIdx); else startEndless();
+  });
+
   /* ================= Line clearing ================= */
   function checkAndClearLines(){
     var fullRows = [], fullCols = [];
@@ -529,9 +562,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     renderObjectives();
     checkAndClearLines();
     setTimeout(function(){
-      ensureTrayValid();
+      refillTrayIfEmpty();
       renderTray();
       saveState();
+      if(!anyTrayPieceFits()) showGameOver();
     }, 320);
   }
 
@@ -738,18 +772,19 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     document.getElementById('tabLevels').classList.remove('act');
     document.getElementById('hint').textContent = 'Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸';
     score = 0; buildBoardDom();
-    if(!loadState()) board = emptyBoard();
-    measureBoard(); tray=[null,null,null]; ensureTrayValid(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
+    if(!loadState()){ board = emptyBoard(); tray = [null,null,null]; }
+    measureBoard(); refillTrayIfEmpty(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
+    if(!anyTrayPieceFits()) showGameOver();
   }
   function startLevel(idx){
     mode = 'levels'; currentLevelIdx = Math.max(0, idx);
     document.getElementById('tabLevels').classList.add('act');
     document.getElementById('tabEndless').classList.remove('act');
-    document.getElementById('hint').textContent = 'Līmenis ' + (currentLevelIdx+1) + ' — izpildi mērķus ar pēc iespējas mazāk soļiem';
+    document.getElementById('hint').textContent = '~' + estimatePassRate(currentLevelIdx) + '% spēlētāju izpilda šo izaicinājumu pirmajā mēģinājumā — centies uz mazāk soļu!';
     score = 0; levelProgress = { movesUsed:0, comboCounts:{}, colorCounts:{} };
     buildBoardDom();
     board = emptyBoard(); tray=[null,null,null];
-    measureBoard(); ensureTrayValid(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
+    measureBoard(); refillTrayIfEmpty(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
   }
   document.getElementById('tabEndless').addEventListener('click', startEndless);
   document.getElementById('tabLevels').addEventListener('click', function(){ openLevelSelect(); });
@@ -767,7 +802,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       (function(i){
         var b = document.createElement('button');
         b.className = 'lvl-cell' + (bests[i] !== undefined ? ' done' : '');
-        b.innerHTML = '<span class="lvl-num">'+(i+1)+'</span>' + (bests[i]!==undefined ? '<span class="lvl-best">'+bests[i]+' soļi</span>' : '');
+        var pct = estimatePassRate(i);
+        b.innerHTML = '<span class="lvl-num">'+pct+'%</span><span class="lvl-best" style="opacity:.7">izpilde 1. reizē</span>' +
+          (bests[i]!==undefined ? '<span class="lvl-best">✓ '+bests[i]+' soļi</span>' : '');
         b.addEventListener('click', function(){ lvlOverlay.classList.remove('show'); startLevel(i); });
         grid.appendChild(b);
       })(i);
