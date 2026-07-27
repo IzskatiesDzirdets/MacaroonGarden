@@ -8,66 +8,97 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --rose:#E8A4B8;--rose-d:#C97A96;--mint:#A8CFC0;--lav:#C4B5D4;
+  --rose:#E8A4B8;--rose-d:#C97A96;--mint:#A8D4B0;--lav:#C4B5D4;
   --cream:#FDF6EE;--sand:#F0E6D8;--chocolate:#3D2314;--text-m:#6B4F3A;--white:#FFFDF9;
   --gold:#D9A441;
 }
-*{box-sizing:border-box;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--chocolate);overflow:hidden;}
 .font-display{font-family:'Cormorant Garamond',serif;}
 
-.wrap{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;padding:.7rem .8rem env(safe-area-inset-bottom, .7rem);}
+.wrap{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;padding:.6rem .7rem env(safe-area-inset-bottom, .6rem);}
 
-header{display:flex;align-items:center;justify-content:space-between;padding:.3rem .1rem .7rem;}
-.back{display:flex;align-items:center;gap:.4rem;text-decoration:none;color:var(--text-m);font-size:.78rem;font-weight:600;}
-.back img{width:26px;height:26px;border-radius:50%;object-fit:cover;}
-.scores{display:flex;gap:.6rem;}
-.score-box{background:var(--white);border-radius:12px;padding:.4rem .8rem;text-align:center;box-shadow:0 3px 12px rgba(61,35,20,.08);}
-.score-box .sl{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-m);display:block;}
-.score-box .sn{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--rose-d);}
-.lb-btn{background:var(--chocolate);color:var(--cream);border:none;border-radius:12px;padding:.5rem .7rem;font-size:1.1rem;cursor:pointer;}
+header{display:flex;align-items:center;justify-content:space-between;padding:.2rem .1rem .5rem;gap:.4rem;}
+.back{display:flex;align-items:center;gap:.35rem;text-decoration:none;color:var(--text-m);font-size:.72rem;font-weight:600;flex-shrink:0;}
+.back img{width:24px;height:24px;border-radius:50%;object-fit:cover;}
+.scores{display:flex;gap:.4rem;}
+.score-box{background:var(--white);border-radius:11px;padding:.32rem .6rem;text-align:center;box-shadow:0 3px 10px rgba(61,35,20,.08);}
+.score-box .sl{font-size:.54rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-m);display:block;}
+.score-box .sn{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;color:var(--rose-d);}
+.icon-btn{background:var(--chocolate);color:var(--cream);border:none;border-radius:11px;width:36px;height:36px;font-size:1rem;cursor:pointer;flex-shrink:0;}
 
-.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:.3rem 0;}
-#board{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:var(--sand);border-radius:14px;padding:8px;
+.mode-tabs{display:flex;gap:.4rem;margin-bottom:.5rem;}
+.mode-tab{flex:1;text-align:center;padding:.5rem;border-radius:11px;border:1.5px solid var(--sand);background:var(--white);
+  font-size:.76rem;font-weight:700;cursor:pointer;color:var(--text-m);}
+.mode-tab.act{background:var(--rose-d);border-color:transparent;color:#fff;}
+
+.objectives{display:flex;flex-direction:column;gap:.35rem;background:var(--white);border-radius:12px;padding:.6rem .8rem;
+  margin-bottom:.5rem;box-shadow:0 3px 10px rgba(61,35,20,.06);}
+.obj-row{display:flex;align-items:center;gap:.5rem;font-size:.74rem;}
+.obj-row .dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.obj-row .lbl{flex:1;color:var(--text-m);font-weight:600;}
+.obj-row .bar{width:70px;height:6px;background:var(--sand);border-radius:99px;overflow:hidden;flex-shrink:0;}
+.obj-row .bar i{display:block;height:100%;background:var(--rose-d);border-radius:99px;transition:width .3s;}
+.obj-row.done .lbl{color:var(--mint);text-decoration:line-through;}
+.moves-tag{font-size:.68rem;color:var(--text-m);text-align:right;}
+
+.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:.2rem 0;}
+#board{position:relative;display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:var(--sand);border-radius:14px;padding:8px;
   box-shadow:0 10px 34px rgba(61,35,20,.14) inset;width:100%;aspect-ratio:1/1;max-height:100%;}
-.cell{background:rgba(255,255,255,.65);border-radius:5px;position:relative;transition:background .15s;}
+.cell{background:rgba(255,255,255,.65);border-radius:5px;position:relative;}
 .cell.filled{box-shadow:0 2px 5px rgba(61,35,20,.25) inset, 0 1px 0 rgba(255,255,255,.4);}
-.cell.ghost-ok{background:rgba(168,207,192,.55) !important;}
-.cell.ghost-bad{background:rgba(201,122,150,.35) !important;}
-.cell.clearing{animation:cellPop .35s ease forwards;}
+.cell.ghost-ok{background:rgba(168,207,192,.6) !important;}
+.cell.ghost-bad{background:rgba(201,122,150,.4) !important;}
+.cell.clearing{animation:cellPop .3s ease forwards;}
 @keyframes cellPop{0%{transform:scale(1);opacity:1}100%{transform:scale(.3);opacity:0}}
 
-.tray{display:flex;justify-content:space-around;align-items:center;gap:.4rem;padding:.6rem 0 .3rem;min-height:96px;}
-.tray-slot{flex:1;display:flex;align-items:center;justify-content:center;min-height:88px;touch-action:none;}
+.tray{display:flex;justify-content:space-around;align-items:center;gap:.4rem;padding:.5rem 0 .2rem;min-height:92px;}
+.tray-slot{flex:1;display:flex;align-items:center;justify-content:center;min-height:84px;touch-action:none;user-select:none;}
 .piece-grid{display:grid;gap:3px;cursor:grab;}
 .piece-cell{width:20px;height:20px;border-radius:4px;}
 .piece-cell.empty{visibility:hidden;}
 .tray-slot.used{opacity:0;pointer-events:none;}
 
-.drag-ghost{position:fixed;pointer-events:none;z-index:500;display:grid;gap:3px;opacity:.92;}
-.drag-ghost .piece-cell{width:30px;height:30px;border-radius:6px;box-shadow:0 6px 16px rgba(61,35,20,.3);}
+.drag-ghost{position:fixed;pointer-events:none;z-index:500;display:grid;gap:3px;opacity:.95;will-change:left,top;}
+.drag-ghost .piece-cell{width:var(--gc,32px);height:var(--gc,32px);border-radius:6px;box-shadow:0 6px 16px rgba(61,35,20,.3);}
 
-.hint{text-align:center;font-size:.7rem;color:var(--text-m);opacity:.6;padding:.2rem 0 .4rem;}
+.hint{text-align:center;font-size:.68rem;color:var(--text-m);opacity:.6;padding:.15rem 0 .3rem;}
 
 .overlay{position:fixed;inset:0;background:rgba(61,35,20,.4);backdrop-filter:blur(4px);display:none;
   align-items:flex-end;justify-content:center;z-index:600;}
 .overlay.show{display:flex;}
-.sheet{background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:78vh;overflow-y:auto;
+.overlay.center{align-items:center;}
+.sheet{background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:82vh;overflow-y:auto;
   padding:1.4rem 1.3rem calc(1.4rem + env(safe-area-inset-bottom));animation:sheetUp .3s cubic-bezier(.16,1,.3,1);}
+.overlay.center .sheet{border-radius:22px;max-width:340px;text-align:center;}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
 .sheet h2{font-family:'Cormorant Garamond',serif;margin:0 0 .9rem;font-size:1.5rem;}
 .sheet-close{float:right;background:var(--sand);border:none;width:32px;height:32px;border-radius:50%;font-size:.9rem;cursor:pointer;}
-.lb-row{display:flex;align-items:center;gap:.7rem;padding:.6rem .3rem;border-bottom:1px solid var(--sand);}
+.lb-row{display:flex;align-items:center;gap:.7rem;padding:.55rem .3rem;border-bottom:1px solid var(--sand);}
 .lb-rank{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.1rem;color:var(--rose-d);width:1.6rem;}
-.lb-name{flex:1;font-size:.88rem;font-weight:600;}
+.lb-name{flex:1;font-size:.86rem;font-weight:600;}
 .lb-score{font-family:'Cormorant Garamond',serif;font-weight:700;color:var(--chocolate);}
 .lb-empty{text-align:center;color:var(--text-m);font-size:.85rem;padding:1.5rem 0;}
-.lb-note{font-size:.72rem;color:var(--text-m);text-align:center;margin-top:1rem;line-height:1.5;}
-.login-nudge{background:var(--sand);border-radius:12px;padding:.8rem 1rem;font-size:.8rem;text-align:center;margin-top:.8rem;}
+.lb-note{font-size:.7rem;color:var(--text-m);text-align:center;margin-top:1rem;line-height:1.5;}
+.login-nudge{background:var(--sand);border-radius:12px;padding:.8rem 1rem;font-size:.78rem;text-align:center;margin-top:.8rem;}
 .login-nudge a{color:var(--rose-d);font-weight:700;text-decoration:none;}
 
+.lvl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;}
+.lvl-cell{aspect-ratio:1/1;border-radius:12px;background:var(--sand);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;font-weight:700;position:relative;border:none;}
+.lvl-cell.done{background:var(--mint);color:#fff;}
+.lvl-cell .lvl-num{font-family:'Cormorant Garamond',serif;font-size:1.3rem;}
+.lvl-cell .lvl-best{font-size:.56rem;opacity:.85;}
+
+.win-emoji{font-size:3rem;margin-bottom:.4rem;}
+.win-stat{font-size:.85rem;color:var(--text-m);margin:.3rem 0;}
+.win-stat b{color:var(--rose-d);font-family:'Cormorant Garamond',serif;font-size:1.2rem;}
+.sheet .msub{width:100%;background:var(--rose-d);color:#fff;border:none;border-radius:12px;padding:.8rem;font-weight:700;
+  cursor:pointer;margin-top:1rem;font-size:.88rem;}
+.sheet .mghost{width:100%;background:none;border:none;color:var(--text-m);padding:.5rem;cursor:pointer;font-size:.8rem;}
+
 .toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:var(--chocolate);color:var(--cream);
-  padding:.55rem 1.1rem;border-radius:999px;font-size:.78rem;font-weight:600;z-index:700;opacity:0;
+  padding:.55rem 1.1rem;border-radius:999px;font-size:.76rem;font-weight:600;z-index:700;opacity:0;
   transition:opacity .3s, transform .3s;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(6px);}
 </style>
@@ -76,33 +107,62 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
 
 <div class="wrap">
   <header>
-    <a href="https://macarongarden.netlify.app/#home" class="back" target="_top">
+    <a href="https://macarongarden.netlify.app/#game" class="back" target="_top">
       <img src="https://macarongarden.netlify.app/assets/logo.webp" alt="" onerror="this.style.display='none'">
-      <span>← Macaroon Garden</span>
+      <span>← Atpakaļ</span>
     </a>
     <div class="scores">
       <div class="score-box"><span class="sl">Rezultāts</span><span class="sn" id="scoreNow">0</span></div>
-      <div class="score-box"><span class="sl">Rekords</span><span class="sn" id="scoreBest">0</span></div>
+      <div class="score-box"><span class="sl" id="secondLbl">Rekords</span><span class="sn" id="scoreBest">0</span></div>
     </div>
-    <button class="lb-btn" id="openLb" aria-label="Līderu saraksts">🏆</button>
+    <button class="icon-btn" id="openLb" aria-label="Līderu saraksts">🏆</button>
   </header>
+
+  <div class="mode-tabs">
+    <button class="mode-tab" id="tabEndless">Bezgalīgais</button>
+    <button class="mode-tab" id="tabLevels">Līmeņi</button>
+  </div>
+
+  <div class="objectives" id="objectives" style="display:none"></div>
 
   <div class="board-wrap"><div id="board"></div></div>
 
   <div class="tray" id="tray"></div>
-  <p class="hint">Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸</p>
+  <p class="hint" id="hint">Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸</p>
 </div>
 
 <div class="drag-ghost" id="dragGhost" style="display:none"></div>
 <div class="toast" id="toast"></div>
 
+<!-- Leaderboard -->
 <div class="overlay" id="lbOverlay">
   <div class="sheet">
     <button class="sheet-close" id="closeLb">✕</button>
     <h2>Līderu saraksts 🏆</h2>
     <div id="lbList"><p class="lb-empty">Ielādē...</p></div>
     <div id="lbLoginNudge"></div>
-    <p class="lb-note">Labākais rezultāts katru periodu saņem īpašu balvu no Macaroon Garden. Rezultāts saglabājas automātiski, kamēr esi ielogojies.</p>
+    <p class="lb-note">Labākais rezultāts katru periodu saņem īpašu balvu no Macaroon Garden.</p>
+  </div>
+</div>
+
+<!-- Level select -->
+<div class="overlay" id="lvlOverlay">
+  <div class="sheet">
+    <button class="sheet-close" id="closeLvl">✕</button>
+    <h2>Izvēlies līmeni</h2>
+    <div class="lvl-grid" id="lvlGrid"></div>
+  </div>
+</div>
+
+<!-- Level complete -->
+<div class="overlay center" id="winOverlay">
+  <div class="sheet">
+    <div class="win-emoji">🎉</div>
+    <h2 style="text-align:center">Līmenis paveikts!</h2>
+    <p class="win-stat">Soļi: <b id="winMoves">0</b></p>
+    <p class="win-stat" id="winBestRow">Tavs labākais: <b id="winBest">—</b></p>
+    <button class="msub" id="winNext">Nākamais līmenis →</button>
+    <button class="mghost" id="winReplay">Spēlēt vēlreiz</button>
   </div>
 </div>
 
@@ -111,7 +171,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
 (function(){
   "use strict";
 
-  /* ---------- Supabase (shared project with the main site) ---------- */
+  /* ================= Supabase ================= */
   var sb = null;
   try{
     sb = window.supabase.createClient(
@@ -119,7 +179,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlibnZxbGpjbGNoemxidmZ3dWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNDM4MjIsImV4cCI6MjA4NjgxOTgyMn0.oQqSvLbbDcWDpgJdDYde11sd6SX96snBIYs1FzfcCvo',
       { auth:{ persistSession:true, autoRefreshToken:true } }
     );
-  }catch(e){ console.warn('Supabase nav pieejams, spēle darbosies bez rezultātu saglabāšanas', e); }
+  }catch(e){ console.warn('Supabase nav pieejams', e); }
 
   var currentUser = null;
   if(sb){
@@ -127,19 +187,28 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     sb.auth.onAuthStateChange(function(_e, session){ currentUser = session ? session.user : null; syncBestFromServer(); });
   }
 
-  /* ---------- Toast ---------- */
+  /* ================= Toast ================= */
   var toastEl = document.getElementById('toast');
   var toastTimer = null;
   function toast(msg){
     toastEl.textContent = msg;
     toastEl.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 1800);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 1600);
   }
 
-  /* ---------- Game constants ---------- */
+  /* ================= Constants ================= */
   var SIZE = 8;
-  var COLORS = ['#E8A4B8','#A8D4B0','#C4B5D4','#C4956A','#EEE880'];
+  var COLOR_INFO = [
+    { hex:'#E8A4B8', name:'Rozā' },
+    { hex:'#A8D4B0', name:'Zaļie' },
+    { hex:'#C4B5D4', name:'Lavandas' },
+    { hex:'#C4956A', name:'Šokolādes' },
+    { hex:'#EEE880', name:'Citrona' },
+  ];
+  var COLORS = COLOR_INFO.map(function(c){ return c.hex; });
+  function colorName(hex){ var f = COLOR_INFO.find(function(c){ return c.hex === hex; }); return f ? f.name : hex; }
+
   var SHAPES = [
     [[1]],
     [[1,1]], [[1],[1]],
@@ -153,14 +222,70 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     [[1,1],[1,0]], [[1,1],[0,1]], [[0,1],[1,1]], [[1,0],[1,1]],
   ];
 
-  /* ---------- State ---------- */
-  var board = []; // SIZE x SIZE, each cell: null or color string
+  /* ================= Level definitions ================= */
+  // objective kinds: {k:'score', n:N} | {k:'combo', size:N, n:count} | {k:'color', hex:H, n:count}
+  // A level's objectives array must ALL be satisfied to complete it. Ranked by fewest moves.
+  var HAND_LEVELS = [
+    [{k:'score', n:150}],
+    [{k:'combo', size:2, n:3}],
+    [{k:'color', hex:'#E8A4B8', n:20}],
+    [{k:'score', n:400}],
+    [{k:'combo', size:2, n:5}, {k:'combo', size:3, n:2}],
+    [{k:'color', hex:'#A8D4B0', n:25}, {k:'color', hex:'#EEE880', n:25}],
+    [{k:'combo', size:2, n:5}, {k:'combo', size:3, n:3}, {k:'combo', size:5, n:1}],
+    [{k:'color', hex:'#E8A4B8', n:30}, {k:'color', hex:'#A8D4B0', n:30}, {k:'color', hex:'#EEE880', n:30}],
+    [{k:'score', n:900}],
+    [{k:'combo', size:4, n:2}],
+    [{k:'color', hex:'#C4B5D4', n:35}, {k:'color', hex:'#C4956A', n:35}],
+    [{k:'combo', size:2, n:8}, {k:'combo', size:4, n:1}],
+    [{k:'score', n:1400}],
+    [{k:'combo', size:3, n:5}, {k:'color', hex:'#E8A4B8', n:20}],
+    [{k:'combo', size:5, n:2}],
+  ];
+  function getLevelDef(idx){
+    if(idx < HAND_LEVELS.length) return HAND_LEVELS[idx];
+    // Unlimited procedural levels beyond the hand-authored set — difficulty scales with idx.
+    var n = idx - HAND_LEVELS.length;
+    var variant = n % 4;
+    var scale = 1 + Math.floor(n / 4) * 0.5;
+    if(variant === 0) return [{k:'score', n: Math.round(1600 * scale)}];
+    if(variant === 1) return [{k:'combo', size:2, n: Math.round(6*scale)}, {k:'combo', size:3, n: Math.round(3*scale)}];
+    if(variant === 2){
+      var c1 = COLORS[n % COLORS.length], c2 = COLORS[(n+2) % COLORS.length];
+      return [{k:'color', hex:c1, n: Math.round(30*scale)}, {k:'color', hex:c2, n: Math.round(30*scale)}];
+    }
+    return [{k:'combo', size:4, n: Math.max(1,Math.round(2*scale))}, {k:'combo', size:5, n: Math.max(1,Math.round(1*scale))}];
+  }
+  function objLabel(o){
+    if(o.k === 'score') return 'Sasniedz ' + o.n + ' punktus';
+    if(o.k === 'combo') return o.size + ' līnijas vienlaikus × ' + o.n;
+    if(o.k === 'color') return colorName(o.hex) + ' klucīši × ' + o.n;
+    return '';
+  }
+
+  /* ================= Mode & level state ================= */
+  var mode = 'endless'; // 'endless' | 'levels'
+  var currentLevelIdx = 0;
+  var levelProgress = null; // {movesUsed, comboCounts:{}, colorCounts:{}, scoreAtStart}
+
+  function loadLevelBests(){
+    try{ return JSON.parse(localStorage.getItem('mg_level_bests') || '{}'); }catch(e){ return {}; }
+  }
+  function saveLevelBest(idx, moves){
+    var b = loadLevelBests();
+    if(!b[idx] || moves < b[idx]) b[idx] = moves;
+    localStorage.setItem('mg_level_bests', JSON.stringify(b));
+  }
+
+  /* ================= Board / core state ================= */
+  var board = [];
   var score = 0;
   var best = parseInt(localStorage.getItem('mg_game_best') || '0', 10);
-  var tray = [null, null, null]; // {shape, color}
+  var tray = [null, null, null];
   var boardEl = document.getElementById('board');
   var trayEl = document.getElementById('tray');
   var cellEls = [];
+  var cellSize = 40, cellGap = 3, boardPad = 8; // measured live, defaults as fallback
 
   function emptyBoard(){
     var b = [];
@@ -168,21 +293,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     return b;
   }
 
-  function loadState(){
-    try{
-      var raw = localStorage.getItem('mg_game_state');
-      if(!raw) return false;
-      var s = JSON.parse(raw);
-      if(!s.board || s.board.length !== SIZE) return false;
-      board = s.board; score = s.score || 0; tray = s.tray || [null,null,null];
-      return true;
-    }catch(e){ return false; }
-  }
-  function saveState(){
-    try{ localStorage.setItem('mg_game_state', JSON.stringify({board:board, score:score, tray:tray})); }catch(e){}
-  }
-
-  /* ---------- Board rendering ---------- */
   function buildBoardDom(){
     boardEl.innerHTML = '';
     cellEls = [];
@@ -191,13 +301,20 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
       for(var c=0;c<SIZE;c++){
         var d = document.createElement('div');
         d.className = 'cell';
-        d.dataset.r = r; d.dataset.c = c;
         boardEl.appendChild(d);
         rowEls.push(d);
       }
       cellEls.push(rowEls);
     }
   }
+  function measureBoard(){
+    var r0 = cellEls[0][0].getBoundingClientRect();
+    var r1 = cellEls[0][1] ? cellEls[0][1].getBoundingClientRect() : r0;
+    cellSize = r0.width;
+    cellGap = Math.max(0, r1.left - r0.right);
+  }
+  window.addEventListener('resize', measureBoard);
+
   function renderBoard(){
     for(var r=0;r<SIZE;r++){
       for(var c=0;c<SIZE;c++){
@@ -209,7 +326,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     }
   }
 
-  /* ---------- Piece validity ---------- */
+  /* ================= Piece validity ================= */
   function shapeSize(shape){ var n=0; for(var i=0;i<shape.length;i++) for(var j=0;j<shape[i].length;j++) if(shape[i][j]) n++; return n; }
   function canPlaceAt(b, shape, r0, c0){
     for(var i=0;i<shape.length;i++){
@@ -222,35 +339,26 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     }
     return true;
   }
-  function findAnyPlacement(b, shape){
-    for(var r=0;r<SIZE;r++) for(var c=0;c<SIZE;c++) if(canPlaceAt(b, shape, r, c)) return {r:r,c:c};
-    return null;
+  function canPlaceSomewhere(b, shape){
+    for(var r=0;r<SIZE;r++) for(var c=0;c<SIZE;c++) if(canPlaceAt(b, shape, r, c)) return true;
+    return false;
   }
-  function canPlaceSomewhere(b, shape){ return !!findAnyPlacement(b, shape); }
-
   function generateValidPiece(b){
     var pool = SHAPES.slice();
     for(var k=pool.length-1;k>0;k--){ var idx=Math.floor(Math.random()*(k+1)); var t=pool[k]; pool[k]=pool[idx]; pool[idx]=t; }
     for(var i=0;i<pool.length;i++){
-      if(canPlaceSomewhere(b, pool[i])){
-        return { shape: pool[i], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
-      }
+      if(canPlaceSomewhere(b, pool[i])) return { shape: pool[i], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
     }
-    return { shape:[[1]], color: COLORS[Math.floor(Math.random()*COLORS.length)] }; // ultimate fallback — always fits if any cell is empty
+    return { shape:[[1]], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
   }
-
   function ensureTrayValid(){
     for(var i=0;i<3;i++){
-      if(tray[i] && !canPlaceSomewhere(board, tray[i].shape)){
-        tray[i] = generateValidPiece(board);
-      }
-      if(!tray[i]){
-        tray[i] = generateValidPiece(board);
-      }
+      if(tray[i] && !canPlaceSomewhere(board, tray[i].shape)) tray[i] = generateValidPiece(board);
+      if(!tray[i]) tray[i] = generateValidPiece(board);
     }
   }
 
-  /* ---------- Tray rendering ---------- */
+  /* ================= Tray rendering ================= */
   function renderTray(){
     trayEl.innerHTML = '';
     for(var i=0;i<3;i++){
@@ -280,14 +388,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     return g;
   }
 
-  /* ---------- Scoring ---------- */
+  /* ================= Scoring & objectives UI ================= */
   function updateScoreUi(){
     document.getElementById('scoreNow').textContent = score;
-    document.getElementById('scoreBest').textContent = best;
+    document.getElementById('scoreBest').textContent = mode === 'levels' ? (levelProgress ? levelProgress.movesUsed : 0) : best;
+    document.getElementById('secondLbl').textContent = mode === 'levels' ? 'Soļi' : 'Rekords';
   }
   function addScore(n){
     score += n;
-    if(score > best){
+    if(mode === 'endless' && score > best){
       best = score;
       localStorage.setItem('mg_game_best', String(best));
       saveBestToServer(best);
@@ -295,19 +404,82 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     updateScoreUi();
   }
 
-  /* ---------- Line clearing ---------- */
+  function renderObjectives(){
+    var wrap = document.getElementById('objectives');
+    if(mode !== 'levels' || !levelProgress){ wrap.style.display = 'none'; return; }
+    wrap.style.display = 'flex';
+    wrap.innerHTML = '';
+    var def = getLevelDef(currentLevelIdx);
+    def.forEach(function(o){
+      var have = 0, need = o.n;
+      if(o.k === 'score') have = score;
+      else if(o.k === 'combo') have = levelProgress.comboCounts[o.size] || 0;
+      else if(o.k === 'color') have = levelProgress.colorCounts[o.hex] || 0;
+      var pct = Math.min(100, Math.round(have/need*100));
+      var row = document.createElement('div');
+      row.className = 'obj-row' + (have >= need ? ' done' : '');
+      var dotColor = o.k === 'color' ? o.hex : (o.k === 'combo' ? 'var(--rose-d)' : 'var(--gold)');
+      row.innerHTML = '<span class="dot" style="background:'+dotColor+'"></span>' +
+        '<span class="lbl">'+objLabel(o)+'</span>' +
+        '<span class="bar"><i style="width:'+pct+'%"></i></span>';
+      wrap.appendChild(row);
+    });
+    var mv = document.createElement('div');
+    mv.className = 'moves-tag';
+    mv.textContent = 'Soļi: ' + levelProgress.movesUsed;
+    wrap.appendChild(mv);
+  }
+
+  function checkLevelComplete(){
+    if(mode !== 'levels' || !levelProgress) return;
+    var def = getLevelDef(currentLevelIdx);
+    var allDone = def.every(function(o){
+      if(o.k === 'score') return score >= o.n;
+      if(o.k === 'combo') return (levelProgress.comboCounts[o.size]||0) >= o.n;
+      if(o.k === 'color') return (levelProgress.colorCounts[o.hex]||0) >= o.n;
+      return false;
+    });
+    if(allDone) showWin();
+  }
+
+  function showWin(){
+    saveLevelBest(currentLevelIdx, levelProgress.movesUsed);
+    document.getElementById('winMoves').textContent = levelProgress.movesUsed;
+    var bests = loadLevelBests();
+    var b = bests[currentLevelIdx];
+    document.getElementById('winBest').textContent = b ? (b + ' soļi') : '—';
+    document.getElementById('winOverlay').classList.add('show');
+  }
+  document.getElementById('winNext').addEventListener('click', function(){
+    document.getElementById('winOverlay').classList.remove('show');
+    startLevel(currentLevelIdx + 1);
+  });
+  document.getElementById('winReplay').addEventListener('click', function(){
+    document.getElementById('winOverlay').classList.remove('show');
+    startLevel(currentLevelIdx);
+  });
+
+  /* ================= Line clearing ================= */
   function checkAndClearLines(){
     var fullRows = [], fullCols = [];
     for(var r=0;r<SIZE;r++){ var full=true; for(var c=0;c<SIZE;c++) if(!board[r][c]){ full=false; break; } if(full) fullRows.push(r); }
     for(var c=0;c<SIZE;c++){ var full2=true; for(var r=0;r<SIZE;r++) if(!board[r][c]){ full2=false; break; } if(full2) fullCols.push(c); }
     var total = fullRows.length + fullCols.length;
-    if(total === 0) return;
+    if(total === 0){ if(mode==='levels') checkLevelComplete(); return; }
 
     var cellsToClear = [];
-    fullRows.forEach(function(r){ for(var c=0;c<SIZE;c++) cellsToClear.push([r,c]); });
-    fullCols.forEach(function(c){ for(var r=0;r<SIZE;r++) cellsToClear.push([r,c]); });
+    var colorTally = {};
+    fullRows.forEach(function(r){ for(var c=0;c<SIZE;c++){ cellsToClear.push([r,c]); var col=board[r][c]; if(col) colorTally[col]=(colorTally[col]||0)+1; } });
+    fullCols.forEach(function(c){ for(var r=0;r<SIZE;r++){ cellsToClear.push([r,c]); var col2=board[r][c]; if(col2) colorTally[col2]=(colorTally[col2]||0)+1; } });
 
     cellsToClear.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.add('clearing'); });
+
+    if(mode === 'levels' && levelProgress){
+      levelProgress.comboCounts[total] = (levelProgress.comboCounts[total]||0) + 1;
+      Object.keys(colorTally).forEach(function(hex){
+        levelProgress.colorCounts[hex] = (levelProgress.colorCounts[hex]||0) + colorTally[hex];
+      });
+    }
 
     setTimeout(function(){
       fullRows.forEach(function(r){ for(var c=0;c<SIZE;c++) board[r][c] = null; });
@@ -315,14 +487,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
       cellsToClear.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.remove('clearing'); });
       renderBoard();
       saveState();
-    }, 320);
+    }, 300);
 
-    var bonus = total * 10 * total; // combo bonus for simultaneous clears
+    var bonus = total * 10 * total;
     addScore(bonus);
     toast(total > 1 ? ('🔥 Kombo! +' + bonus) : ('✨ +' + bonus));
+    renderObjectives();
+    if(mode === 'levels') checkLevelComplete();
   }
 
-  /* ---------- Placement ---------- */
+  /* ================= Placement ================= */
   function commitPlacement(trayIdx, shape, color, r0, c0){
     for(var i=0;i<shape.length;i++){
       for(var j=0;j<shape[i].length;j++){
@@ -330,19 +504,23 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
       }
     }
     addScore(shapeSize(shape));
+    if(mode === 'levels' && levelProgress) levelProgress.movesUsed++;
     renderBoard();
     tray[trayIdx] = null;
+    renderObjectives();
     checkAndClearLines();
     setTimeout(function(){
       ensureTrayValid();
       renderTray();
       saveState();
-    }, 340);
+    }, 320);
   }
 
-  /* ---------- Drag interaction (pointer events — works for mouse + touch) ---------- */
+  /* ================= Drag interaction — precise + rAF-throttled ================= */
   var dragGhost = document.getElementById('dragGhost');
-  var dragging = null; // {idx, piece, offsetCellX, offsetCellY}
+  var dragging = null;
+  var pendingMove = null;
+  var rafScheduled = false;
 
   function attachDragHandlers(){
     var slots = trayEl.querySelectorAll('.tray-slot');
@@ -357,51 +535,85 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     var piece = tray[idx];
     if(!piece) return;
     ev.preventDefault();
+    measureBoard();
     dragging = { idx: idx, piece: piece };
+    var ghostCell = Math.max(22, Math.round(cellSize));
+    dragGhost.style.setProperty('--gc', ghostCell + 'px');
     dragGhost.innerHTML = '';
-    dragGhost.appendChild(buildPieceGrid(piece, 30));
+    dragGhost.appendChild(buildGhostGrid(piece, ghostCell));
     dragGhost.style.display = 'grid';
-    dragGhost.style.gridTemplateColumns = 'repeat(' + piece.shape[0].length + ',30px)';
-    positionGhost(ev.clientX, ev.clientY);
+    dragGhost.style.gridTemplateColumns = 'repeat(' + piece.shape[0].length + ',' + ghostCell + 'px)';
+    positionGhost(ev.clientX, ev.clientY, piece, ghostCell);
     document.querySelectorAll('.tray-slot')[idx].classList.add('used');
 
-    function onMove(e){ positionGhost(e.clientX, e.clientY); updateHoverPreview(e.clientX, e.clientY); }
+    function onMove(e){
+      pendingMove = e;
+      if(!rafScheduled){
+        rafScheduled = true;
+        requestAnimationFrame(function(){
+          rafScheduled = false;
+          if(pendingMove){ positionGhost(pendingMove.clientX, pendingMove.clientY, piece, ghostCell); updateHoverPreview(pendingMove.clientX, pendingMove.clientY); }
+        });
+      }
+    }
     function onUp(e){
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
       finishDrag(e.clientX, e.clientY);
     }
-    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointermove', onMove, {passive:true});
     document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onUp);
+  }
+  function buildGhostGrid(piece, px){
+    var rows = piece.shape.length, cols = piece.shape[0].length;
+    var g = document.createElement('div');
+    g.style.display = 'grid'; g.style.gap = '3px';
+    g.style.gridTemplateColumns = 'repeat('+cols+','+px+'px)';
+    for(var i=0;i<rows;i++) for(var j=0;j<cols;j++){
+      var c = document.createElement('div');
+      c.className = 'piece-cell' + (piece.shape[i][j] ? '' : ' empty');
+      if(piece.shape[i][j]) c.style.background = piece.color;
+      c.style.width = px+'px'; c.style.height = px+'px';
+      g.appendChild(c);
+    }
+    return g;
   }
 
-  function positionGhost(x, y){
-    dragGhost.style.left = (x - dragGhost.offsetWidth/2) + 'px';
-    dragGhost.style.top = (y - dragGhost.offsetHeight - 26) + 'px';
+  function positionGhost(x, y, piece, ghostCell){
+    var w = piece.shape[0].length * (ghostCell+3);
+    var h = piece.shape.length * (ghostCell+3);
+    dragGhost.style.left = (x - w/2) + 'px';
+    dragGhost.style.top = (y - h - ghostCell*1.4) + 'px';
   }
 
   var lastHover = null;
-  function boardCellFromPoint(x, y){
+  function anchorFromPoint(x, y, shape){
+    // Finger position maps to the shape's visual centre-top, offset above the pointer
+    // so the piece is never hidden under the finger — matches how it's drawn in positionGhost.
     var rect = boardEl.getBoundingClientRect();
-    var cellW = (rect.width - 16) / SIZE;
-    var localX = x - rect.left - 8, localY = y - rect.top - 8;
-    var c = Math.floor(localX / cellW), r = Math.floor(localY / cellW);
-    return {r:r, c:c};
+    var step = cellSize + cellGap;
+    var targetY = y - cellSize*1.4 - cellGap;
+    var localX = x - rect.left - boardPad;
+    var localY = targetY - rect.top - boardPad;
+    var cols = shape[0].length;
+    var c0 = Math.round(localX/step - (cols/2 - 0.5));
+    var r0 = Math.round(localY/step);
+    return {r:r0, c:c0};
   }
   function clearHoverPreview(){
     if(!lastHover) return;
     lastHover.forEach(function(rc){
-      if(rc[0]>=0 && rc[0]<SIZE && rc[1]>=0 && rc[1]<SIZE){
-        cellEls[rc[0]][rc[1]].classList.remove('ghost-ok','ghost-bad');
-      }
+      if(rc[0]>=0 && rc[0]<SIZE && rc[1]>=0 && rc[1]<SIZE) cellEls[rc[0]][rc[1]].classList.remove('ghost-ok','ghost-bad');
     });
     lastHover = null;
   }
   function updateHoverPreview(x, y){
     clearHoverPreview();
     if(!dragging) return;
-    var anchor = boardCellFromPoint(x, y - 40);
     var shape = dragging.piece.shape;
+    var anchor = anchorFromPoint(x, y, shape);
     var valid = canPlaceAt(board, shape, anchor.r, anchor.c);
     var cells = [];
     for(var i=0;i<shape.length;i++){
@@ -409,42 +621,98 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
         if(!shape[i][j]) continue;
         var r = anchor.r+i, c = anchor.c+j;
         cells.push([r,c]);
-        if(r>=0 && r<SIZE && c>=0 && c<SIZE){
-          cellEls[r][c].classList.add(valid ? 'ghost-ok' : 'ghost-bad');
-        }
+        if(r>=0 && r<SIZE && c>=0 && c<SIZE) cellEls[r][c].classList.add(valid ? 'ghost-ok' : 'ghost-bad');
       }
     }
     lastHover = cells;
   }
-
   function finishDrag(x, y){
     clearHoverPreview();
     dragGhost.style.display = 'none';
     var idx = dragging.idx, piece = dragging.piece;
-    dragging = null;
-    var anchor = boardCellFromPoint(x, y - 40);
+    dragging = null; pendingMove = null;
+    var anchor = anchorFromPoint(x, y, piece.shape);
     if(canPlaceAt(board, piece.shape, anchor.r, anchor.c)){
       commitPlacement(idx, piece.shape, piece.color, anchor.r, anchor.c);
     } else {
-      renderTray(); // snap back
+      renderTray();
     }
   }
 
-  /* ---------- Leaderboard ---------- */
+  /* ================= State persistence ================= */
+  function loadState(){
+    try{
+      var raw = localStorage.getItem('mg_game_state_' + mode + (mode==='levels' ? ('_'+currentLevelIdx) : ''));
+      if(!raw) return false;
+      var s = JSON.parse(raw);
+      if(!s.board || s.board.length !== SIZE) return false;
+      board = s.board; score = s.score || 0; tray = s.tray || [null,null,null];
+      if(mode === 'levels' && s.levelProgress) levelProgress = s.levelProgress;
+      return true;
+    }catch(e){ return false; }
+  }
+  function saveState(){
+    try{
+      var key = 'mg_game_state_' + mode + (mode==='levels' ? ('_'+currentLevelIdx) : '');
+      localStorage.setItem(key, JSON.stringify({board:board, score:score, tray:tray, levelProgress:levelProgress}));
+    }catch(e){}
+  }
+
+  /* ================= Mode switching ================= */
+  function startEndless(){
+    mode = 'endless'; levelProgress = null;
+    document.getElementById('tabEndless').classList.add('act');
+    document.getElementById('tabLevels').classList.remove('act');
+    document.getElementById('hint').textContent = 'Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸';
+    score = 0; buildBoardDom();
+    if(!loadState()) board = emptyBoard();
+    measureBoard(); tray=[null,null,null]; ensureTrayValid(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
+  }
+  function startLevel(idx){
+    mode = 'levels'; currentLevelIdx = Math.max(0, idx);
+    document.getElementById('tabLevels').classList.add('act');
+    document.getElementById('tabEndless').classList.remove('act');
+    document.getElementById('hint').textContent = 'Līmenis ' + (currentLevelIdx+1) + ' — izpildi mērķus ar pēc iespējas mazāk soļiem';
+    score = 0; levelProgress = { movesUsed:0, comboCounts:{}, colorCounts:{} };
+    buildBoardDom();
+    board = emptyBoard(); tray=[null,null,null];
+    measureBoard(); ensureTrayValid(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
+  }
+  document.getElementById('tabEndless').addEventListener('click', startEndless);
+  document.getElementById('tabLevels').addEventListener('click', function(){ openLevelSelect(); });
+
+  /* ================= Level select overlay ================= */
+  var lvlOverlay = document.getElementById('lvlOverlay');
+  document.getElementById('closeLvl').addEventListener('click', function(){ lvlOverlay.classList.remove('show'); });
+  lvlOverlay.addEventListener('click', function(e){ if(e.target===lvlOverlay) lvlOverlay.classList.remove('show'); });
+  function openLevelSelect(){
+    var grid = document.getElementById('lvlGrid');
+    grid.innerHTML = '';
+    var bests = loadLevelBests();
+    var showCount = Math.max(HAND_LEVELS.length, (Object.keys(bests).length ? Math.max.apply(null, Object.keys(bests).map(Number)) + 2 : 0), 15);
+    for(var i=0;i<showCount;i++){
+      (function(i){
+        var b = document.createElement('button');
+        b.className = 'lvl-cell' + (bests[i] !== undefined ? ' done' : '');
+        b.innerHTML = '<span class="lvl-num">'+(i+1)+'</span>' + (bests[i]!==undefined ? '<span class="lvl-best">'+bests[i]+' soļi</span>' : '');
+        b.addEventListener('click', function(){ lvlOverlay.classList.remove('show'); startLevel(i); });
+        grid.appendChild(b);
+      })(i);
+    }
+    lvlOverlay.classList.add('show');
+  }
+
+  /* ================= Leaderboard ================= */
   var lbOverlay = document.getElementById('lbOverlay');
-  document.getElementById('openLb').addEventListener('click', openLeaderboard);
+  document.getElementById('openLb').addEventListener('click', function(){ lbOverlay.classList.add('show'); loadLeaderboard(); });
   document.getElementById('closeLb').addEventListener('click', function(){ lbOverlay.classList.remove('show'); });
   lbOverlay.addEventListener('click', function(e){ if(e.target === lbOverlay) lbOverlay.classList.remove('show'); });
 
-  function openLeaderboard(){
-    lbOverlay.classList.add('show');
-    loadLeaderboard();
-  }
   async function loadLeaderboard(){
     var listEl = document.getElementById('lbList');
     var nudgeEl = document.getElementById('lbLoginNudge');
     nudgeEl.innerHTML = currentUser ? '' :
-      '<div class="login-nudge">Ielogojies galvenajā lapā, lai tavs rezultāts parādītos šeit un tu varētu sacensties par balvu! <a href="https://macarongarden.netlify.app/#home" target="_top">Ieiet →</a></div>';
+      '<div class="login-nudge">Ielogojies galvenajā lapā, lai tavs rezultāts parādītos šeit! <a href="https://macarongarden.netlify.app/#home" target="_top">Ieiet →</a></div>';
     if(!sb){ listEl.innerHTML = '<p class="lb-empty">Līderu saraksts pagaidām nav pieejams.</p>'; return; }
     listEl.innerHTML = '<p class="lb-empty">Ielādē...</p>';
     try{
@@ -460,12 +728,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
           (row.display_name || 'Anonīms spēlētājs') + '</span><span class="lb-score">'+row.score+'</span>';
         listEl.appendChild(el);
       });
-    }catch(e){
-      listEl.innerHTML = '<p class="lb-empty">Neizdevās ielādēt līderu sarakstu.</p>';
-    }
+    }catch(e){ listEl.innerHTML = '<p class="lb-empty">Neizdevās ielādēt līderu sarakstu.</p>'; }
   }
 
-  /* ---------- Server score sync ---------- */
+  /* ================= Server score sync (endless mode only) ================= */
   async function saveBestToServer(newBest){
     if(!sb || !currentUser) return;
     try{
@@ -481,24 +747,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.3r
     if(!sb || !currentUser) return;
     try{
       var res = await sb.from('game_scores').select('score').eq('user_id', currentUser.id).maybeSingle();
-      if(res.data && res.data.score > best){
-        best = res.data.score;
-        localStorage.setItem('mg_game_best', String(best));
-        updateScoreUi();
-      } else if(best > 0){
-        saveBestToServer(best);
-      }
+      if(res.data && res.data.score > best){ best = res.data.score; localStorage.setItem('mg_game_best', String(best)); updateScoreUi(); }
+      else if(best > 0){ saveBestToServer(best); }
     }catch(e){}
   }
 
-  /* ---------- Init ---------- */
+  /* ================= Init ================= */
   buildBoardDom();
-  if(!loadState()){ board = emptyBoard(); }
-  ensureTrayValid();
-  renderBoard();
-  renderTray();
-  updateScoreUi();
-  saveState();
+  startEndless();
 })();
 </script>
 </body>
