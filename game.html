@@ -49,6 +49,25 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
 .cell.filled{box-shadow:0 2px 5px rgba(61,35,20,.25) inset, 0 1px 0 rgba(255,255,255,.4);}
 .cell.ghost-ok{background:rgba(168,207,192,.6) !important;}
 .cell.ghost-bad{background:rgba(201,122,150,.4) !important;}
+.cell.ghost-fire{background:linear-gradient(160deg,#FFE9A8,#F0B429 55%,#D9A441) !important;
+  box-shadow:0 0 10px rgba(240,180,41,.85), 0 0 2px rgba(255,255,255,.8) inset !important;
+  animation:fireFlicker .5s ease-in-out infinite alternate;}
+@keyframes fireFlicker{0%{filter:brightness(1) saturate(1);}100%{filter:brightness(1.18) saturate(1.25);}}
+
+.drag-ghost.ghost-valid .piece-cell{transition:transform .12s ease, box-shadow .12s ease;transform:scale(1.08);}
+.drag-ghost.ghost-fire-piece .piece-cell{
+  transform:scale(1.16) !important;
+  background-image:linear-gradient(160deg,#FFE9A8,#F0B429 60%,#D9A441) !important;
+  box-shadow:0 0 16px rgba(240,180,41,.9), 0 6px 16px rgba(61,35,20,.35) !important;
+  animation:fireFlicker .45s ease-in-out infinite alternate;
+}
+
+.combo-badge{position:fixed;z-index:800;transform:translate(-50%,-50%) scale(0);pointer-events:none;
+  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:2.1rem;color:#fff;
+  text-shadow:0 0 14px rgba(240,180,41,.95), 0 2px 4px rgba(61,35,20,.5);
+  opacity:0;transition:opacity .12s ease, transform .12s cubic-bezier(.2,1.4,.4,1);}
+.combo-badge.show{opacity:1;transform:translate(-50%,-50%) scale(1);animation:comboPulse .6s ease-in-out infinite alternate;}
+@keyframes comboPulse{0%{filter:brightness(1)}100%{filter:brightness(1.3)}}
 .cell.clearing{animation:cellPop .3s ease forwards;}
 @keyframes cellPop{0%{transform:scale(1);opacity:1}100%{transform:scale(.3);opacity:0}}
 
@@ -584,31 +603,64 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   function positionGhost(x, y, piece, ghostCell){
     var w = piece.shape[0].length * (ghostCell+3);
     var h = piece.shape.length * (ghostCell+3);
+    // Centered exactly on the finger — precise 1:1 tracking, no floating offset.
     dragGhost.style.left = (x - w/2) + 'px';
-    dragGhost.style.top = (y - h - ghostCell*1.4) + 'px';
+    dragGhost.style.top = (y - h/2) + 'px';
   }
 
   var lastHover = null;
+  var lastFireCells = null;
+  var comboBadge = null;
+
   function anchorFromPoint(x, y, shape){
-    // Finger position maps to the shape's visual centre-top, offset above the pointer
-    // so the piece is never hidden under the finger — matches how it's drawn in positionGhost.
+    // The shape's bounding-box centre is pinned exactly under the pointer —
+    // matches positionGhost 1:1, so what you see is exactly where it lands.
     var rect = boardEl.getBoundingClientRect();
     var step = cellSize + cellGap;
-    var targetY = y - cellSize*1.4 - cellGap;
-    var localX = x - rect.left - boardPad;
-    var localY = targetY - rect.top - boardPad;
-    var cols = shape[0].length;
-    var c0 = Math.round(localX/step - (cols/2 - 0.5));
+    var rows = shape.length, cols = shape[0].length;
+    var localX = x - rect.left - boardPad - (cols*step)/2;
+    var localY = y - rect.top - boardPad - (rows*step)/2;
+    var c0 = Math.round(localX/step);
     var r0 = Math.round(localY/step);
     return {r:r0, c:c0};
   }
-  function clearHoverPreview(){
-    if(!lastHover) return;
-    lastHover.forEach(function(rc){
-      if(rc[0]>=0 && rc[0]<SIZE && rc[1]>=0 && rc[1]<SIZE) cellEls[rc[0]][rc[1]].classList.remove('ghost-ok','ghost-bad');
-    });
-    lastHover = null;
+
+  function wouldClearLines(b, shape, r0, c0){
+    // Non-destructive simulation: which rows/cols would be full if this piece landed here.
+    var tmp = b.map(function(row){ return row.slice(); });
+    for(var i=0;i<shape.length;i++) for(var j=0;j<shape[i].length;j++){
+      if(shape[i][j]){ var r=r0+i, c=c0+j; if(r>=0&&r<SIZE&&c>=0&&c<SIZE) tmp[r][c] = '#000'; }
+    }
+    var rows=[], cols=[];
+    for(var r=0;r<SIZE;r++){ var full=true; for(var c=0;c<SIZE;c++) if(!tmp[r][c]){full=false;break;} if(full) rows.push(r); }
+    for(var c2=0;c2<SIZE;c2++){ var full2=true; for(var r2=0;r2<SIZE;r2++) if(!tmp[r2][c2]){full2=false;break;} if(full2) cols.push(c2); }
+    return {rows:rows, cols:cols};
   }
+
+  function ensureComboBadge(){
+    if(comboBadge) return comboBadge;
+    comboBadge = document.createElement('div');
+    comboBadge.className = 'combo-badge';
+    document.body.appendChild(comboBadge);
+    return comboBadge;
+  }
+  function hideComboBadge(){ if(comboBadge) comboBadge.classList.remove('show'); }
+
+  function clearHoverPreview(){
+    if(lastHover){
+      lastHover.forEach(function(rc){
+        if(rc[0]>=0 && rc[0]<SIZE && rc[1]>=0 && rc[1]<SIZE) cellEls[rc[0]][rc[1]].classList.remove('ghost-ok','ghost-bad');
+      });
+      lastHover = null;
+    }
+    if(lastFireCells){
+      lastFireCells.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.remove('ghost-fire'); });
+      lastFireCells = null;
+    }
+    dragGhost.classList.remove('ghost-valid','ghost-fire-piece');
+    hideComboBadge();
+  }
+
   function updateHoverPreview(x, y){
     clearHoverPreview();
     if(!dragging) return;
@@ -625,7 +677,28 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       }
     }
     lastHover = cells;
+
+    if(!valid) return;
+    dragGhost.classList.add('ghost-valid');
+
+    var clear = wouldClearLines(board, shape, anchor.r, anchor.c);
+    var total = clear.rows.length + clear.cols.length;
+    if(total > 0){
+      dragGhost.classList.add('ghost-fire-piece');
+      var fireCells = [];
+      clear.rows.forEach(function(r){ for(var c=0;c<SIZE;c++) fireCells.push([r,c]); });
+      clear.cols.forEach(function(c){ for(var r=0;r<SIZE;r++) fireCells.push([r,c]); });
+      fireCells.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.add('ghost-fire'); });
+      lastFireCells = fireCells;
+
+      var badge = ensureComboBadge();
+      badge.textContent = '×' + total;
+      badge.style.left = x + 'px';
+      badge.style.top = (y - 70) + 'px';
+      badge.classList.add('show');
+    }
   }
+
   function finishDrag(x, y){
     clearHoverPreview();
     dragGhost.style.display = 'none';
