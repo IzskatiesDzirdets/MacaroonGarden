@@ -62,14 +62,67 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   animation:fireFlicker .45s ease-in-out infinite alternate;
 }
 
+/* ---- drag combo preview badge (hover only) ---- */
 .combo-badge{position:fixed;z-index:800;transform:translate(-50%,-50%) scale(0);pointer-events:none;
   font-family:'Cormorant Garamond',serif;font-weight:700;font-size:2.1rem;color:#fff;
   text-shadow:0 0 14px rgba(240,180,41,.95), 0 2px 4px rgba(61,35,20,.5);
   opacity:0;transition:opacity .12s ease, transform .12s cubic-bezier(.2,1.4,.4,1);}
 .combo-badge.show{opacity:1;transform:translate(-50%,-50%) scale(1);animation:comboPulse .6s ease-in-out infinite alternate;}
 @keyframes comboPulse{0%{filter:brightness(1)}100%{filter:brightness(1.3)}}
-.cell.clearing{animation:cellPop .3s ease forwards;}
-@keyframes cellPop{0%{transform:scale(1);opacity:1}100%{transform:scale(.3);opacity:0}}
+
+/* ---- cell clear: wave-ripple instead of simple pop ---- */
+.cell.clearing{animation:cellPop .38s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes cellPop{
+  0%{transform:scale(1);opacity:1;filter:brightness(1);}
+  40%{transform:scale(1.22);opacity:1;filter:brightness(1.6);}
+  100%{transform:scale(0);opacity:0;filter:brightness(2);}
+}
+
+/* ---- floating +N score popups on the board ---- */
+.score-popup{
+  position:absolute;pointer-events:none;z-index:900;
+  font-family:'Cormorant Garamond',serif;font-weight:700;
+  color:#fff;line-height:1;white-space:nowrap;
+  text-shadow:0 2px 8px rgba(61,35,20,.55), 0 0 20px rgba(240,180,41,.8);
+  animation:scoreFloat 1.1s cubic-bezier(.2,.8,.4,1) forwards;
+}
+@keyframes scoreFloat{
+  0%  {opacity:0;transform:translateY(0) scale(.6);}
+  15% {opacity:1;transform:translateY(-10px) scale(1.15);}
+  60% {opacity:1;transform:translateY(-46px) scale(1);}
+  100%{opacity:0;transform:translateY(-80px) scale(.85);}
+}
+
+/* ---- big xN multiplier banner ---- */
+.multiplier-banner{
+  position:absolute;pointer-events:none;z-index:910;
+  font-family:'Cormorant Garamond',serif;font-weight:700;color:#fff;
+  left:50%;transform:translateX(-50%) scale(0);
+  text-shadow:0 0 30px rgba(240,180,41,1), 0 3px 8px rgba(61,35,20,.6);
+  white-space:nowrap;
+  animation:bannerPop .9s cubic-bezier(.2,1.5,.4,1) forwards;
+}
+@keyframes bannerPop{
+  0%  {opacity:0;transform:translateX(-50%) scale(.3) rotate(-6deg);}
+  20% {opacity:1;transform:translateX(-50%) scale(1.18) rotate(2deg);}
+  55% {opacity:1;transform:translateX(-50%) scale(0.96) rotate(0deg);}
+  80% {opacity:1;transform:translateX(-50%) scale(1);}
+  100%{opacity:0;transform:translateX(-50%) scale(.9) translateY(-18px);}
+}
+
+/* ---- score box punch when score increases ---- */
+@keyframes scorePunch{
+  0%{transform:scale(1);}30%{transform:scale(1.22);}60%{transform:scale(.96);}100%{transform:scale(1);}
+}
+.score-box.punch{animation:scorePunch .28s cubic-bezier(.2,1.4,.4,1);}
+
+/* ---- board flash on big combo ---- */
+@keyframes boardFlash{
+  0%{box-shadow:0 10px 34px rgba(61,35,20,.14) inset;}
+  40%{box-shadow:0 0 0 6px rgba(240,180,41,.55), 0 10px 34px rgba(61,35,20,.14) inset;}
+  100%{box-shadow:0 10px 34px rgba(61,35,20,.14) inset;}
+}
+#board.flash{animation:boardFlash .5s ease-out;}
 
 .tray{display:flex;justify-content:space-around;align-items:center;gap:.4rem;padding:.5rem 0 .2rem;min-height:92px;}
 .tray-slot{flex:1;display:flex;align-items:center;justify-content:center;min-height:84px;touch-action:none;user-select:none;}
@@ -134,6 +187,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       <div class="score-box"><span class="sl">Rezultāts</span><span class="sn" id="scoreNow">0</span></div>
       <div class="score-box"><span class="sl" id="secondLbl">Rekords</span><span class="sn" id="scoreBest">0</span></div>
     </div>
+    <button class="icon-btn" id="soundToggle" aria-label="Skaņa">🔊</button>
     <button class="icon-btn" id="openLb" aria-label="Līderu saraksts">🏆</button>
   </header>
 
@@ -216,6 +270,49 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     sb.auth.onAuthStateChange(function(_e, session){ currentUser = session ? session.user : null; syncBestFromServer(); });
   }
 
+  /* ================= Audio & haptics ================= */
+  var audioCtx = null;
+  var soundOn = localStorage.getItem('mg_sound_on') !== '0';
+  function ensureAudioCtx(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+    }
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function playTone(freq, duration, type, gainAmt, delay){
+    if(!soundOn) return;
+    var ctx = ensureAudioCtx();
+    if(!ctx) return;
+    var t0 = ctx.currentTime + (delay||0);
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(gainAmt || 0.2, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + duration + 0.02);
+  }
+  function sfxPlace(){ playTone(320, 0.09, 'sine', 0.18); }
+  function sfxClear(lineCount){
+    // Rising little arpeggio per line cleared, pitch climbs with combo size.
+    var base = 440;
+    for(var i=0;i<Math.min(lineCount,4);i++) playTone(base * Math.pow(1.26, i), 0.16, 'triangle', 0.22, i*0.06);
+  }
+  function sfxCombo(){ playTone(660, 0.12, 'square', 0.15); playTone(880, 0.14, 'square', 0.15, 0.07); }
+  function sfxWin(){ [523,659,784,1047].forEach(function(f,i){ playTone(f, 0.22, 'triangle', 0.2, i*0.09); }); }
+  function sfxGameOver(){ playTone(220, 0.35, 'sawtooth', 0.15); playTone(160, 0.4, 'sawtooth', 0.13, 0.12); }
+  function haptic(pattern){ if(soundOn && navigator.vibrate) try{ navigator.vibrate(pattern); }catch(e){} }
+
+  function setSoundOn(v){
+    soundOn = v;
+    localStorage.setItem('mg_sound_on', v ? '1' : '0');
+    var btn = document.getElementById('soundToggle');
+    if(btn) btn.textContent = v ? '🔊' : '🔇';
+  }
+
   /* ================= Toast ================= */
   var toastEl = document.getElementById('toast');
   var toastTimer = null;
@@ -292,10 +389,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     return '';
   }
 
-  // Deterministic difficulty estimate (not live analytics — we don't yet track real
-  // attempts) shown as "estimated first-try success" to give a motivating sense of challenge.
-  function seededJitter(idx){ var x = Math.sin(idx*999.123)*10000; return x - Math.floor(x); }
-  function estimatePassRate(idx){
+  // Honest difficulty estimate — a design-time heuristic, NOT a claim about real players.
+  // We do not track live pass/fail telemetry, so we never label this as "% of players".
+  var DIFFICULTY_TIERS = [
+    { max: 1.2,  label: 'Viegli',      stars: '⭐' },
+    { max: 2.4,  label: 'Vidēji',      stars: '⭐⭐' },
+    { max: 4.0,  label: 'Grūti',       stars: '⭐⭐⭐' },
+    { max: 6.0,  label: 'Ļoti grūti',  stars: '⭐⭐⭐⭐' },
+    { max: Infinity, label: 'Meistara līmenis', stars: '⭐⭐⭐⭐⭐' },
+  ];
+  function levelDifficulty(idx){
     var def = getLevelDef(idx);
     var diff = 0;
     def.forEach(function(o){
@@ -303,9 +406,20 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       else if(o.k === 'combo') diff += (o.size-1)*o.n*0.45;
       else if(o.k === 'color') diff += o.n/16;
     });
-    var base = 88 - diff*5.5;
-    var jitter = (seededJitter(idx)-0.5)*10;
-    return Math.round(Math.max(3, Math.min(93, base+jitter)));
+    for(var i=0;i<DIFFICULTY_TIERS.length;i++) if(diff <= DIFFICULTY_TIERS[i].max) return DIFFICULTY_TIERS[i];
+    return DIFFICULTY_TIERS[DIFFICULTY_TIERS.length-1];
+  }
+  // Real, locally-tracked personal attempt history (honest — this is actual data about
+  // this device, never presented as "other players").
+  function loadAttemptStats(){
+    try{ return JSON.parse(localStorage.getItem('mg_attempt_stats') || '{}'); }catch(e){ return {}; }
+  }
+  function recordAttempt(idx, won){
+    var s = loadAttemptStats();
+    if(!s[idx]) s[idx] = { attempts:0, wins:0 };
+    s[idx].attempts++;
+    if(won) s[idx].wins++;
+    localStorage.setItem('mg_attempt_stats', JSON.stringify(s));
   }
 
   /* ================= Mode & level state ================= */
@@ -395,7 +509,22 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   function refillTrayIfEmpty(){
     var allEmpty = tray.every(function(p){ return !p; });
     if(!allEmpty) return;
-    for(var i=0;i<3;i++) tray[i] = randomPiece();
+    var pieces = [randomPiece(), randomPiece(), randomPiece()];
+    // Fairness guard: if none of the 3 fresh pieces would fit anywhere on the current
+    // board, swap in a small piece that we know fits, so the round doesn't end on an
+    // unlucky draw the player had no way to influence. If the board is so full that
+    // nothing at all fits, that's a genuine loss and we leave it as-is.
+    var anyFits = pieces.some(function(p){ return canPlaceSomewhere(board, p.shape); });
+    if(!anyFits){
+      var smallShapes = [[[1]], [[1,1]], [[1],[1]]];
+      for(var s=0;s<smallShapes.length && !anyFits;s++){
+        if(canPlaceSomewhere(board, smallShapes[s])){
+          pieces[0] = { shape: smallShapes[s], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
+          anyFits = true;
+        }
+      }
+    }
+    tray[0] = pieces[0]; tray[1] = pieces[1]; tray[2] = pieces[2];
   }
   function anyTrayPieceFits(){
     return tray.some(function(p){ return p && canPlaceSomewhere(board, p.shape); });
@@ -486,7 +615,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   }
 
   function showWin(){
+    sfxWin();
+    haptic([30,40,30,40,60]);
     saveLevelBest(currentLevelIdx, levelProgress.movesUsed);
+    recordAttempt(currentLevelIdx, true);
     document.getElementById('winMoves').textContent = levelProgress.movesUsed;
     var bests = loadLevelBests();
     var b = bests[currentLevelIdx];
@@ -503,6 +635,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   });
 
   function showGameOver(){
+    sfxGameOver();
     document.getElementById('goScore').textContent = score;
     document.getElementById('gameOverOverlay').classList.add('show');
   }
@@ -510,6 +643,61 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     document.getElementById('gameOverOverlay').classList.remove('show');
     if(mode === 'levels') startLevel(currentLevelIdx); else startEndless();
   });
+
+  /* ================= Juice helpers ================= */
+
+  // Floating score popup that rises from the centre of the board
+  function spawnScorePopup(text, sizePx, colorStr){
+    var boardRect = boardEl.getBoundingClientRect();
+    var el = document.createElement('div');
+    el.className = 'score-popup';
+    el.textContent = text;
+    el.style.fontSize = (sizePx || 36) + 'px';
+    if(colorStr) el.style.color = colorStr;
+    // Position relative to the board element (which is position:relative)
+    el.style.left = '50%';
+    el.style.top = '42%';
+    el.style.transform = 'translateX(-50%)';
+    boardEl.appendChild(el);
+    el.addEventListener('animationend', function(){ el.remove(); });
+  }
+
+  // Big xN banner centred on the board
+  function spawnMultiplierBanner(n){
+    var labels = ['','','×2','×3','×4','×5','×6','×7','×8'];
+    var text = (n < labels.length ? labels[n] : '×'+n) + (n >= 4 ? ' 🔥' : '');
+    var fontSizes = [0,0,58,72,86,100,110,120,130];
+    var px = n < fontSizes.length ? fontSizes[n] : 130;
+    var colors = ['','','#FFD966','#FF9B3F','#FF5F3F','#FF2F6F','#D92BFF','#2BDDFF','#fff'];
+    var col = n < colors.length ? colors[n] : '#fff';
+    var el = document.createElement('div');
+    el.className = 'multiplier-banner';
+    el.textContent = text;
+    el.style.fontSize = px + 'px';
+    el.style.color = col;
+    el.style.top = '28%';
+    boardEl.appendChild(el);
+    el.addEventListener('animationend', function(){ el.remove(); });
+  }
+
+  // Score-box punch animation
+  function punchScoreBox(){
+    var box = document.querySelector('.score-box');
+    if(!box) return;
+    box.classList.remove('punch');
+    void box.offsetWidth; // reflow to restart animation
+    box.classList.add('punch');
+    box.addEventListener('animationend', function(){ box.classList.remove('punch'); }, {once:true});
+  }
+
+  // Staggered wave clear: cells animate column-by-column with tiny delay offsets
+  function waveClearCells(cellsToClear, delay){
+    cellsToClear.forEach(function(rc){
+      var el = cellEls[rc[0]][rc[1]];
+      var waveDelay = rc[1] * 18; // 18ms per column = smooth left→right wave
+      setTimeout(function(){ el.classList.add('clearing'); }, (delay||0) + waveDelay);
+    });
+  }
 
   /* ================= Line clearing ================= */
   function checkAndClearLines(){
@@ -521,10 +709,20 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
 
     var cellsToClear = [];
     var colorTally = {};
-    fullRows.forEach(function(r){ for(var c=0;c<SIZE;c++){ cellsToClear.push([r,c]); var col=board[r][c]; if(col) colorTally[col]=(colorTally[col]||0)+1; } });
-    fullCols.forEach(function(c){ for(var r=0;r<SIZE;r++){ cellsToClear.push([r,c]); var col2=board[r][c]; if(col2) colorTally[col2]=(colorTally[col2]||0)+1; } });
+    var seen = {};
+    function addClearCell(r, c){
+      var key = r + '_' + c;
+      if(seen[key]) return;
+      seen[key] = true;
+      cellsToClear.push([r,c]);
+      var col = board[r][c];
+      if(col) colorTally[col] = (colorTally[col]||0) + 1;
+    }
+    fullRows.forEach(function(r){ for(var c=0;c<SIZE;c++) addClearCell(r, c); });
+    fullCols.forEach(function(c){ for(var r=0;r<SIZE;r++) addClearCell(r, c); });
 
-    cellsToClear.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.add('clearing'); });
+    // --- JUICE: staggered wave clear animation ---
+    waveClearCells(cellsToClear, 0);
 
     if(mode === 'levels' && levelProgress){
       levelProgress.comboCounts[total] = (levelProgress.comboCounts[total]||0) + 1;
@@ -533,19 +731,40 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       });
     }
 
+    var bonus = total * 10 * total;
+    var waveEnd = 8 * 18 + 380; // last column wave + animation duration
+
+    // --- JUICE: floating score popup ---
+    var popSize = total === 1 ? 36 : total === 2 ? 48 : total <= 4 ? 60 : 76;
+    var popColor = total === 1 ? '#fff' : total === 2 ? '#FFD966' : total <= 4 ? '#FF9B3F' : '#FF5F3F';
+    spawnScorePopup('+' + bonus, popSize, popColor);
+
+    // --- JUICE: xN multiplier banner for 2+ lines ---
+    if(total >= 2) spawnMultiplierBanner(total);
+
+    // --- JUICE: board flash for combos ---
+    if(total >= 2){
+      boardEl.classList.remove('flash');
+      void boardEl.offsetWidth;
+      boardEl.classList.add('flash');
+      boardEl.addEventListener('animationend', function(){ boardEl.classList.remove('flash'); }, {once:true});
+    }
+
+    addScore(bonus);
+    punchScoreBox();
+    sfxClear(total);
+    if(total > 1){ sfxCombo(); haptic([20,30,20,30,40]); } else { haptic(25); }
+    toast(total > 1 ? ('🔥 ×' + total + ' Kombo! +' + bonus) : ('✨ +' + bonus));
+    renderObjectives();
+    if(mode === 'levels') checkLevelComplete();
+
     setTimeout(function(){
       fullRows.forEach(function(r){ for(var c=0;c<SIZE;c++) board[r][c] = null; });
       fullCols.forEach(function(c){ for(var r=0;r<SIZE;r++) board[r][c] = null; });
       cellsToClear.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.remove('clearing'); });
       renderBoard();
       saveState();
-    }, 300);
-
-    var bonus = total * 10 * total;
-    addScore(bonus);
-    toast(total > 1 ? ('🔥 Kombo! +' + bonus) : ('✨ +' + bonus));
-    renderObjectives();
-    if(mode === 'levels') checkLevelComplete();
+    }, waveEnd);
   }
 
   /* ================= Placement ================= */
@@ -556,6 +775,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       }
     }
     addScore(shapeSize(shape));
+    sfxPlace();
+    haptic(10);
     if(mode === 'levels' && levelProgress) levelProgress.movesUsed++;
     renderBoard();
     tray[trayIdx] = null;
@@ -566,7 +787,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       renderTray();
       saveState();
       if(!anyTrayPieceFits()) showGameOver();
-    }, 320);
+    }, 560);
   }
 
   /* ================= Drag interaction — precise + rAF-throttled ================= */
@@ -634,12 +855,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     return g;
   }
 
+  // Vertical lift so the piece is visible above the fingertip instead of hidden under it.
+  // Both the ghost rendering and the placement anchor use this same offset, so what you
+  // see is exactly where it lands.
+  var FINGER_LIFT = 70;
   function positionGhost(x, y, piece, ghostCell){
     var w = piece.shape[0].length * (ghostCell+3);
     var h = piece.shape.length * (ghostCell+3);
-    // Centered exactly on the finger — precise 1:1 tracking, no floating offset.
     dragGhost.style.left = (x - w/2) + 'px';
-    dragGhost.style.top = (y - h/2) + 'px';
+    dragGhost.style.top = (y - h/2 - FINGER_LIFT) + 'px';
   }
 
   var lastHover = null;
@@ -653,7 +877,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     var step = cellSize + cellGap;
     var rows = shape.length, cols = shape[0].length;
     var localX = x - rect.left - boardPad - (cols*step)/2;
-    var localY = y - rect.top - boardPad - (rows*step)/2;
+    var localY = (y - FINGER_LIFT) - rect.top - boardPad - (rows*step)/2;
     var c0 = Math.round(localX/step);
     var r0 = Math.round(localY/step);
     return {r:r0, c:c0};
@@ -728,7 +952,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       var badge = ensureComboBadge();
       badge.textContent = '×' + total;
       badge.style.left = x + 'px';
-      badge.style.top = (y - 70) + 'px';
+      badge.style.top = (y - FINGER_LIFT - 60) + 'px';
       badge.classList.add('show');
     }
   }
@@ -780,11 +1004,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     mode = 'levels'; currentLevelIdx = Math.max(0, idx);
     document.getElementById('tabLevels').classList.add('act');
     document.getElementById('tabEndless').classList.remove('act');
-    document.getElementById('hint').textContent = '~' + estimatePassRate(currentLevelIdx) + '% spēlētāju izpilda šo izaicinājumu pirmajā mēģinājumā — centies uz mazāk soļu!';
+    var diff = levelDifficulty(idx);
+    var stats = loadAttemptStats()[idx];
+    var histTxt = stats ? (' · Tavi mēģinājumi: ' + stats.attempts) : '';
+    document.getElementById('hint').textContent = diff.stars + ' ' + diff.label + histTxt + ' — centies uz mazāk soļu!';
     score = 0; levelProgress = { movesUsed:0, comboCounts:{}, colorCounts:{} };
     buildBoardDom();
     board = emptyBoard(); tray=[null,null,null];
     measureBoard(); refillTrayIfEmpty(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
+    recordAttempt(idx, false);
   }
   document.getElementById('tabEndless').addEventListener('click', startEndless);
   document.getElementById('tabLevels').addEventListener('click', function(){ openLevelSelect(); });
@@ -802,8 +1030,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       (function(i){
         var b = document.createElement('button');
         b.className = 'lvl-cell' + (bests[i] !== undefined ? ' done' : '');
-        var pct = estimatePassRate(i);
-        b.innerHTML = '<span class="lvl-num">'+pct+'%</span><span class="lvl-best" style="opacity:.7">izpilde 1. reizē</span>' +
+        var diff = levelDifficulty(i);
+        b.innerHTML = '<span class="lvl-num" style="font-size:1.1rem">'+diff.stars+'</span><span class="lvl-best" style="opacity:.7">'+diff.label+'</span>' +
           (bests[i]!==undefined ? '<span class="lvl-best">✓ '+bests[i]+' soļi</span>' : '');
         b.addEventListener('click', function(){ lvlOverlay.classList.remove('show'); startLevel(i); });
         grid.appendChild(b);
@@ -842,8 +1070,22 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   }
 
   /* ================= Server score sync (endless mode only) ================= */
+  // SECURITY NOTE: this client-side check only stops accidental/casual bad values.
+  // It is NOT real anti-cheat — anyone can open devtools and call supabase directly,
+  // bypassing this file entirely. Since the leaderboard is tied to a real prize, the
+  // authoritative check MUST live server-side: a Postgres RLS policy restricting each
+  // user to writing only their own row, plus a CHECK constraint or a Supabase Edge
+  // Function that rejects scores that couldn't plausibly be reached (e.g. jumped by
+  // more than a session could produce). See the message accompanying this file for the
+  // exact SQL/Edge Function to add in the Supabase dashboard.
+  var sessionStartScore = score;
+  var MAX_PLAUSIBLE_SCORE_PER_SESSION = 20000; // generous ceiling for one sitting
   async function saveBestToServer(newBest){
     if(!sb || !currentUser) return;
+    if(newBest - sessionStartScore > MAX_PLAUSIBLE_SCORE_PER_SESSION){
+      console.warn('Rezultāts izskatās neticams šai sesijai — saglabāšana serverī atlikta.');
+      return;
+    }
     try{
       await sb.from('game_scores').upsert({
         user_id: currentUser.id,
@@ -862,7 +1104,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     }catch(e){}
   }
 
+  document.getElementById('soundToggle').addEventListener('click', function(){ setSoundOn(!soundOn); });
+
   /* ================= Init ================= */
+  setSoundOn(soundOn);
   buildBoardDom();
   startEndless();
 })();
