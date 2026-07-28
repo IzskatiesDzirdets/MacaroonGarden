@@ -398,6 +398,17 @@ body.pseudo-fs .wrap{
   </div>
 </div>
 
+<!-- Mode switch confirmation (prevents accidentally leaving an active game) -->
+<div class="overlay center" id="modeConfirmOverlay">
+  <div class="sheet" style="max-width:320px">
+    <div class="win-emoji">🔄</div>
+    <h2 style="text-align:center">Mainīt spēles režīmu?</h2>
+    <p class="win-stat" style="text-align:center">Tava pašreizējā spēle netiks zaudēta, bet ekrāns tiks nomainīts.</p>
+    <button class="msub" id="modeConfirmYes">Jā, mainīt</button>
+    <button class="mghost" id="modeConfirmNo">Nē, palikt šeit</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -496,6 +507,24 @@ body.pseudo-fs .wrap{
     [[1,1,0],[0,1,1]], [[0,1,1],[1,1,0]],
     [[1,1],[1,0]], [[1,1],[0,1]], [[0,1],[1,1]], [[1,0],[1,1]],
   ];
+
+  // Bigger 5- and 6-cell pieces. These are drawn separately from SHAPES (see
+  // randomPiece) with their own — deliberately low — probability, so they show
+  // up periodically rather than crowding out the regular-size pieces.
+  var BIG_SHAPES = [
+    // 5 cells
+    [[1,1,1,1,1]], [[1],[1],[1],[1],[1]],
+    [[0,1,0],[1,1,1],[0,1,0]],
+    [[1,0,0,0],[1,1,1,1]], [[0,0,0,1],[1,1,1,1]], [[1,1,1,1],[1,0,0,0]], [[1,1,1,1],[0,0,0,1]],
+    [[1,1],[1,1],[1,0]], [[1,1],[1,1],[0,1]], [[1,0],[1,1],[1,1]], [[0,1],[1,1],[1,1]],
+    // 6 cells
+    [[1,1,1],[1,1,1]], [[1,1],[1,1],[1,1]],
+    [[1,0,0],[1,0,0],[1,0,0],[1,1,1]], [[0,0,1],[0,0,1],[0,0,1],[1,1,1]],
+    [[1,1,1],[1,0,0],[1,0,0],[1,0,0]], [[1,1,1],[0,0,1],[0,0,1],[0,0,1]],
+  ];
+  // ~1 in 6 pieces drawn is a big (5–6 cell) one — often enough to feel like a
+  // regular part of the mix, rare enough that it doesn't dominate an 8x8 board.
+  var BIG_SHAPE_CHANCE = 0.16;
 
   /* ================= Level definitions ================= */
   // objective kinds: {k:'score', n:N} | {k:'combo', size:N, n:count} | {k:'color', hex:H, n:count}
@@ -663,7 +692,8 @@ body.pseudo-fs .wrap{
     return false;
   }
   function randomPiece(){
-    var shape = SHAPES[Math.floor(Math.random()*SHAPES.length)];
+    var pool = (Math.random() < BIG_SHAPE_CHANCE) ? BIG_SHAPES : SHAPES;
+    var shape = pool[Math.floor(Math.random()*pool.length)];
     return { shape: shape, color: COLORS[Math.floor(Math.random()*COLORS.length)] };
   }
   function refillTrayIfEmpty(){
@@ -1874,8 +1904,44 @@ body.pseudo-fs .wrap{
     });
   }
 
-  document.getElementById('tabEndless').addEventListener('click', startEndless);
-  document.getElementById('tabLevels').addEventListener('click', function(){ openLevelSelect(); });
+  /* ================= Mode-switch confirmation ================= */
+  // "Active game" = the player has actually made at least one move in the
+  // current mode (score > 0 covers both Endless and Levels, since placing any
+  // piece scores points immediately). A fresh, untouched board switches modes
+  // with no prompt — there's nothing to protect yet.
+  function hasActiveProgress(){
+    return score > 0;
+  }
+
+  var pendingModeSwitch = null;
+  var modeConfirmOverlay = document.getElementById('modeConfirmOverlay');
+
+  function requestModeSwitch(targetMode, action){
+    if(mode !== targetMode && hasActiveProgress()){
+      pendingModeSwitch = action;
+      modeConfirmOverlay.classList.add('show');
+    } else {
+      action();
+    }
+  }
+
+  document.getElementById('modeConfirmYes').addEventListener('click', function(){
+    modeConfirmOverlay.classList.remove('show');
+    var action = pendingModeSwitch;
+    pendingModeSwitch = null;
+    if(action) action();
+  });
+  document.getElementById('modeConfirmNo').addEventListener('click', function(){
+    modeConfirmOverlay.classList.remove('show');
+    pendingModeSwitch = null;
+  });
+
+  document.getElementById('tabEndless').addEventListener('click', function(){
+    requestModeSwitch('endless', startEndless);
+  });
+  document.getElementById('tabLevels').addEventListener('click', function(){
+    requestModeSwitch('levels', openLevelSelect);
+  });
 
   /* ================= Init ================= */
   setSoundOn(soundOn);
