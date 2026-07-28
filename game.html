@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Makarūnu Mozaīka — Macaroon Garden</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,9 +45,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
 .obj-row.done .lbl{color:var(--mint);text-decoration:line-through;}
 .moves-tag{font-size:.68rem;color:var(--text-m);text-align:right;}
 
-.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:.2rem 0;}
+.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:.2rem 0;overflow:hidden;}
 #board{position:relative;display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:var(--sand);border-radius:14px;padding:8px;
-  box-shadow:0 10px 34px rgba(61,35,20,.14) inset;width:100%;aspect-ratio:1/1;max-height:100%;}
+  box-shadow:0 10px 34px rgba(61,35,20,.14) inset;
+  /* Size is set by JS measureBoard() so it's always a perfect square that fits */
+  width:100%;touch-action:none;}
 .cell{background:rgba(255,255,255,.65);border-radius:5px;position:relative;}
 .cell.filled{box-shadow:0 2px 5px rgba(61,35,20,.25) inset, 0 1px 0 rgba(255,255,255,.4);}
 .cell.ghost-ok{background:rgba(168,207,192,.6) !important;}
@@ -169,6 +174,44 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   cursor:pointer;margin-top:1rem;font-size:.88rem;}
 .sheet .mghost{width:100%;background:none;border:none;color:var(--text-m);padding:.5rem;cursor:pointer;font-size:.8rem;}
 
+/* ---- lives bar in header ---- */
+.lives-bar{display:flex;align-items:center;gap:3px;}
+.life-heart{font-size:1.25rem;transition:transform .25s cubic-bezier(.2,1.4,.4,1), filter .25s;}
+.life-heart.empty{filter:grayscale(1) opacity(.3);transform:scale(.8);}
+.life-heart.gain{animation:heartGain .4s cubic-bezier(.2,1.5,.4,1);}
+@keyframes heartGain{0%{transform:scale(.5)}60%{transform:scale(1.4)}100%{transform:scale(1)}}
+
+/* ---- locked level cells ---- */
+.lvl-cell.locked{opacity:.45;cursor:not-allowed;background:var(--sand);}
+.lvl-cell.locked::after{content:'🔒';font-size:1.3rem;}
+.lvl-cell.locked .lvl-num,.lvl-cell.locked .lvl-best{display:none;}
+
+/* ---- register nudge box ---- */
+.reg-box{background:var(--sand);border-radius:14px;padding:.9rem 1rem;margin-top:.7rem;text-align:center;}
+.reg-title{font-size:.8rem;color:var(--text-m);font-weight:600;margin:0 0 .3rem;}
+
+/* ---- quiz overlay ---- */
+.quiz-progress{display:flex;gap:6px;justify-content:center;margin-bottom:1rem;}
+.quiz-pip{width:28px;height:6px;border-radius:99px;background:var(--sand);transition:background .3s;}
+.quiz-pip.done{background:var(--mint);}
+.quiz-pip.active{background:var(--rose-d);}
+.quiz-q{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;
+  color:var(--chocolate);margin:0 0 1rem;line-height:1.35;text-align:center;}
+.quiz-opts{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem;}
+.quiz-opt{width:100%;text-align:left;padding:.75rem 1rem;border-radius:12px;
+  border:2px solid var(--sand);background:var(--white);font-size:.85rem;font-weight:600;
+  cursor:pointer;color:var(--chocolate);transition:border-color .15s, background .15s;}
+.quiz-opt:hover{border-color:var(--rose-d);}
+.quiz-opt.correct{border-color:var(--mint);background:rgba(168,212,176,.25);}
+.quiz-opt.wrong{border-color:#e07070;background:rgba(224,112,112,.12);}
+.quiz-opt:disabled{cursor:default;}
+.quiz-result{text-align:center;font-size:.82rem;font-weight:600;min-height:1.2rem;
+  color:var(--text-m);margin-bottom:.4rem;}
+.quiz-result.ok{color:#4a9e6b;}
+.quiz-result.bad{color:#c0504d;}
+.quiz-lives-earned{text-align:center;padding:.6rem;background:rgba(168,212,176,.25);
+  border-radius:10px;font-weight:700;font-size:.9rem;color:#3a7a56;margin-top:.5rem;}
+
 .toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:var(--chocolate);color:var(--cream);
   padding:.55rem 1.1rem;border-radius:999px;font-size:.76rem;font-weight:600;z-index:700;opacity:0;
   transition:opacity .3s, transform .3s;pointer-events:none;}
@@ -188,6 +231,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       <div class="score-box"><span class="sl" id="secondLbl">Rekords</span><span class="sn" id="scoreBest">0</span></div>
     </div>
     <button class="icon-btn" id="soundToggle" aria-label="Skaņa">🔊</button>
+    <button class="icon-btn" id="fullscreenBtn" aria-label="Pilnekrāns">⛶</button>
     <button class="icon-btn" id="openLb" aria-label="Līderu saraksts">🏆</button>
   </header>
 
@@ -203,6 +247,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   <div class="tray" id="tray"></div>
   <p class="hint" id="hint">Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸</p>
 </div>
+
+<!-- ===== LIVES BAR (injected into header via JS) ===== -->
 
 <div class="drag-ghost" id="dragGhost" style="display:none"></div>
 <div class="toast" id="toast"></div>
@@ -233,19 +279,89 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     <div class="win-emoji">🎉</div>
     <h2 style="text-align:center">Līmenis paveikts!</h2>
     <p class="win-stat">Soļi: <b id="winMoves">0</b></p>
-    <p class="win-stat" id="winBestRow">Tavs labākais: <b id="winBest">—</b></p>
-    <button class="msub" id="winNext">Nākamais līmenis →</button>
-    <button class="mghost" id="winReplay">Spēlēt vēlreiz</button>
+    <p class="win-stat">Tavs labākais: <b id="winBest">—</b></p>
+    <p class="win-stat">Koprezultāts: <b id="winTotalScore">0</b></p>
+    <div id="winRegBox" style="display:none" class="reg-box">
+      <p class="reg-title">💾 Saglabā savu rezultātu kopvērtējumā!</p>
+      <a href="https://macarongarden.netlify.app/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none;margin-top:.6rem">Reģistrēties / Ielogoties →</a>
+      <button class="mghost" id="winRegSkip">Turpināt anonīmi</button>
+    </div>
+    <div id="winActions">
+      <button class="msub" id="winNext">Nākamais līmenis →</button>
+      <button class="mghost" id="winReplay">Atkārtot šo līmeni</button>
+    </div>
   </div>
 </div>
 
-<!-- Game over — real risk, for intrigue -->
+<!-- No lives / Quiz overlay -->
+<div class="overlay center" id="noLivesOverlay">
+  <div class="sheet" style="max-width:380px">
+
+    <!-- State 1: out of lives, offer quiz -->
+    <div id="quizOffer">
+      <div class="win-emoji">💔</div>
+      <h2 style="text-align:center">Dzīvības iztērētas!</h2>
+      <p class="win-stat" style="text-align:center">Nākamā dzīvība pienāks pēc: <b id="nextLifeTimer">—</b></p>
+      <p style="font-size:.82rem;color:var(--text-m);text-align:center;margin:.6rem 0 .3rem">
+        Vai atbildi uz 5 jautājumiem par Macaroon Garden un atgūsti <b>3 dzīvības</b> uzreiz! 🍬
+      </p>
+      <button class="msub" id="startQuizBtn">Atbildēt uz jautājumiem →</button>
+      <button class="mghost" id="closeLives">Aizvērt</button>
+    </div>
+
+    <!-- State 2: quiz in progress -->
+    <div id="quizGame" style="display:none">
+      <h2 style="text-align:center;margin-bottom:.5rem">Macaroon Garden viktorīna 🌸</h2>
+      <div class="quiz-progress" id="quizProgress"></div>
+      <p class="quiz-q" id="quizQuestion"></p>
+      <div class="quiz-opts" id="quizOpts"></div>
+      <p class="quiz-result" id="quizResult"></p>
+      <button class="msub" id="quizNextBtn" style="display:none">Nākamais →</button>
+    </div>
+
+    <!-- State 3: quiz finished -->
+    <div id="quizDone" style="display:none">
+      <div class="win-emoji">🎉</div>
+      <h2 style="text-align:center">Viktorīna pabeigta!</h2>
+      <p class="win-stat" style="text-align:center">Pareizas atbildes: <b id="quizCorrectCount">0</b> / 5</p>
+      <div class="quiz-lives-earned" id="quizLivesEarned"></div>
+      <button class="msub" id="quizPlayBtn" style="margin-top:1rem">Turpināt spēlēt! →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Game over (endless / no moves) -->
 <div class="overlay center" id="gameOverOverlay">
   <div class="sheet">
     <div class="win-emoji">😮</div>
     <h2 style="text-align:center">Neviena figūra vairs neder!</h2>
     <p class="win-stat">Rezultāts: <b id="goScore">0</b></p>
-    <button class="msub" id="goRestart">Spēlēt vēlreiz</button>
+    <p id="goLivesLeft" style="display:none;text-align:center;font-size:.88rem;margin:.4rem 0;color:var(--text-m)"></p>
+    <div id="goRegBox" class="reg-box" style="display:none">
+      <p class="reg-title">💾 Reģistrējies, lai rezultāts parādītos kopvērtējumā!</p>
+      <a href="https://macarongarden.netlify.app/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none">Reģistrēties / Ielogoties →</a>
+      <button class="mghost" id="goRegSkip">Turpināt anonīmi</button>
+    </div>
+    <div id="goActions">
+      <button class="msub" id="goRestart">Spēlēt vēlreiz</button>
+    </div>
+    <div id="goNoLivesMsg" style="display:none">
+      <button class="msub" id="goQuizBtn">🍬 Atgūt dzīvības ar viktorīnu</button>
+      <button class="mghost" id="goFinalBtn">Beigt spēli</button>
+    </div>
+  </div>
+</div>
+
+<!-- Final score (all lives spent + confirm anonymous continue) -->
+<div class="overlay center" id="finalOverlay">
+  <div class="sheet">
+    <div class="win-emoji">🌸</div>
+    <h2 style="text-align:center">Spēle pabeigta!</h2>
+    <p class="win-stat">Tu pabeidzi ar <b id="finalScore">0</b> punktiem</p>
+    <p class="win-stat">Sasniegts līmenis: <b id="finalLevel">0</b></p>
+    <a href="https://macarongarden.netlify.app/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none;margin-top:.8rem">🏆 Reģistrēties un saglabāt</a>
+    <button class="mghost" id="finalContinueAnon">Turpināt anonīmi (sākt no sākuma)</button>
   </div>
 </div>
 
@@ -466,13 +582,24 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
       cellEls.push(rowEls);
     }
   }
+  function fitBoard(){
+    // Calculate the largest square that fits inside .board-wrap without overflow.
+    // This replaces CSS aspect-ratio which misbehaves on iOS Safari with flex layouts.
+    var wrap = boardEl.parentElement;
+    var wrapW = wrap.clientWidth;
+    var wrapH = wrap.clientHeight;
+    var side = Math.min(wrapW, wrapH) - 4; // 4px breathing room
+    boardEl.style.width  = side + 'px';
+    boardEl.style.height = side + 'px';
+  }
   function measureBoard(){
+    fitBoard();
     var r0 = cellEls[0][0].getBoundingClientRect();
     var r1 = cellEls[0][1] ? cellEls[0][1].getBoundingClientRect() : r0;
     cellSize = r0.width;
-    cellGap = Math.max(0, r1.left - r0.right);
+    cellGap  = Math.max(0, r1.left - r0.right);
   }
-  window.addEventListener('resize', measureBoard);
+  window.addEventListener('resize', function(){ measureBoard(); });
 
   function renderBoard(){
     for(var r=0;r<SIZE;r++){
@@ -613,37 +740,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     });
     if(allDone) showWin();
   }
-
-  function showWin(){
-    sfxWin();
-    haptic([30,40,30,40,60]);
-    saveLevelBest(currentLevelIdx, levelProgress.movesUsed);
-    recordAttempt(currentLevelIdx, true);
-    document.getElementById('winMoves').textContent = levelProgress.movesUsed;
-    var bests = loadLevelBests();
-    var b = bests[currentLevelIdx];
-    document.getElementById('winBest').textContent = b ? (b + ' soļi') : '—';
-    document.getElementById('winOverlay').classList.add('show');
-  }
-  document.getElementById('winNext').addEventListener('click', function(){
-    document.getElementById('winOverlay').classList.remove('show');
-    startLevel(currentLevelIdx + 1);
-  });
-  document.getElementById('winReplay').addEventListener('click', function(){
-    document.getElementById('winOverlay').classList.remove('show');
-    startLevel(currentLevelIdx);
-  });
-
-  function showGameOver(){
-    sfxGameOver();
-    document.getElementById('goScore').textContent = score;
-    document.getElementById('gameOverOverlay').classList.add('show');
-  }
-  document.getElementById('goRestart').addEventListener('click', function(){
-    document.getElementById('gameOverOverlay').classList.remove('show');
-    clearSavedState();
-    if(mode === 'levels') startLevel(currentLevelIdx); else startEndless();
-  });
 
   /* ================= Juice helpers ================= */
 
@@ -809,6 +905,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   function startDrag(ev, idx){
     var piece = tray[idx];
     if(!piece) return;
+    // Prevent starting a second drag if one is already in progress
+    if(dragging) return;
     ev.preventDefault();
     measureBoard();
     dragging = { idx: idx, piece: piece };
@@ -831,15 +929,32 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
         });
       }
     }
+    // Use a once-flag so pointercancel + pointerup can't both fire finishDrag
+    var ended = false;
     function onUp(e){
+      if(ended) return;
+      ended = true;
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
-      document.removeEventListener('pointercancel', onUp);
+      document.removeEventListener('pointercancel', onCancel);
       finishDrag(e.clientX, e.clientY);
+    }
+    function onCancel(){
+      if(ended) return;
+      ended = true;
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onCancel);
+      // Cancel = put piece back, don't place
+      clearHoverPreview();
+      dragGhost.style.display = 'none';
+      dragging = null;
+      pendingMove = null;
+      renderTray();
     }
     document.addEventListener('pointermove', onMove, {passive:true});
     document.addEventListener('pointerup', onUp);
-    document.addEventListener('pointercancel', onUp);
+    document.addEventListener('pointercancel', onCancel);
   }
   function buildGhostGrid(piece, px){
     var rows = piece.shape.length, cols = piece.shape[0].length;
@@ -959,6 +1074,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
   }
 
   function finishDrag(x, y){
+    if(!dragging){ dragGhost.style.display = 'none'; return; } // safety guard
     clearHoverPreview();
     dragGhost.style.display = 'none';
     var idx = dragging.idx, piece = dragging.piece;
@@ -1022,31 +1138,499 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     measureBoard(); refillTrayIfEmpty(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
     recordAttempt(idx, false);
   }
-  document.getElementById('tabEndless').addEventListener('click', startEndless);
-  document.getElementById('tabLevels').addEventListener('click', function(){ openLevelSelect(); });
+
+  /* ================= Lives system (3 lives, quiz to refill) ================= */
+  var MAX_LIVES = 3;
+  var LIFE_REGEN_MS = 24 * 60 * 60 * 1000 / MAX_LIVES; // one per 8h as fallback
+
+  function loadLivesData(){
+    try{ return JSON.parse(localStorage.getItem('mg_lives') || 'null'); }catch(e){ return null; }
+  }
+  function saveLivesData(d){ localStorage.setItem('mg_lives', JSON.stringify(d)); }
+
+  function getLives(){
+    var d = loadLivesData();
+    if(!d) return { lives: MAX_LIVES, lastRegen: Date.now() };
+    var now = Date.now();
+    var elapsed = now - d.lastRegen;
+    var regen = Math.floor(elapsed / LIFE_REGEN_MS);
+    if(regen > 0){
+      d.lives = Math.min(MAX_LIVES, d.lives + regen);
+      d.lastRegen = d.lastRegen + regen * LIFE_REGEN_MS;
+    }
+    return d;
+  }
+
+  function spendLife(){
+    var d = getLives();
+    if(d.lives <= 0) return false;
+    d.lives--;
+    saveLivesData(d);
+    renderLivesBar();
+    return true;
+  }
+
+  function addLives(n){
+    var d = getLives();
+    var oldLives = d.lives;
+    d.lives = Math.min(MAX_LIVES, d.lives + n);
+    if(d.lives === MAX_LIVES) d.lastRegen = Date.now();
+    saveLivesData(d);
+    // Animate each new heart
+    renderLivesBar(oldLives);
+  }
+
+  function msUntilNextLife(){
+    var d = getLives();
+    if(d.lives >= MAX_LIVES) return 0;
+    return LIFE_REGEN_MS - (Date.now() - d.lastRegen);
+  }
+
+  function formatCountdown(ms){
+    if(ms <= 0) return '0:00';
+    var s = Math.ceil(ms / 1000);
+    var h = Math.floor(s / 3600); s -= h * 3600;
+    var m = Math.floor(s / 60); s -= m * 60;
+    return (h > 0 ? h + ':' : '') + (m < 10 && h > 0 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  // Lives bar
+  var livesBarEl = null;
+  function buildLivesBar(){
+    if(livesBarEl) return;
+    livesBarEl = document.createElement('div');
+    livesBarEl.className = 'lives-bar';
+    livesBarEl.setAttribute('aria-label', 'Dzīvības');
+    var header = document.querySelector('header');
+    var soundBtn = document.getElementById('soundToggle');
+    header.insertBefore(livesBarEl, soundBtn);
+  }
+  function renderLivesBar(prevLives){
+    if(!livesBarEl) return;
+    var d = getLives();
+    var html = '';
+    for(var i = 0; i < MAX_LIVES; i++){
+      var gained = (prevLives !== undefined) && i >= prevLives && i < d.lives;
+      html += '<span class="life-heart' + (i < d.lives ? '' : ' empty') + (gained ? ' gain' : '') + '">❤️</span>';
+    }
+    livesBarEl.innerHTML = html;
+    livesBarEl.dataset.last = String(d.lives);
+  }
+
+  var livesTickInterval = null;
+  function startLivesTicker(){
+    if(livesTickInterval) clearInterval(livesTickInterval);
+    livesTickInterval = setInterval(function(){
+      var d = getLives();
+      var last = parseInt(livesBarEl ? livesBarEl.dataset.last || '0' : '0');
+      if(d.lives !== last) renderLivesBar();
+      var timerEl = document.getElementById('nextLifeTimer');
+      if(timerEl && document.getElementById('noLivesOverlay').classList.contains('show')){
+        timerEl.textContent = formatCountdown(msUntilNextLife());
+      }
+    }, 1000);
+  }
+
+  /* ================= Quiz data ================= */
+  var QUIZ_BANK = [
+    { q:'Kā Macaroon Garden veido katru macaronu čaumalu?',
+      a:'Rokām pipo un žāvē 24 stundas pirms cepšanas',
+      w:['Ar mašīnu štancē un cep uzreiz','Iepērk gatavas čaumalas no Francijas','Ceļ cepšanā ar tvaiku'] },
+    { q:'No kā sastāv macaronu čaumalas pamats?',
+      a:'Smalki maltiem franču mandeļu miltiem un dabīgiem pigmentiem',
+      w:['Parastiem kviešu miltiem ar mākslīgām krāsvielām','Kokosriekstu miltiem un cukura sīrupu','Rīsu miltiem un piena pulveri'] },
+    { q:'Kāda ir Macaroon Garden klasiskā roze un aveņu garša?',
+      a:'Maigs rožu krēms ar svaigām avenēm',
+      w:['Ķiploku un sīpolu krēms','Curry un kokosriekstu pasta','Šķiņķa un siera pildījums'] },
+    { q:'Kā tiek veidots katras garšas pildījums?',
+      a:'Individuāli – ganāša, krēms vai augļu konfitūra katrai atsevišķi',
+      w:['Viena universāla krēma receptūra visām garšām','Tikai ar šokolādes kausējumu','Ar gatavu ievārījumu no veikala'] },
+    { q:'Kad Macaroon Garden cep macaronus?',
+      a:'Pasūtījuma nedēļā, lai tie būtu svaigi',
+      w:['Reizi mēnesī lielā partijā un glabā saldētavā','Tikai svētku sezonā','Gadu iepriekš un tad atkausē'] },
+    { q:'Cik klientu jau ir priecējuši Macaroon Garden macaroni?',
+      a:'Vairāk nekā 500',
+      w:['Aptuveni 50','Vairāk nekā 10 000','Tikai 12'] },
+    { q:'Kādas izejvielas izmanto Macaroon Garden?',
+      a:'Tikai labākās mandeles, dabīgās krāsvielas un svaigus augļus',
+      w:['Galvenokārt mākslīgās aromātvielas un konservantus','Tikai cukuru un ūdeni','Gatavus pulverus no lielveikala'] },
+    { q:'Kas padara Macaroon Garden dāvanu komplektus īpašus?',
+      a:'Skaisti iepakotas kastītes, ideāli dzimšanas dienām un svētkiem',
+      w:['Tikai lieli vairumtirdzniecības pasūtījumi','Gatavi komplekti bez iespējas izvēlēties','Tikai viena fiksēta garša'] },
+    { q:'Kur Macaroon Garden piegādā svaigus macaronus?',
+      a:'Visā Rīgas teritorijā līdz durvīm',
+      w:['Tikai Jūrmalā','Visā Latvijā ar 7 dienu piegādi','Tikai starptautiski'] },
+    { q:'Kā klients var izveidot savu ideālo kastīti?',
+      a:'Izvēlas izmēru, garšas un daudzumu – viss tiek komplektēts individuāli',
+      w:['Saņem nejaušu komplektu','Var izvēlēties tikai vienu garšu','Kastīte tiek piegādāta tukša'] },
+    { q:'Cik dažādas garšas ir Macaroon Garden kolekcijā?',
+      a:'5',
+      w:['12','3','20'] },
+    { q:'Cik ātri Macaroon Garden piegādā macaronus Rīgā?',
+      a:'24 stundu laikā',
+      w:['5–7 darba dienu laikā','Tikai nākamajā mēnesī','Uzreiz pēc zvana ar dronu'] },
+    { q:'Kur var sekot Macaroon Garden jaunākajiem darbiem?',
+      a:'Instagram kontā @macarongardenlv',
+      w:['@macaronlatvija','@frenchmacaronsriga','@gardenvacuum'] },
+    { q:'Kad var veikt pasūtījumu Macaroon Garden?',
+      a:'Jebkurā diennakts laikā',
+      w:['Tikai no 9:00 līdz 12:00','Tikai svētdienās','Tikai tad, kad ir pilnmēness'] },
+    { q:'Kas ir Macaroon Garden "Makarūnu Mozaīka"?',
+      a:'Nebeidzama, atslābinoša puzle, kur figūras vienmēr var izlikt',
+      w:['Sacensība, kurā jāēd pēc iespējas vairāk macaronu','Spēle, kurā jāmeklē pazudušie macaroni Rīgā','Virtuāla cepšanas skola'] },
+    { q:'Kāda ir Macaroon Garden piegādes svaiguma filozofija?',
+      a:'Macaroni tiek cepti pasūtījuma nedēļā un piegādāti svaigi',
+      w:['Tie ir bijuši saldētavā vismaz gadu','Tie tiek atkausēti mikroviļņu krāsnī','Tie ir vakuumā iepakoti no 2019. gada'] },
+    { q:'Kā Macaroon Garden raksturo katru macaronu?',
+      a:'Kā mazu mākslas darbu',
+      w:['Kā industriāli ražotu cepumu','Kā dekorāciju, ne ēdienu','Kā bezgaršīgu, bet ļoti krāsainu priekšmetu'] },
+    { q:'Kāds ir Macaroon Garden e-pasta adrese?',
+      a:'info@macaroongarden.lv',
+      w:['pasutijumi@makaroni.lv','hello@frenchpastry.com','macaron@riga.gov.lv'] },
+    { q:'Ko piedāvā Macaroon Garden interaktīvais kastītes veidotājs?',
+      a:'Izvēlēties izmēru un garšas, lai viss automātiski nonāktu pasūtījumā',
+      w:['Spēlēt Tetris ar macaroniem','Tikai skatīties bildes bez iespējas pasūtīt','Mainīt lapas krāsu uz zaļu'] },
+    { q:'Kāda ir Macaroon Garden galvenā filozofija?',
+      a:'Katrs macarons ir mazs prieka brīdis – kraukšķīgs apvalks, maiga pildīšana un perfekts balanss',
+      w:['Galvenais ir ātrums un zemā cena','Macaroni jāēd tikai ar karoti','Jo vairāk cukura, jo labāk'] },
+  ];
+
+  /* ================= Quiz engine ================= */
+  var quizQuestions = [];   // 5 shuffled from bank
+  var quizCurrent = 0;
+  var quizCorrect = 0;
+  var quizAnswered = false;
+
+  function shuffleArray(arr){
+    var a = arr.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function buildQuizRound(){
+    quizQuestions = shuffleArray(QUIZ_BANK).slice(0, 5);
+    quizCurrent = 0;
+    quizCorrect = 0;
+    quizAnswered = false;
+  }
+
+  function renderQuizProgress(){
+    var pip = document.getElementById('quizProgress');
+    pip.innerHTML = '';
+    for(var i = 0; i < 5; i++){
+      var d = document.createElement('div');
+      d.className = 'quiz-pip' + (i < quizCurrent ? ' done' : i === quizCurrent ? ' active' : '');
+      pip.appendChild(d);
+    }
+  }
+
+  function renderQuizQuestion(){
+    var q = quizQuestions[quizCurrent];
+    document.getElementById('quizQuestion').textContent = q.q;
+    document.getElementById('quizResult').textContent = '';
+    document.getElementById('quizResult').className = 'quiz-result';
+    document.getElementById('quizNextBtn').style.display = 'none';
+    quizAnswered = false;
+
+    // Shuffle answer options
+    var opts = shuffleArray([q.a, q.w[0], q.w[1], q.w[2]]);
+    var container = document.getElementById('quizOpts');
+    container.innerHTML = '';
+    opts.forEach(function(text){
+      var btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = text;
+      btn.addEventListener('click', function(){ handleQuizAnswer(text === q.a, btn, q.a); });
+      container.appendChild(btn);
+    });
+    renderQuizProgress();
+  }
+
+  function handleQuizAnswer(isCorrect, clickedBtn, correctText){
+    if(quizAnswered) return;
+    quizAnswered = true;
+    // Disable all options
+    document.querySelectorAll('.quiz-opt').forEach(function(b){
+      b.disabled = true;
+      if(b.textContent === correctText) b.classList.add('correct');
+    });
+    var res = document.getElementById('quizResult');
+    if(isCorrect){
+      clickedBtn.classList.add('correct');
+      quizCorrect++;
+      res.textContent = '✓ Pareizi! 🍬';
+      res.className = 'quiz-result ok';
+      playTone(600, 0.12, 'sine', 0.2);
+      haptic(20);
+    } else {
+      clickedBtn.classList.add('wrong');
+      res.textContent = '✗ Nepareizi';
+      res.className = 'quiz-result bad';
+      playTone(220, 0.18, 'sawtooth', 0.15);
+      haptic([20,20]);
+    }
+    // Auto-advance after short pause, or show Next button
+    if(quizCurrent < 4){
+      setTimeout(function(){
+        if(!quizAnswered) return; // safety
+        quizCurrent++;
+        renderQuizQuestion();
+      }, 1100);
+    } else {
+      setTimeout(finishQuiz, 1100);
+    }
+  }
+
+  function finishQuiz(){
+    document.getElementById('quizGame').style.display = 'none';
+    document.getElementById('quizDone').style.display = 'block';
+    document.getElementById('quizCorrectCount').textContent = quizCorrect;
+    var livesEarned = quizCorrect; // 1 life per correct answer, max 3
+    livesEarned = Math.min(MAX_LIVES, livesEarned);
+    var el = document.getElementById('quizLivesEarned');
+    if(livesEarned > 0){
+      el.textContent = '❤️'.repeat(livesEarned) + '  Tu nopelnīji ' + livesEarned + ' dzīvīb' + (livesEarned === 1 ? 'u' : 'as') + '!';
+      addLives(livesEarned);
+      sfxWin();
+      haptic([30,40,60]);
+    } else {
+      el.textContent = 'Diemžēl šoreiz dzīvības netika atgūtas. Mēģini vēlreiz vēlāk!';
+      el.style.background = 'rgba(224,112,112,.12)';
+      el.style.color = '#c0504d';
+    }
+  }
+
+  function showNoLives(){
+    // Reset quiz UI to offer screen
+    document.getElementById('quizOffer').style.display = 'block';
+    document.getElementById('quizGame').style.display = 'none';
+    document.getElementById('quizDone').style.display = 'none';
+    document.getElementById('nextLifeTimer').textContent = formatCountdown(msUntilNextLife());
+    document.getElementById('noLivesOverlay').classList.add('show');
+  }
+
+  document.getElementById('startQuizBtn').addEventListener('click', function(){
+    document.getElementById('quizOffer').style.display = 'none';
+    document.getElementById('quizGame').style.display = 'block';
+    buildQuizRound();
+    renderQuizQuestion();
+  });
+
+  document.getElementById('closeLives').addEventListener('click', function(){
+    document.getElementById('noLivesOverlay').classList.remove('show');
+  });
+
+  document.getElementById('quizPlayBtn').addEventListener('click', function(){
+    document.getElementById('noLivesOverlay').classList.remove('show');
+    var d = getLives();
+    if(d.lives <= 0) return;
+    if(mode === 'levels'){
+      openLevelSelect();
+    } else {
+      // Player ran out of lives in Endless mode — take them back into a fresh
+      // Endless board instead of always dropping them into Level select.
+      spendLife();
+      clearSavedState();
+      startEndless();
+    }
+  });
+
+  /* ================= Unlocked levels ================= */
+  function getMaxUnlockedLevel(){
+    var bests = loadLevelBests();
+    var completed = Object.keys(bests).map(Number);
+    if(completed.length === 0) return 0;
+    return Math.max.apply(null, completed) + 1;
+  }
+
+  /* ================= Cumulative session score ================= */
+  var sessionTotalScore = 0;
+  var sessionHighestLevel = 0;
 
   /* ================= Level select overlay ================= */
   var lvlOverlay = document.getElementById('lvlOverlay');
   document.getElementById('closeLvl').addEventListener('click', function(){ lvlOverlay.classList.remove('show'); });
   lvlOverlay.addEventListener('click', function(e){ if(e.target===lvlOverlay) lvlOverlay.classList.remove('show'); });
+
   function openLevelSelect(){
     var grid = document.getElementById('lvlGrid');
     grid.innerHTML = '';
     var bests = loadLevelBests();
-    var showCount = Math.max(HAND_LEVELS.length, (Object.keys(bests).length ? Math.max.apply(null, Object.keys(bests).map(Number)) + 2 : 0), 15);
-    for(var i=0;i<showCount;i++){
+    var maxUnlocked = getMaxUnlockedLevel();
+    var showCount = Math.max(HAND_LEVELS.length,
+      (Object.keys(bests).length ? Math.max.apply(null, Object.keys(bests).map(Number)) + 2 : 0),
+      maxUnlocked + 1, 15);
+    for(var i = 0; i < showCount; i++){
       (function(i){
+        var locked = i > maxUnlocked;
+        var done = bests[i] !== undefined;
         var b = document.createElement('button');
-        b.className = 'lvl-cell' + (bests[i] !== undefined ? ' done' : '');
-        var diff = levelDifficulty(i);
-        b.innerHTML = '<span class="lvl-num" style="font-size:1.1rem">'+diff.stars+'</span><span class="lvl-best" style="opacity:.7">'+diff.label+'</span>' +
-          (bests[i]!==undefined ? '<span class="lvl-best">✓ '+bests[i]+' soļi</span>' : '');
-        b.addEventListener('click', function(){ lvlOverlay.classList.remove('show'); startLevel(i); });
+        b.className = 'lvl-cell' + (done ? ' done' : '') + (locked ? ' locked' : '');
+        if(locked){
+          b.setAttribute('aria-label', 'Līmenis ' + (i+1) + ' slēgts');
+          b.disabled = true;
+        } else {
+          var diff = levelDifficulty(i);
+          b.innerHTML =
+            '<span class="lvl-num" style="font-size:.95rem">' + (i+1) + '</span>' +
+            '<span class="lvl-best" style="opacity:.7">' + diff.stars + '</span>' +
+            (done ? '<span class="lvl-best">✓ ' + bests[i] + ' soļi</span>' : '');
+          b.addEventListener('click', function(){
+            lvlOverlay.classList.remove('show');
+            tryStartLevel(i);
+          });
+        }
         grid.appendChild(b);
       })(i);
     }
     lvlOverlay.classList.add('show');
   }
+
+  function tryStartLevel(idx){
+    var d = getLives();
+    if(d.lives <= 0){
+      showNoLives();
+      return;
+    }
+    spendLife();
+    startLevel(idx);
+  }
+
+  /* ================= Win overlay ================= */
+  function showWin(){
+    sfxWin();
+    haptic([30,40,30,40,60]);
+    saveLevelBest(currentLevelIdx, levelProgress.movesUsed);
+    recordAttempt(currentLevelIdx, true);
+
+    sessionTotalScore += score;
+    sessionHighestLevel = Math.max(sessionHighestLevel, currentLevelIdx + 1);
+
+    document.getElementById('winMoves').textContent = levelProgress.movesUsed;
+    var bests = loadLevelBests();
+    var b = bests[currentLevelIdx];
+    document.getElementById('winBest').textContent = b ? (b + ' soļi') : '—';
+    document.getElementById('winTotalScore').textContent = sessionTotalScore;
+
+    // Show register nudge only for guests
+    var regBox = document.getElementById('winRegBox');
+    var actions = document.getElementById('winActions');
+    if(!currentUser){
+      regBox.style.display = 'block';
+      actions.style.display = 'none';
+    } else {
+      regBox.style.display = 'none';
+      actions.style.display = 'block';
+    }
+    document.getElementById('winOverlay').classList.add('show');
+  }
+
+  document.getElementById('winNext').addEventListener('click', function(){
+    document.getElementById('winOverlay').classList.remove('show');
+    tryStartLevel(currentLevelIdx + 1);
+  });
+  document.getElementById('winReplay').addEventListener('click', function(){
+    document.getElementById('winOverlay').classList.remove('show');
+    tryStartLevel(currentLevelIdx);
+  });
+  document.getElementById('winRegSkip').addEventListener('click', function(){
+    // Guest chose to continue without registering
+    document.getElementById('winRegBox').style.display = 'none';
+    document.getElementById('winActions').style.display = 'block';
+  });
+
+  /* ================= Game-over overlay ================= */
+  function showGameOver(){
+    sfxGameOver();
+    document.getElementById('goScore').textContent = score;
+
+    var d = getLives();
+    var livesLeft = d.lives;
+
+    // Update lives display inside game-over sheet
+    var livesEl = document.getElementById('goLivesLeft');
+    if(livesEl){
+      if(livesLeft > 0){
+        livesEl.textContent = 'Atlikušās dzīvības: ' + '❤️'.repeat(livesLeft) + '🖤'.repeat(MAX_LIVES - livesLeft);
+        livesEl.style.display = 'block';
+      } else {
+        livesEl.textContent = 'Dzīvības iztērētas 💔';
+        livesEl.style.display = 'block';
+      }
+    }
+
+    // Registration nudge is shown for guests, but it NEVER blocks the life-gated
+    // action below anymore — previously guests couldn't see the restart/quiz choice
+    // at all until they dismissed this box, and lives were never spent for Endless
+    // mode, so losing never visibly cost anything.
+    var regBox = document.getElementById('goRegBox');
+    var actions = document.getElementById('goActions');
+    var noLivesMsg = document.getElementById('goNoLivesMsg');
+
+    regBox.style.display = currentUser ? 'none' : 'block';
+
+    if(livesLeft > 0){
+      actions.style.display = 'block';
+      if(noLivesMsg) noLivesMsg.style.display = 'none';
+    } else {
+      actions.style.display = 'none';
+      if(noLivesMsg) noLivesMsg.style.display = 'block';
+    }
+    document.getElementById('gameOverOverlay').classList.add('show');
+  }
+
+  document.getElementById('goRegSkip').addEventListener('click', function(){
+    // Just dismiss the nudge — the restart/quiz action underneath is already visible.
+    document.getElementById('goRegBox').style.display = 'none';
+  });
+
+  document.getElementById('goRestart').addEventListener('click', function(){
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    clearSavedState();
+    // A fresh board — in EITHER mode — always costs a life now. Previously Endless
+    // mode never called spendLife() at all, so losing never actually reduced lives.
+    var d = getLives();
+    if(d.lives <= 0){ showNoLives(); return; }
+    spendLife();
+    if(mode === 'levels'){
+      startLevel(currentLevelIdx);
+    } else {
+      startEndless();
+    }
+  });
+
+  document.getElementById('goQuizBtn').addEventListener('click', function(){
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    showNoLives();
+  });
+
+  document.getElementById('goFinalBtn').addEventListener('click', function(){
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    showFinalScreen();
+  });
+
+  /* ================= Final screen (all lives gone after all attempts) ================= */
+  function showFinalScreen(){
+    document.getElementById('finalScore').textContent = sessionTotalScore;
+    document.getElementById('finalLevel').textContent = sessionHighestLevel;
+    document.getElementById('finalOverlay').classList.add('show');
+  }
+
+  document.getElementById('finalContinueAnon').addEventListener('click', function(){
+    document.getElementById('finalOverlay').classList.remove('show');
+    // Reset everything for a fresh anonymous run
+    sessionTotalScore = 0;
+    sessionHighestLevel = 0;
+    // Give back 1 life so they can actually play
+    var d = getLives();
+    d.lives = 1;
+    saveLivesData(d);
+    renderLivesBar();
+    openLevelSelect();
+  });
 
   /* ================= Leaderboard ================= */
   var lbOverlay = document.getElementById('lbOverlay');
@@ -1077,23 +1661,12 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
     }catch(e){ listEl.innerHTML = '<p class="lb-empty">Neizdevās ielādēt līderu sarakstu.</p>'; }
   }
 
-  /* ================= Server score sync (endless mode only) ================= */
-  // SECURITY NOTE: this client-side check only stops accidental/casual bad values.
-  // It is NOT real anti-cheat — anyone can open devtools and call supabase directly,
-  // bypassing this file entirely. Since the leaderboard is tied to a real prize, the
-  // authoritative check MUST live server-side: a Postgres RLS policy restricting each
-  // user to writing only their own row, plus a CHECK constraint or a Supabase Edge
-  // Function that rejects scores that couldn't plausibly be reached (e.g. jumped by
-  // more than a session could produce). See the message accompanying this file for the
-  // exact SQL/Edge Function to add in the Supabase dashboard.
-  var sessionStartScore = score;
-  var MAX_PLAUSIBLE_SCORE_PER_SESSION = 20000; // generous ceiling for one sitting
+  /* ================= Server score sync ================= */
+  var sessionStartScore = 0;
+  var MAX_PLAUSIBLE_SCORE_PER_SESSION = 20000;
   async function saveBestToServer(newBest){
     if(!sb || !currentUser) return;
-    if(newBest - sessionStartScore > MAX_PLAUSIBLE_SCORE_PER_SESSION){
-      console.warn('Rezultāts izskatās neticams šai sesijai — saglabāšana serverī atlikta.');
-      return;
-    }
+    if(newBest - sessionStartScore > MAX_PLAUSIBLE_SCORE_PER_SESSION) return;
     try{
       await sb.from('game_scores').upsert({
         user_id: currentUser.id,
@@ -1114,8 +1687,75 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.2r
 
   document.getElementById('soundToggle').addEventListener('click', function(){ setSoundOn(!soundOn); });
 
+  /* ================= Fullscreen ================= */
+  var fsBtn = document.getElementById('fullscreenBtn');
+
+  function isFullscreen(){
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+  }
+
+  function updateFsIcon(){
+    fsBtn.textContent = isFullscreen() ? '✕' : '⛶';
+    fsBtn.setAttribute('aria-label', isFullscreen() ? 'Iziet no pilnekrāna' : 'Pilnekrāns');
+  }
+
+  function enterFullscreen(){
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if(req){
+      req.call(el).then(updateFsIcon).catch(function(){});
+    } else {
+      // iOS Safari doesn't support Fullscreen API — show a tip overlay instead
+      showIosFsTip();
+    }
+  }
+
+  function exitFullscreen(){
+    var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+    if(ex) ex.call(document).then(updateFsIcon).catch(function(){});
+  }
+
+  fsBtn.addEventListener('click', function(){
+    if(isFullscreen()) exitFullscreen(); else enterFullscreen();
+  });
+
+  document.addEventListener('fullscreenchange', updateFsIcon);
+  document.addEventListener('webkitfullscreenchange', updateFsIcon);
+  document.addEventListener('mozfullscreenchange', updateFsIcon);
+
+  // iOS Safari tip — shown instead of Fullscreen API which Safari doesn't support
+  function showIosFsTip(){
+    if(document.getElementById('iosFsTip')) return;
+    var tip = document.createElement('div');
+    tip.id = 'iosFsTip';
+    tip.style.cssText = [
+      'position:fixed','inset:0','z-index:950','background:rgba(61,35,20,.55)',
+      'backdrop-filter:blur(6px)','display:flex','align-items:center','justify-content:center'
+    ].join(';');
+    tip.innerHTML = [
+      '<div style="background:var(--white);border-radius:22px;padding:1.6rem 1.4rem;max-width:300px;text-align:center;font-family:\'DM Sans\',sans-serif">',
+      '<div style="font-size:2rem;margin-bottom:.5rem">📱</div>',
+      '<h3 style="margin:0 0 .7rem;font-family:\'Cormorant Garamond\',serif;font-size:1.3rem;color:var(--chocolate)">',
+      'Pilnekrāns iPhone / iPad</h3>',
+      '<p style="font-size:.82rem;color:var(--text-m);line-height:1.55;margin:0 0 1rem">',
+      'Nospied <b>↑ Kopīgot</b> apakšā, tad izvēlies<br><b>„Pievienot sākuma ekrānam"</b> — ',
+      'tad spēle atveras pilnā ekrānā bez pārlūka joslām.</p>',
+      '<button id="iosFsTipClose" style="width:100%;background:var(--rose-d);color:#fff;border:none;',
+      'border-radius:12px;padding:.75rem;font-weight:700;font-size:.88rem;cursor:pointer">Sapratu!</button>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(tip);
+    document.getElementById('iosFsTipClose').addEventListener('click', function(){ tip.remove(); });
+    tip.addEventListener('click', function(e){ if(e.target === tip) tip.remove(); });
+  }
+  document.getElementById('tabEndless').addEventListener('click', startEndless);
+  document.getElementById('tabLevels').addEventListener('click', function(){ openLevelSelect(); });
+
   /* ================= Init ================= */
   setSoundOn(soundOn);
+  buildLivesBar();
+  renderLivesBar();
+  startLivesTicker();
   buildBoardDom();
   startEndless();
 })();
