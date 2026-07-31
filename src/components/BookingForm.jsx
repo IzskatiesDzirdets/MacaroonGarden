@@ -228,16 +228,6 @@ export default function BookingForm({ boxFlavors }) {
   const y = cal.getFullYear()
   const m = cal.getMonth()
 
-  const selectedFlavoursText =
-    selFlavs.length > 0
-      ? selFlavs
-          .map((id) => {
-            const f = FLAVOURS.find((x) => x.id === id)
-            return f ? `${f.e} ${f.n}` : id
-          })
-          .join(', ')
-      : 'Izvēlēties garšas...'
-
   return (
     <section id="booking" className="bg-espresso px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto max-w-5xl">
@@ -523,7 +513,7 @@ export default function BookingForm({ boxFlavors }) {
                     />
                   </div>
 
-                  {/* Multi-select Dropdown for Flavours */}
+                  {/* Multi-select Dropdown for Flavours with self-wrapping compact chips */}
                   <div className="relative" ref={dropdownRef}>
                     <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-gold/80 mb-1">
                       Garšas *
@@ -531,12 +521,36 @@ export default function BookingForm({ boxFlavors }) {
                     <button
                       type="button"
                       onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 text-left font-body text-sm text-ivory outline-none transition-all focus:border-gold/50 flex items-center justify-between"
+                      className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 text-left font-body text-sm text-ivory outline-none transition-all focus:border-gold/50 flex items-center justify-between min-h-[42px]"
                     >
-                      <span className="block truncate opacity-85">
-                        {selectedFlavoursText}
-                      </span>
-                      <span className="text-[0.6rem] text-gold/60">&#9660;</span>
+                      {selFlavs.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 py-0.5 max-w-[90%]">
+                          {selFlavs.map((id) => {
+                            const f = FLAVOURS.find((x) => x.id === id)
+                            if (!f) return null
+                            const pillColor = {
+                              rose: 'bg-blush/10 text-gold border-blush/20',
+                              choc: 'bg-gold/10 text-gold border-gold/20',
+                              lemon: 'bg-gold/10 text-gold border-gold/20',
+                              blue: 'bg-sage/10 text-gold border-sage/20',
+                              pist: 'bg-sage/10 text-gold border-sage/20',
+                            }[id] || 'bg-white/5 border-white/10'
+
+                            return (
+                              <span
+                                key={id}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${pillColor}`}
+                              >
+                                <span>{f.e}</span>
+                                <span className="font-semibold text-[10px] tracking-wide uppercase">{f.n}</span>
+                              </span>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <span className="opacity-50 text-xs">Izvēlēties garšas...</span>
+                      )}
+                      <span className="text-[0.6rem] text-gold/60 ml-2 flex-shrink-0">&#9660;</span>
                     </button>
 
                     {dropdownOpen && (

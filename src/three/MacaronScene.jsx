@@ -26,7 +26,7 @@ export default function MacaronScene({ progressRef, static: isStatic = false }) 
     <Canvas
       dpr={[1, isStatic ? 1.5 : 1.8]}
       camera={{ position: [0, 0.6, 5.2], fov: 38 }}
-      gl={{ antialias: true }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
       shadows={!isStatic}
     >
       <ambientLight intensity={0.5} />

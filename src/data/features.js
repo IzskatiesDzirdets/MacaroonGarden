@@ -5,7 +5,7 @@ export const FEATURES = [
   {
     id: 'shell-top',
     piece: 'shellTop',
-    direction: [-2.6, 1.6, 0.8],
+    direction: [-1.2, 2.2, 0.8],
     window: [0.03, 0.32],
     eyebrow: 'Virsčaumala',
     title: 'Rokām veidots, ne štancēts',
@@ -14,7 +14,7 @@ export const FEATURES = [
   {
     id: 'shell-bottom',
     piece: 'shellBottom',
-    direction: [2.6, 1.4, -0.6],
+    direction: [1.2, -2.2, -0.6],
     window: [0.08, 0.37],
     eyebrow: 'Apakšējā čaumala',
     title: 'Franču mandeļu milti',
@@ -23,7 +23,7 @@ export const FEATURES = [
   {
     id: 'filling',
     piece: 'filling',
-    direction: [0, -2.4, 1.6],
+    direction: [0.0, -0.4, 1.8],
     window: [0.13, 0.42],
     eyebrow: 'Pildījums',
     title: 'Katra garša — sava kompozīcija',
@@ -32,7 +32,7 @@ export const FEATURES = [
   {
     id: 'crumb-rose',
     piece: 'crumbRose',
-    direction: [-2.2, -1.8, -1.4],
+    direction: [-1.8, -0.8, -1.0],
     window: [0.18, 0.47],
     eyebrow: 'Rozes smarža',
     title: 'Pēc tavas pasūtījuma',
@@ -41,7 +41,7 @@ export const FEATURES = [
   {
     id: 'crumb-pistachio',
     piece: 'crumbPistachio',
-    direction: [2.4, -1.2, 1.8],
+    direction: [1.8, 0.8, 1.2],
     window: [0.23, 0.52],
     eyebrow: 'Pistācijas notis',
     title: 'Dāvanu ateljē',
@@ -50,7 +50,7 @@ export const FEATURES = [
   {
     id: 'crumb-cocoa',
     piece: 'crumbCocoa',
-    direction: [0.2, 2.6, -1.8],
+    direction: [-0.4, 1.8, -1.2],
     window: [0.28, 0.57],
     eyebrow: 'Kakao skaidiņas',
     title: 'Svaigi, ne no saldētavas',
