@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* ---- Macaroon Garden — Midnight Pâtisserie palette ---- */
-  --color-espresso:      #140F0D;   /* base background — warm near-black, not pure black */
-  --color-espresso-2:    #1F1613;   /* secondary bg / gradient stop, bordeaux-brown undertone */
-  --color-espresso-3:    #2A1E19;   /* card surfaces */
-  --color-gold:          #C9A15A;   /* brass/champagne accent — the "shell glaze" */
-  --color-gold-soft:     #E4C98A;
-  --color-blush:         #E3A6B4;   /* rose macaron shell */
-  --color-blush-deep:    #C97F92;
-  --color-sage:          #8CA37C;   /* pistachio secondary accent */
-  --color-ivory:         #F3E9DD;   /* primary text on dark */
-  --color-ivory-dim:     #C9BEB2;   /* secondary text on dark */
+  /* ---- Macaroon Garden — Premium Light French Pâtisserie palette ---- */
+  --color-espresso:      #FFFDF9;   /* primary background — warm soft white, extremely cozy and light */
+  --color-espresso-2:    #FDF6EE;   /* secondary bg / gradient stop — warm cream */
+  --color-espresso-3:    #FFFFFF;   /* card surfaces — clean pure white */
+  --color-gold:          #C97A96;   /* luxury deep rose accent — matches high-end French pastries */
+  --color-gold-soft:     #E8A4B8;   /* soft blush rose */
+  --color-blush:         #E8A4B8;   /* soft rose */
+  --color-blush-deep:    #C97A96;   /* deep rose */
+  --color-sage:          #A8CFC0;   /* pistachio green accent */
+  --color-ivory:         #2C1810;   /* primary text — rich dark chocolate brown, premium readability */
+  --color-ivory-dim:     #6B4F3A;   /* secondary text — warm cocoa brown */
 
   --font-display: "Fraunces", "Georgia", serif;
   --font-body: "Manrope", "Helvetica Neue", sans-serif;
@@ -20,6 +20,7 @@
 
 html {
   background: var(--color-espresso);
+  scroll-behavior: smooth;
 }
 
 body {
@@ -30,8 +31,8 @@ body {
 }
 
 ::selection {
-  background: var(--color-gold);
-  color: var(--color-espresso);
+  background: var(--color-gold-soft);
+  color: #ffffff;
 }
 
 :focus-visible {
@@ -39,11 +40,52 @@ body {
   outline-offset: 3px;
 }
 
-/* Custom scrollbar — quiet, premium */
+/* Custom scrollbar — quiet, warm pastry shop look */
 ::-webkit-scrollbar { width: 9px; }
-::-webkit-scrollbar-track { background: var(--color-espresso); }
-::-webkit-scrollbar-thumb { background: var(--color-espresso-3); border-radius: 8px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-gold); }
+::-webkit-scrollbar-track { background: var(--color-espresso-2); }
+::-webkit-scrollbar-thumb { background: #F0E6D8; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-gold-soft); }
+
+/* Overrides for transparency classes to ensure beautiful light garden aesthetic */
+.border-white\/10 {
+  border-color: rgba(61, 35, 20, 0.08) !important; /* Elegant thin sand outline */
+}
+.bg-white\/\[0\.04\] {
+  background-color: #ffffff !important; /* Solid clean white for cards */
+}
+.bg-white\/\[0\.03\] {
+  background-color: #fdf6ee !important; /* Solid warm cream for subcards */
+}
+.bg-espresso\/70 {
+  background-color: rgba(253, 246, 238, 0.88) !important; /* Blurred warm cream navbar */
+}
+.bg-espresso-3\/60 {
+  background-color: rgba(255, 255, 255, 0.9) !important; /* Semi-transparent clean white */
+}
+.bg-espresso-3\/40 {
+  background-color: rgba(253, 246, 238, 0.5) !important;
+}
+.bg-white\/5 {
+  background-color: rgba(61, 35, 20, 0.04) !important;
+}
+.bg-white\/10 {
+  background-color: rgba(61, 35, 20, 0.08) !important;
+}
+.border-white\/8 {
+  border-color: rgba(61, 35, 20, 0.08) !important;
+}
+.bg-white\/50 {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}
+.bg-white\/\[0\.02\] {
+  background-color: rgba(61, 35, 20, 0.02) !important;
+}
+.text-ivory-dim\/70 {
+  color: rgba(107, 79, 58, 0.7) !important;
+}
+.text-ivory-dim\/60 {
+  color: rgba(107, 79, 58, 0.6) !important;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

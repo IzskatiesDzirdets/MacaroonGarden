@@ -458,11 +458,13 @@ body.pseudo-fs .wrap{
   /* ================= Supabase ================= */
   var sb = null;
   try{
-    sb = window.supabase.createClient(
-      'https://ibnvqljclchzlbvfwugj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlibnZxbGpjbGNoemxidmZ3dWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNDM4MjIsImV4cCI6MjA4NjgxOTgyMn0.oQqSvLbbDcWDpgJdDYde11sd6SX96snBIYs1FzfcCvo',
-      { auth:{ persistSession:true, autoRefreshToken:true } }
-    );
+    if (window.supabase) {
+      sb = window.supabase.createClient(
+        'https://ibnvqljclchzlbvfwugj.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlibnZxbGpjbGNoemxidmZ3dWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNDM4MjIsImV4cCI6MjA4NjgxOTgyMn0.oQqSvLbbDcWDpgJdDYde11sd6SX96snBIYs1FzfcCvo',
+        { auth:{ persistSession:true, autoRefreshToken:true } }
+      );
+    }
   }catch(e){ console.warn('Supabase nav pieejams', e); }
 
   var currentUser = null;

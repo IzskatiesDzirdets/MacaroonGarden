@@ -112,7 +112,6 @@ export default function BookingForm({ boxFlavors }) {
   }, [])
 
   const onDay = (d) => bks.filter((b) => b.delivery_date === d)
-  const timesOn = (d) => bks.filter((b) => b.delivery_date === d).map((b) => b.delivery_time)
 
   const avail = (day) => {
     const y = cal.getFullYear()
@@ -228,7 +227,6 @@ export default function BookingForm({ boxFlavors }) {
   const { total, start } = calInfo()
   const y = cal.getFullYear()
   const m = cal.getMonth()
-  const takenTimes = selDate ? timesOn(selDate) : []
 
   const selectedFlavoursText =
     selFlavs.length > 0
@@ -389,15 +387,17 @@ export default function BookingForm({ boxFlavors }) {
                 </div>
               </div>
 
-              {/* Hourly Time chips */}
+              {/* Hourly Time chips - divided into 2-hour blocks with capacity for multiple bookings */}
               {selDate && (
                 <div className="mt-8">
                   <label className="block font-mono text-xs uppercase tracking-wider text-gold/80 mb-3">
-                    Pieejamie piegādes laiki
+                    Pieejamie piegādes laiki (2 stundu posmi)
                   </label>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {TIMES.map((t) => {
-                      const isTaken = takenTimes.includes(t)
+                      // Allow up to 3 orders per 2-hour block
+                      const count = onDay(selDate).filter((b) => b.delivery_time === t).length
+                      const isTaken = count >= MAX_ORDERS_PER_BLOCK
                       return (
                         <button
                           key={t}
@@ -412,7 +412,10 @@ export default function BookingForm({ boxFlavors }) {
                               : 'bg-white/5 border border-white/5 text-ivory hover:border-gold/40'
                           }`}
                         >
-                          {t}
+                          <span>{t}</span>
+                          {count > 0 && !isTaken && (
+                            <span className="block text-[9px] opacity-75 mt-0.5 text-gold">Rezervēts x{count}</span>
+                          )}
                         </button>
                       )
                     })}
