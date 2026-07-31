@@ -296,8 +296,8 @@ body.pseudo-fs .wrap{
 
 <div class="wrap">
   <header>
-    <a href="https://macarongarden.netlify.app/#game" class="back" id="backLink" target="_top">
-      <img src="https://macarongarden.netlify.app/assets/logo.webp" alt="" onerror="this.style.display='none'">
+    <a href="/#game" class="back" id="backLink" target="_top">
+      <img src="/assets/logo.webp" alt="" onerror="this.style.display='none'">
       <span>← Atpakaļ</span>
     </a>
     <div class="scores">
@@ -357,7 +357,7 @@ body.pseudo-fs .wrap{
     <p class="win-stat">Koprezultāts: <b id="winTotalScore">0</b></p>
     <div id="winRegBox" style="display:none" class="reg-box">
       <p class="reg-title">💾 Saglabā savu rezultātu kopvērtējumā!</p>
-      <a href="https://macarongarden.netlify.app/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none;margin-top:.6rem">Reģistrēties / Ielogoties →</a>
+      <a href="/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none;margin-top:.6rem">Reģistrēties / Ielogoties →</a>
       <button class="mghost" id="winRegSkip">Turpināt anonīmi</button>
     </div>
     <div id="winActions">
@@ -414,7 +414,7 @@ body.pseudo-fs .wrap{
     <p id="goLivesLeft" style="display:none;text-align:center;font-size:.88rem;margin:.4rem 0;color:var(--text-m)"></p>
     <div id="goRegBox" class="reg-box" style="display:none">
       <p class="reg-title">💾 Reģistrējies, lai rezultāts parādītos kopvērtējumā!</p>
-      <a href="https://macarongarden.netlify.app/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none">Reģistrēties / Ielogoties →</a>
+      <a href="/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none">Reģistrēties / Ielogoties →</a>
       <button class="mghost" id="goRegSkip">Turpināt anonīmi</button>
     </div>
     <div id="goActions">
@@ -434,7 +434,7 @@ body.pseudo-fs .wrap{
     <h2 style="text-align:center">Spēle pabeigta!</h2>
     <p class="win-stat">Tu pabeidzi ar <b id="finalScore">0</b> punktiem</p>
     <p class="win-stat">Sasniegts līmenis: <b id="finalLevel">0</b></p>
-    <a href="https://macarongarden.netlify.app/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none;margin-top:.8rem">🏆 Reģistrēties un saglabāt</a>
+    <a href="/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none;margin-top:.8rem">🏆 Reģistrēties un saglabāt</a>
     <button class="mghost" id="finalContinueAnon">Turpināt anonīmi (sākt no sākuma)</button>
   </div>
 </div>
@@ -736,24 +736,90 @@ body.pseudo-fs .wrap{
     var shape = pool[Math.floor(Math.random()*pool.length)];
     return { shape: shape, color: COLORS[Math.floor(Math.random()*COLORS.length)] };
   }
-  function refillTrayIfEmpty(){
+    function refillTrayIfEmpty(){
     var allEmpty = tray.every(function(p){ return !p; });
     if(!allEmpty) return;
-    var pieces = [randomPiece(), randomPiece(), randomPiece()];
-    // Fairness guard: if none of the 3 fresh pieces would fit anywhere on the current
-    // board, swap in a small piece that we know fits, so the round doesn't end on an
-    // unlucky draw the player had no way to influence. If the board is so full that
-    // nothing at all fits, that's a genuine loss and we leave it as-is.
+
+    var pieces = [];
+    var candidates = [];
+    var allShapes = SHAPES.concat(BIG_SHAPES);
+
+    // Evaluate combo potential for all shapes on current board state
+    for(var s=0; s<allShapes.length; s++){
+      var shape = allShapes[s];
+      var maxCombo = 0;
+      var canPlace = false;
+
+      for(var r=0; r<SIZE; r++){
+        for(var c=0; c<SIZE; c++){
+          if(canPlaceAt(board, shape, r, c)){
+            canPlace = true;
+            var clear = wouldClearLines(board, shape, r, c);
+            var combo = clear.rows.length + clear.cols.length;
+            if(combo > maxCombo) maxCombo = combo;
+          }
+        }
+      }
+
+      if(canPlace){
+        candidates.push({ shape: shape, combo: maxCombo });
+      }
+    }
+
+    if(candidates.length === 0){
+      candidates = SHAPES.map(function(sh){ return { shape: sh, combo: 0 }; });
+    }
+
+    // Sort candidates by combo potential (highest first)
+    candidates.sort(function(a, b){ return b.combo - a.combo; });
+
+    var smallShapes = [[[1]], [[1,1]], [[1],[1]], [[1,1],[1,0]], [[1,1],[0,1]]];
+
+    // Piece 1: Combos booster helper
+    var shape1 = null;
+    var highComboCandidates = candidates.filter(function(c){ return c.combo > 0; });
+    if(highComboCandidates.length > 0){
+      shape1 = highComboCandidates[Math.floor(Math.random() * highComboCandidates.length)].shape;
+    } else {
+      shape1 = candidates[Math.floor(Math.random() * Math.min(5, candidates.length))].shape;
+    }
+
+    // Piece 2: Small builder piece for easy tucking and combo bridging
+    var shape2 = null;
+    var playableSmall = smallShapes.filter(function(s){ return canPlaceSomewhere(board, s); });
+    if(playableSmall.length > 0){
+      shape2 = playableSmall[Math.floor(Math.random() * playableSmall.length)];
+    } else {
+      shape2 = smallShapes[0];
+    }
+
+    // Piece 3: Playable variety piece
+    var shape3 = null;
+    if(candidates.length > 1){
+      shape3 = candidates[Math.floor(Math.random() * candidates.length)].shape;
+    } else {
+      shape3 = shape2;
+    }
+
+    pieces = [
+      { shape: shape1, color: COLORS[Math.floor(Math.random() * COLORS.length)] },
+      { shape: shape2, color: COLORS[Math.floor(Math.random() * COLORS.length)] },
+      { shape: shape3, color: COLORS[Math.floor(Math.random() * COLORS.length)] }
+    ];
+
+    pieces = shuffleArray(pieces);
+
+    // Final check
     var anyFits = pieces.some(function(p){ return canPlaceSomewhere(board, p.shape); });
     if(!anyFits){
-      var smallShapes = [[[1]], [[1,1]], [[1],[1]]];
-      for(var s=0;s<smallShapes.length && !anyFits;s++){
-        if(canPlaceSomewhere(board, smallShapes[s])){
-          pieces[0] = { shape: smallShapes[s], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
+      for(var s2=0; s2<smallShapes.length && !anyFits; s2++){
+        if(canPlaceSomewhere(board, smallShapes[s2])){
+          pieces[0] = { shape: smallShapes[s2], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
           anyFits = true;
         }
       }
     }
+
     tray[0] = pieces[0]; tray[1] = pieces[1]; tray[2] = pieces[2];
   }
   function anyTrayPieceFits(){
@@ -1093,7 +1159,7 @@ body.pseudo-fs .wrap{
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
       document.removeEventListener('pointercancel', onCancel);
-      slotEl.removeEventListener('lostpointercapture', onLostCapture);
+      // slotEl.removeEventListener('lostpointercapture', onLostCapture);
       if(watchdogTimer){ clearInterval(watchdogTimer); watchdogTimer = null; }
     }
     function onUp(e){
@@ -1127,7 +1193,7 @@ body.pseudo-fs .wrap{
     document.addEventListener('pointermove', onMove, {passive:true});
     document.addEventListener('pointerup', onUp);
     document.addEventListener('pointercancel', onCancel);
-    slotEl.addEventListener('lostpointercapture', onLostCapture);
+    // slotEl.addEventListener('lostpointercapture', onLostCapture);
 
     watchdogTimer = setInterval(function(){
       if(!ended && Date.now() - lastMoveTs > DRAG_STALL_MS) onWatchdogTimeout();
@@ -1819,7 +1885,7 @@ body.pseudo-fs .wrap{
     var listEl = document.getElementById('lbList');
     var nudgeEl = document.getElementById('lbLoginNudge');
     nudgeEl.innerHTML = currentUser ? '' :
-      '<div class="login-nudge">Ielogojies galvenajā lapā, lai tavs rezultāts parādītos šeit! <a href="https://macarongarden.netlify.app/#home" target="_top">Ieiet →</a></div>';
+      '<div class="login-nudge">Ielogojies galvenajā lapā, lai tavs rezultāts parādītos šeit! <a href="/#home" target="_top">Ieiet →</a></div>';
     if(!sb){ listEl.innerHTML = '<p class="lb-empty">Līderu saraksts pagaidām nav pieejams.</p>'; return; }
     listEl.innerHTML = '<p class="lb-empty">Ielādē...</p>';
     try{

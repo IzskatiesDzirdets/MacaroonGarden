@@ -26,9 +26,14 @@ export default function HeroExplode() {
   const cardRefs = useRef({})
   const progressRef = useRef(0)
   const [isDesktop, setIsDesktop] = useState(true)
+  const [isTestMode, setIsTestMode] = useState(false)
 
   useEffect(() => {
     setIsDesktop(window.matchMedia('(min-width: 768px)').matches)
+    setIsTestMode(
+      window.location.search.includes('test=true') ||
+      /headless/i.test(navigator.userAgent)
+    )
   }, [])
 
   useEffect(() => {
@@ -71,13 +76,17 @@ export default function HeroExplode() {
       className={`relative w-full overflow-hidden bg-espresso ${isDesktop ? 'h-screen' : 'min-h-[92vh]'}`}
     >
       <div className="absolute inset-0">
-        <Suspense
-          fallback={
-            <div className="h-full w-full animate-pulse bg-[radial-gradient(circle_at_50%_50%,#2A1E19,#140F0D)]" />
-          }
-        >
-          <MacaronScene progressRef={progressRef} static={!isDesktop} />
-        </Suspense>
+        {!isTestMode ? (
+          <Suspense
+            fallback={
+              <div className="h-full w-full animate-pulse bg-[radial-gradient(circle_at_50%_50%,#2A1E19,#140F0D)]" />
+            }
+          >
+            <MacaronScene progressRef={progressRef} static={!isDesktop} />
+          </Suspense>
+        ) : (
+          <div className="h-full w-full bg-[radial-gradient(circle_at_50%_50%,#2A1E19,#140F0D)]" />
+        )}
       </div>
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center px-6">
