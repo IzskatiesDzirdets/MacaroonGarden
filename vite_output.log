@@ -18,3 +18,5 @@
 5:53:22 PM [vite] (client) hmr update /src/index.css, /src/components/HeroExplode.jsx, /src/components/MobileFeatureList.jsx, /src/three/MacaronScene.jsx
 5:55:23 PM [vite] (client) hmr update /src/index.css, /src/three/MacaronScene.jsx
 5:56:53 PM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
+7:42:31 AM [vite] (client) hmr update /src/index.css, /src/three/MacaronScene.jsx
+7:43:36 AM [vite] (client) hmr update /src/components/HeroExplode.jsx, /src/index.css
