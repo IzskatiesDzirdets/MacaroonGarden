@@ -1,3 +1,5 @@
+import gameHtml from '../game.html?raw'
+
 export default function GameSection() {
   return (
     <section id="game" className="bg-espresso-2 px-6 py-24 md:px-16 md:py-32">
@@ -16,7 +18,7 @@ export default function GameSection() {
         {/* Frame container */}
         <div className="mx-auto max-w-[480px] overflow-hidden rounded-3xl border border-white/10 bg-espresso-3 shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-gold/15 h-[min(78vh,680px)]">
           <iframe
-            src="/game.html"
+            srcDoc={gameHtml}
             title="Makarūnu Mozaīka"
             className="h-full w-full border-none block"
             loading="lazy"

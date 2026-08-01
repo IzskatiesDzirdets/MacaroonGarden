@@ -1,0 +1,2101 @@
+<!doctype html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Makarūnu Mozaīka — Macaroon Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rose:#E8A4B8;--rose-d:#C97A96;--mint:#A8D4B0;--lav:#C4B5D4;
+  --cream:#FDF6EE;--sand:#F0E6D8;--chocolate:#3D2314;--text-m:#6B4F3A;--white:#FFFDF9;
+  --gold:#D9A441;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;background:radial-gradient(120% 90% at 50% -10%, #FFF8EE 0%, var(--cream) 55%) fixed;font-family:'DM Sans',sans-serif;color:var(--chocolate);overflow:hidden;
+  touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none;}
+.font-display{font-family:'Cormorant Garamond',serif;}
+
+/* touch-action:none on the WHOLE wrap (not just #board/.tray-slot) — this is the fix
+   for pieces getting stuck mid-drag: previously the thin gap between the tray and the
+   board had no touch-action override, so a fast drag crossing it could be reinterpreted
+   by the browser as a page-scroll gesture, which silently cancels the pointer and leaves
+   the piece "floating" between the two zones. */
+.wrap{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;padding:.6rem .7rem env(safe-area-inset-bottom, .6rem);touch-action:none;}
+
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:.2rem .1rem .5rem;gap:.35rem;row-gap:.3rem;}
+.back{display:flex;align-items:center;gap:.35rem;text-decoration:none;color:var(--text-m);font-size:.72rem;font-weight:600;flex-shrink:0;}
+.back img{width:24px;height:24px;border-radius:50%;object-fit:cover;}
+.scores{display:flex;gap:.35rem;flex-shrink:1;}
+.score-box{background:var(--white);border-radius:11px;padding:.32rem .55rem;text-align:center;box-shadow:0 3px 10px rgba(61,35,20,.08);
+  border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(4px);}
+.score-box .sl{font-size:.54rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-m);display:block;}
+.score-box .sn{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;color:var(--rose-d);}
+.icon-btn{background:var(--chocolate);color:var(--cream);border:none;border-radius:11px;width:36px;height:36px;font-size:1rem;cursor:pointer;flex-shrink:0;}
+
+/* On narrow phones (or a narrow embedding iframe) every header item was fixed-width
+   with nowhere to shrink to, so the row silently overflowed and the fullscreen
+   button ended up pushed outside the visible/tappable area. Below ~360px we tighten
+   everything and, if it still doesn't fit, the row now wraps onto a second line
+   instead of clipping off-screen. */
+@media (max-width:360px){
+  .back span{display:none;}
+  .score-box{padding:.28rem .42rem;}
+  .score-box .sl{font-size:.48rem;}
+  .score-box .sn{font-size:1rem;}
+  .icon-btn{width:32px;height:32px;font-size:.9rem;}
+  .life-heart{font-size:1.05rem;}
+}
+
+.mode-tabs{display:flex;gap:.4rem;margin-bottom:.5rem;}
+.mode-tab{flex:1;text-align:center;padding:.5rem;border-radius:11px;border:1.5px solid var(--sand);background:var(--white);
+  font-size:.76rem;font-weight:700;cursor:pointer;color:var(--text-m);}
+.mode-tab.act{background:var(--rose-d);border-color:transparent;color:#fff;}
+
+.objectives{display:flex;flex-direction:column;gap:.35rem;background:var(--white);border-radius:12px;padding:.6rem .8rem;
+  margin-bottom:.5rem;box-shadow:0 3px 10px rgba(61,35,20,.06);}
+.obj-row{display:flex;align-items:center;gap:.5rem;font-size:.74rem;}
+.obj-row .dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.obj-row .lbl{flex:1;color:var(--text-m);font-weight:600;}
+.obj-row .bar{width:70px;height:6px;background:var(--sand);border-radius:99px;overflow:hidden;flex-shrink:0;}
+.obj-row .bar i{display:block;height:100%;background:var(--rose-d);border-radius:99px;transition:width .3s;}
+.obj-row.done .lbl{color:var(--mint);text-decoration:line-through;}
+.moves-tag{font-size:.68rem;color:var(--text-m);text-align:right;}
+
+.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:.2rem 0;overflow:hidden;}
+#board{position:relative;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;
+  background:radial-gradient(120% 130% at 50% -10%, rgba(255,255,255,.4) 0%, transparent 60%), rgba(217,164,65,.14);
+  border:2px solid var(--sand);border-radius:14px;padding:8px;
+  box-shadow:0 10px 34px rgba(61,35,20,.14) inset;
+  /* Size is set by JS measureBoard() so it's always a perfect square that fits */
+  width:100%;touch-action:none;}
+.cell{background:rgba(255,255,255,.65);border-radius:5px;position:relative;}
+/* Round "macaron" look for filled cells — a shell with a glossy highlight.
+   Written as one combined selector list (including the drag-ghost variant
+   explicitly) so the round shape applies consistently everywhere a piece is
+   shown: on the board, in the tray, and while being dragged. */
+.cell.filled,
+.piece-cell:not(.empty),
+.drag-ghost .piece-cell:not(.empty){
+  border-radius:50%;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.15), 0 2px 5px rgba(61,35,20,.22);
+  background-image:radial-gradient(circle at 30% 30%, rgba(255,255,255,.45), transparent 60%);
+}
+.cell.ghost-ok{background:rgba(168,207,192,.6) !important;}
+.cell.ghost-bad{background:rgba(201,122,150,.4) !important;}
+.cell.ghost-fire{background:linear-gradient(160deg,#FFE9A8,#F0B429 55%,#D9A441) !important;
+  box-shadow:0 0 10px rgba(240,180,41,.85), 0 0 2px rgba(255,255,255,.8) inset !important;
+  animation:fireFlicker .5s ease-in-out infinite alternate;}
+@keyframes fireFlicker{0%{filter:brightness(1) saturate(1);}100%{filter:brightness(1.18) saturate(1.25);}}
+
+.drag-ghost.ghost-valid .piece-cell{transition:transform .12s ease, box-shadow .12s ease;transform:scale(1.08);}
+.drag-ghost.ghost-fire-piece .piece-cell{
+  transform:scale(1.16) !important;
+  background-image:linear-gradient(160deg,#FFE9A8,#F0B429 60%,#D9A441) !important;
+  box-shadow:0 0 16px rgba(240,180,41,.9), 0 6px 16px rgba(61,35,20,.35) !important;
+  animation:fireFlicker .45s ease-in-out infinite alternate;
+}
+
+/* ---- drag combo preview badge (hover only) ---- */
+.combo-badge{position:fixed;z-index:800;transform:translate(-50%,-50%) scale(0);pointer-events:none;
+  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:2.1rem;color:#fff;
+  text-shadow:0 0 14px rgba(240,180,41,.95), 0 2px 4px rgba(61,35,20,.5);
+  opacity:0;transition:opacity .12s ease, transform .12s cubic-bezier(.2,1.4,.4,1);}
+.combo-badge.show{opacity:1;transform:translate(-50%,-50%) scale(1);animation:comboPulse .6s ease-in-out infinite alternate;}
+@keyframes comboPulse{0%{filter:brightness(1)}100%{filter:brightness(1.3)}}
+
+/* ---- cell clear: wave-ripple instead of simple pop ---- */
+.cell.clearing{animation:cellPop .38s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes cellPop{
+  0%{transform:scale(1);opacity:1;filter:brightness(1);}
+  40%{transform:scale(1.22);opacity:1;filter:brightness(1.6);}
+  100%{transform:scale(0);opacity:0;filter:brightness(2);}
+}
+
+/* ---- floating +N score popups on the board ---- */
+.score-popup{
+  position:absolute;pointer-events:none;z-index:900;
+  font-family:'Cormorant Garamond',serif;font-weight:700;
+  color:#fff;line-height:1;white-space:nowrap;
+  text-shadow:0 2px 8px rgba(61,35,20,.55), 0 0 20px rgba(240,180,41,.8);
+  animation:scoreFloat 1.1s cubic-bezier(.2,.8,.4,1) forwards;
+}
+@keyframes scoreFloat{
+  0%  {opacity:0;transform:translateY(0) scale(.6);}
+  15% {opacity:1;transform:translateY(-10px) scale(1.15);}
+  60% {opacity:1;transform:translateY(-46px) scale(1);}
+  100%{opacity:0;transform:translateY(-80px) scale(.85);}
+}
+
+/* ---- big xN multiplier banner ---- */
+.multiplier-banner{
+  position:absolute;pointer-events:none;z-index:910;
+  font-family:'Cormorant Garamond',serif;font-weight:700;color:#fff;
+  left:50%;transform:translateX(-50%) scale(0);
+  text-shadow:0 0 30px rgba(240,180,41,1), 0 3px 8px rgba(61,35,20,.6);
+  white-space:nowrap;
+  animation:bannerPop .9s cubic-bezier(.2,1.5,.4,1) forwards;
+}
+@keyframes bannerPop{
+  0%  {opacity:0;transform:translateX(-50%) scale(.3) rotate(-6deg);}
+  20% {opacity:1;transform:translateX(-50%) scale(1.18) rotate(2deg);}
+  55% {opacity:1;transform:translateX(-50%) scale(0.96) rotate(0deg);}
+  80% {opacity:1;transform:translateX(-50%) scale(1);}
+  100%{opacity:0;transform:translateX(-50%) scale(.9) translateY(-18px);}
+}
+
+/* ---- score box punch when score increases ---- */
+@keyframes scorePunch{
+  0%{transform:scale(1);}30%{transform:scale(1.22);}60%{transform:scale(.96);}100%{transform:scale(1);}
+}
+.score-box.punch{animation:scorePunch .28s cubic-bezier(.2,1.4,.4,1);}
+
+/* ---- board flash on big combo ---- */
+@keyframes boardFlash{
+  0%{box-shadow:0 10px 34px rgba(61,35,20,.14) inset;}
+  40%{box-shadow:0 0 0 6px rgba(240,180,41,.55), 0 10px 34px rgba(61,35,20,.14) inset;}
+  100%{box-shadow:0 10px 34px rgba(61,35,20,.14) inset;}
+}
+#board.flash{animation:boardFlash .5s ease-out;}
+
+/* ---- confetti burst for big combos ---- */
+.confetti-piece{position:absolute;width:7px;height:7px;pointer-events:none;z-index:920;
+  animation:confettiBurst .85s cubic-bezier(.2,.7,.3,1) forwards;}
+@keyframes confettiBurst{
+  0%{transform:translate(-50%,-50%) rotate(0deg) scale(1);opacity:1;}
+  100%{transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(.5);opacity:0;}
+}
+
+/* ---- board shake for very big combos (4+ lines) ---- */
+@keyframes boardShake{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-5px,3px);}
+  40%{transform:translate(4px,-4px);}
+  60%{transform:translate(-4px,-1px);}
+  80%{transform:translate(3px,2px);}
+}
+.board-wrap.shake{animation:boardShake .32s ease-in-out;}
+
+.tray{display:flex;justify-content:space-around;align-items:center;gap:.4rem;padding:.5rem 0 .2rem;min-height:92px;}
+.tray-slot{flex:1;display:flex;align-items:center;justify-content:center;min-height:84px;touch-action:none;user-select:none;
+  border:1px dashed var(--sand);border-radius:12px;}
+.piece-grid{display:grid;gap:3px;cursor:grab;}
+.piece-cell{width:20px;height:20px;border-radius:4px;position:relative;}
+.piece-cell.empty{visibility:hidden;}
+.tray-slot.used{opacity:.28;pointer-events:none;filter:grayscale(.4);}
+
+.drag-ghost{position:fixed;pointer-events:none;z-index:500;display:grid;gap:3px;opacity:.95;will-change:left,top;}
+.drag-ghost .piece-cell{width:var(--gc,32px);height:var(--gc,32px);border-radius:6px;box-shadow:0 6px 16px rgba(61,35,20,.3);}
+
+.hint{text-align:center;font-size:.68rem;color:var(--text-m);opacity:.6;padding:.15rem 0 .3rem;}
+
+.overlay{position:fixed;inset:0;background:rgba(61,35,20,.4);backdrop-filter:blur(4px);display:none;
+  align-items:flex-end;justify-content:center;z-index:600;}
+.overlay.show{display:flex;}
+.overlay.center{align-items:center;}
+.sheet{background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:82vh;overflow-y:auto;
+  padding:1.4rem 1.3rem calc(1.4rem + env(safe-area-inset-bottom));animation:sheetUp .3s cubic-bezier(.16,1,.3,1);}
+.overlay.center .sheet{border-radius:22px;max-width:340px;text-align:center;}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+.sheet h2{font-family:'Cormorant Garamond',serif;margin:0 0 .9rem;font-size:1.5rem;}
+.sheet-close{float:right;background:var(--sand);border:none;width:32px;height:32px;border-radius:50%;font-size:.9rem;cursor:pointer;}
+.lb-row{display:flex;align-items:center;gap:.7rem;padding:.55rem .3rem;border-bottom:1px solid var(--sand);}
+.lb-rank{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.1rem;color:var(--rose-d);width:1.6rem;}
+.lb-name{flex:1;font-size:.86rem;font-weight:600;}
+.lb-score{font-family:'Cormorant Garamond',serif;font-weight:700;color:var(--chocolate);}
+.lb-empty{text-align:center;color:var(--text-m);font-size:.85rem;padding:1.5rem 0;}
+.lb-note{font-size:.7rem;color:var(--text-m);text-align:center;margin-top:1rem;line-height:1.5;}
+.login-nudge{background:var(--sand);border-radius:12px;padding:.8rem 1rem;font-size:.78rem;text-align:center;margin-top:.8rem;}
+.login-nudge a{color:var(--rose-d);font-weight:700;text-decoration:none;}
+
+.lvl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem;}
+.lvl-cell{aspect-ratio:1/1;border-radius:12px;background:var(--sand);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;font-weight:700;position:relative;border:none;gap:.15rem;padding:.3rem;text-align:center;}
+.lvl-cell.done{background:var(--mint);color:#fff;}
+.lvl-cell .lvl-num{font-family:'Cormorant Garamond',serif;font-size:1.5rem;line-height:1;}
+.lvl-cell .lvl-best{font-size:.52rem;opacity:.85;line-height:1.2;}
+
+.win-emoji{font-size:3rem;margin-bottom:.4rem;}
+.win-stat{font-size:.85rem;color:var(--text-m);margin:.3rem 0;}
+.win-stat b{color:var(--rose-d);font-family:'Cormorant Garamond',serif;font-size:1.2rem;}
+.sheet .msub{width:100%;background:var(--rose-d);color:#fff;border:none;border-radius:12px;padding:.8rem;font-weight:700;
+  cursor:pointer;margin-top:1rem;font-size:.88rem;}
+.sheet .mghost{width:100%;background:none;border:none;color:var(--text-m);padding:.5rem;cursor:pointer;font-size:.8rem;}
+
+/* ---- lives bar in header ---- */
+.lives-bar{display:flex;align-items:center;gap:3px;}
+.life-heart{font-size:1.25rem;transition:transform .25s cubic-bezier(.2,1.4,.4,1), filter .25s;}
+.life-heart.empty{filter:grayscale(1) opacity(.3);transform:scale(.8);}
+.life-heart.gain{animation:heartGain .4s cubic-bezier(.2,1.5,.4,1);}
+@keyframes heartGain{0%{transform:scale(.5)}60%{transform:scale(1.4)}100%{transform:scale(1)}}
+
+/* ---- locked level cells ---- */
+.lvl-cell.locked{opacity:.45;cursor:not-allowed;background:var(--sand);}
+.lvl-cell.locked::after{content:'🔒';font-size:1.3rem;}
+.lvl-cell.locked .lvl-num,.lvl-cell.locked .lvl-best{display:none;}
+
+/* ---- register nudge box ---- */
+.reg-box{background:var(--sand);border-radius:14px;padding:.9rem 1rem;margin-top:.7rem;text-align:center;}
+.reg-title{font-size:.8rem;color:var(--text-m);font-weight:600;margin:0 0 .3rem;}
+
+/* ---- quiz overlay ---- */
+.quiz-progress{display:flex;gap:6px;justify-content:center;margin-bottom:1rem;}
+.quiz-pip{width:28px;height:6px;border-radius:99px;background:var(--sand);transition:background .3s;}
+.quiz-pip.done{background:var(--mint);}
+.quiz-pip.active{background:var(--rose-d);}
+.quiz-q{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;
+  color:var(--chocolate);margin:0 0 1rem;line-height:1.35;text-align:center;}
+.quiz-opts{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem;}
+.quiz-opt{width:100%;text-align:left;padding:.75rem 1rem;border-radius:12px;
+  border:2px solid var(--sand);background:var(--white);font-size:.85rem;font-weight:600;
+  cursor:pointer;color:var(--chocolate);transition:border-color .15s, background .15s;}
+.quiz-opt:hover{border-color:var(--rose-d);}
+.quiz-opt.correct{border-color:var(--mint);background:rgba(168,212,176,.25);}
+.quiz-opt.wrong{border-color:#e07070;background:rgba(224,112,112,.12);}
+.quiz-opt:disabled{cursor:default;}
+.quiz-result{text-align:center;font-size:.82rem;font-weight:600;min-height:1.2rem;
+  color:var(--text-m);margin-bottom:.4rem;}
+.quiz-result.ok{color:#4a9e6b;}
+.quiz-result.bad{color:#c0504d;}
+.quiz-lives-earned{text-align:center;padding:.6rem;background:rgba(168,212,176,.25);
+  border-radius:10px;font-weight:700;font-size:.9rem;color:#3a7a56;margin-top:.5rem;}
+
+/* Pseudo-fullscreen fallback: expands the game to fill all space it has,
+   edge-to-edge, using nothing but CSS. This works identically on Android and
+   iPhone (unlike the native Fullscreen API, which iframes can block) and is
+   applied every time the fullscreen button is pressed, on top of trying the
+   native API for a real browser-chrome-hiding fullscreen where available. */
+body.pseudo-fs{background:var(--chocolate);}
+body.pseudo-fs .wrap{
+  /* NOTE: previously used the "inset:0" shorthand together with an explicit
+     height — that's over-constrained (top + bottom + height all set at once),
+     which is exactly what caused the gap/jump on iPhone whenever Safari's
+     address bar showed or hid mid-session. Anchoring only top/left/right and
+     letting height be the single source of truth fixes it on both platforms. */
+  /* z-index kept LOW on purpose: it only needs to sit above the plain page
+     background. Overlays (600), toast (700), combo badges (800+), score
+     popups (900+) all need to render ON TOP of the game even in fullscreen —
+     a z-index of 9999 here was burying every popup (level select, game over,
+     mode-switch confirm, etc.) underneath the fullscreen game view. */
+  position:fixed;top:0;left:0;right:0;z-index:1;
+  width:100%;max-width:none;margin:0;
+  height:100vh;height:100dvh;
+}
+
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:var(--chocolate);color:var(--cream);
+  padding:.55rem 1.1rem;border-radius:999px;font-size:.76rem;font-weight:600;z-index:700;opacity:0;
+  transition:opacity .3s, transform .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(6px);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <a href="/#game" class="back" id="backLink" target="_top">
+      <img src="/assets/logo.webp" alt="" onerror="this.style.display='none'">
+      <span>← Atpakaļ</span>
+    </a>
+    <div class="scores">
+      <div class="score-box"><span class="sl">Rezultāts</span><span class="sn" id="scoreNow">0</span></div>
+      <div class="score-box"><span class="sl" id="secondLbl">Rekords</span><span class="sn" id="scoreBest">0</span></div>
+    </div>
+    <button class="icon-btn" id="soundToggle" aria-label="Skaņa">🔊</button>
+    <button class="icon-btn" id="fullscreenBtn" aria-label="Pilnekrāns">⛶</button>
+    <button class="icon-btn" id="openLb" aria-label="Līderu saraksts">🏆</button>
+  </header>
+
+  <div class="mode-tabs">
+    <button class="mode-tab" id="tabEndless">Bezgalīgais</button>
+    <button class="mode-tab" id="tabLevels">Līmeņi</button>
+  </div>
+
+  <div class="objectives" id="objectives" style="display:none"></div>
+
+  <div class="board-wrap"><div id="board"></div></div>
+
+  <div class="tray" id="tray"></div>
+  <p class="hint" id="hint">Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸</p>
+</div>
+
+<!-- ===== LIVES BAR (injected into header via JS) ===== -->
+
+<div class="drag-ghost" id="dragGhost" style="display:none"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Leaderboard -->
+<div class="overlay" id="lbOverlay">
+  <div class="sheet">
+    <button class="sheet-close" id="closeLb">✕</button>
+    <h2>Līderu saraksts 🏆</h2>
+    <div id="lbList"><p class="lb-empty">Ielādē...</p></div>
+    <div id="lbLoginNudge"></div>
+    <p class="lb-note">Labākais rezultāts katru periodu saņem īpašu balvu no Macaroon Garden.</p>
+  </div>
+</div>
+
+<!-- Level select -->
+<div class="overlay" id="lvlOverlay">
+  <div class="sheet">
+    <button class="sheet-close" id="closeLvl">✕</button>
+    <h2>Izvēlies līmeni</h2>
+    <div class="lvl-grid" id="lvlGrid"></div>
+  </div>
+</div>
+
+<!-- Level complete -->
+<div class="overlay center" id="winOverlay">
+  <div class="sheet">
+    <div class="win-emoji">🎉</div>
+    <h2 style="text-align:center">Līmenis paveikts!</h2>
+    <p class="win-stat">Soļi: <b id="winMoves">0</b></p>
+    <p class="win-stat">Tavs labākais: <b id="winBest">—</b></p>
+    <p class="win-stat">Koprezultāts: <b id="winTotalScore">0</b></p>
+    <div id="winRegBox" style="display:none" class="reg-box">
+      <p class="reg-title">💾 Saglabā savu rezultātu kopvērtējumā!</p>
+      <a href="/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none;margin-top:.6rem">Reģistrēties / Ielogoties →</a>
+      <button class="mghost" id="winRegSkip">Turpināt anonīmi</button>
+    </div>
+    <div id="winActions">
+      <button class="msub" id="winNext">Nākamais līmenis →</button>
+      <button class="mghost" id="winReplay">Atkārtot šo līmeni</button>
+    </div>
+  </div>
+</div>
+
+<!-- No lives / Quiz overlay -->
+<div class="overlay center" id="noLivesOverlay">
+  <div class="sheet" style="max-width:380px">
+
+    <!-- State 1: out of lives, offer quiz -->
+    <div id="quizOffer">
+      <div class="win-emoji">💔</div>
+      <h2 style="text-align:center">Dzīvības iztērētas!</h2>
+      <p class="win-stat" style="text-align:center">Nākamā dzīvība pienāks pēc: <b id="nextLifeTimer">—</b></p>
+      <p style="font-size:.82rem;color:var(--text-m);text-align:center;margin:.6rem 0 .3rem">
+        Vai atbildi uz 5 jautājumiem par Macaroon Garden un atgūsti <b>3 dzīvības</b> uzreiz! 🍬
+      </p>
+      <button class="msub" id="startQuizBtn">Atbildēt uz jautājumiem →</button>
+      <button class="mghost" id="closeLives">Aizvērt</button>
+    </div>
+
+    <!-- State 2: quiz in progress -->
+    <div id="quizGame" style="display:none">
+      <h2 style="text-align:center;margin-bottom:.5rem">Macaroon Garden viktorīna 🌸</h2>
+      <div class="quiz-progress" id="quizProgress"></div>
+      <p class="quiz-q" id="quizQuestion"></p>
+      <div class="quiz-opts" id="quizOpts"></div>
+      <p class="quiz-result" id="quizResult"></p>
+      <button class="msub" id="quizNextBtn" style="display:none">Nākamais →</button>
+    </div>
+
+    <!-- State 3: quiz finished -->
+    <div id="quizDone" style="display:none">
+      <div class="win-emoji">🎉</div>
+      <h2 style="text-align:center">Viktorīna pabeigta!</h2>
+      <p class="win-stat" style="text-align:center">Pareizas atbildes: <b id="quizCorrectCount">0</b> / 5</p>
+      <div class="quiz-lives-earned" id="quizLivesEarned"></div>
+      <button class="msub" id="quizPlayBtn" style="margin-top:1rem">Turpināt spēlēt! →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Game over (endless / no moves) -->
+<div class="overlay center" id="gameOverOverlay">
+  <div class="sheet">
+    <div class="win-emoji">😮</div>
+    <h2 style="text-align:center">Neviena figūra vairs neder!</h2>
+    <p class="win-stat">Rezultāts: <b id="goScore">0</b></p>
+    <p id="goLivesLeft" style="display:none;text-align:center;font-size:.88rem;margin:.4rem 0;color:var(--text-m)"></p>
+    <div id="goRegBox" class="reg-box" style="display:none">
+      <p class="reg-title">💾 Reģistrējies, lai rezultāts parādītos kopvērtējumā!</p>
+      <a href="/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none">Reģistrēties / Ielogoties →</a>
+      <button class="mghost" id="goRegSkip">Turpināt anonīmi</button>
+    </div>
+    <div id="goActions">
+      <button class="msub" id="goRestart">Spēlēt vēlreiz</button>
+    </div>
+    <div id="goNoLivesMsg" style="display:none">
+      <button class="msub" id="goQuizBtn">🍬 Atgūt dzīvības ar viktorīnu</button>
+      <button class="mghost" id="goFinalBtn">Beigt spēli</button>
+    </div>
+  </div>
+</div>
+
+<!-- Final score (all lives spent + confirm anonymous continue) -->
+<div class="overlay center" id="finalOverlay">
+  <div class="sheet">
+    <div class="win-emoji">🌸</div>
+    <h2 style="text-align:center">Spēle pabeigta!</h2>
+    <p class="win-stat">Tu pabeidzi ar <b id="finalScore">0</b> punktiem</p>
+    <p class="win-stat">Sasniegts līmenis: <b id="finalLevel">0</b></p>
+    <a href="/#home" target="_top" class="msub" style="display:block;text-align:center;text-decoration:none;margin-top:.8rem">🏆 Reģistrēties un saglabāt</a>
+    <button class="mghost" id="finalContinueAnon">Turpināt anonīmi (sākt no sākuma)</button>
+  </div>
+</div>
+
+<!-- Mode switch confirmation (prevents accidentally leaving an active game) -->
+<div class="overlay center" id="modeConfirmOverlay">
+  <div class="sheet" style="max-width:320px">
+    <div class="win-emoji">🔄</div>
+    <h2 style="text-align:center">Mainīt spēles režīmu?</h2>
+    <p class="win-stat" style="text-align:center">Tava pašreizējā spēle netiks zaudēta, bet ekrāns tiks nomainīts.</p>
+    <button class="msub" id="modeConfirmYes">Jā, mainīt</button>
+    <button class="mghost" id="modeConfirmNo">Nē, palikt šeit</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ================= Supabase ================= */
+  var sb = null;
+  try{
+    if (window.supabase) {
+      sb = window.supabase.createClient(
+        'https://ibnvqljclchzlbvfwugj.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlibnZxbGpjbGNoemxidmZ3dWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNDM4MjIsImV4cCI6MjA4NjgxOTgyMn0.oQqSvLbbDcWDpgJdDYde11sd6SX96snBIYs1FzfcCvo',
+        { auth:{ persistSession:true, autoRefreshToken:true } }
+      );
+    }
+  }catch(e){ console.warn('Supabase nav pieejams', e); }
+
+  var currentUser = null;
+  if(sb){
+    sb.auth.getSession().then(function(r){ currentUser = r.data.session ? r.data.session.user : null; syncBestFromServer(); });
+    sb.auth.onAuthStateChange(function(_e, session){ currentUser = session ? session.user : null; syncBestFromServer(); });
+  }
+
+  /* ================= Audio & haptics ================= */
+  var audioCtx = null;
+  var soundOn = localStorage.getItem('mg_sound_on') !== '0';
+  function ensureAudioCtx(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+    }
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function playTone(freq, duration, type, gainAmt, delay){
+    if(!soundOn) return;
+    var ctx = ensureAudioCtx();
+    if(!ctx) return;
+    var t0 = ctx.currentTime + (delay||0);
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(gainAmt || 0.2, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + duration + 0.02);
+  }
+  function sfxPlace(){ playTone(320, 0.09, 'sine', 0.18); }
+  function sfxClear(lineCount){
+    // Rising little arpeggio per line cleared, pitch climbs with combo size.
+    var base = 440;
+    for(var i=0;i<Math.min(lineCount,4);i++) playTone(base * Math.pow(1.26, i), 0.16, 'triangle', 0.22, i*0.06);
+  }
+  function sfxCombo(){ playTone(660, 0.12, 'square', 0.15); playTone(880, 0.14, 'square', 0.15, 0.07); }
+  function sfxWin(){ [523,659,784,1047].forEach(function(f,i){ playTone(f, 0.22, 'triangle', 0.2, i*0.09); }); }
+  function sfxGameOver(){ playTone(220, 0.35, 'sawtooth', 0.15); playTone(160, 0.4, 'sawtooth', 0.13, 0.12); }
+  function haptic(pattern){ if(soundOn && navigator.vibrate) try{ navigator.vibrate(pattern); }catch(e){} }
+
+  function setSoundOn(v){
+    soundOn = v;
+    localStorage.setItem('mg_sound_on', v ? '1' : '0');
+    var btn = document.getElementById('soundToggle');
+    if(btn) btn.textContent = v ? '🔊' : '🔇';
+  }
+
+  /* ================= Toast ================= */
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 1600);
+  }
+
+  /* ================= Constants ================= */
+  var SIZE = 8;
+  var COLOR_INFO = [
+    { hex:'#E8A4B8', name:'Rozā' },
+    { hex:'#A8D4B0', name:'Zaļie' },
+    { hex:'#C4B5D4', name:'Lavandas' },
+    { hex:'#C4956A', name:'Šokolādes' },
+    { hex:'#EEE880', name:'Citrona' },
+  ];
+  var COLORS = COLOR_INFO.map(function(c){ return c.hex; });
+  function colorName(hex){ var f = COLOR_INFO.find(function(c){ return c.hex === hex; }); return f ? f.name : hex; }
+
+  var SHAPES = [
+    [[1]],
+    [[1,1]], [[1],[1]],
+    [[1,1,1]], [[1],[1],[1]],
+    [[1,1,1,1]], [[1],[1],[1],[1]],
+    [[1,1],[1,1]],
+    [[1,0],[1,0],[1,1]], [[0,1],[0,1],[1,1]], [[1,1],[1,0],[1,0]], [[1,1],[0,1],[0,1]],
+    [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]], [[1,1,1],[1,0,0]], [[1,1,1],[0,0,1]],
+    [[0,1,0],[1,1,1]],
+    [[1,1,0],[0,1,1]], [[0,1,1],[1,1,0]],
+    [[1,1],[1,0]], [[1,1],[0,1]], [[0,1],[1,1]], [[1,0],[1,1]],
+  ];
+
+  // Bigger 5- and 6-cell pieces. These are drawn separately from SHAPES (see
+  // randomPiece) with their own — deliberately low — probability, so they show
+  // up periodically rather than crowding out the regular-size pieces.
+  var BIG_SHAPES = [
+    // 5 cells — classic shapes only: straight line, plus, and L (with rotations)
+    [[1,1,1,1,1]], [[1],[1],[1],[1],[1]],
+    [[0,1,0],[1,1,1],[0,1,0]],
+    [[1,0,0,0],[1,1,1,1]], [[0,0,0,1],[1,1,1,1]], [[1,1,1,1],[1,0,0,0]], [[1,1,1,1],[0,0,0,1]],
+    // 6 cells — rectangles and L (with rotations)
+    [[1,1,1],[1,1,1]], [[1,1],[1,1],[1,1]],
+    [[1,0,0],[1,0,0],[1,0,0],[1,1,1]], [[0,0,1],[0,0,1],[0,0,1],[1,1,1]],
+    [[1,1,1],[1,0,0],[1,0,0],[1,0,0]], [[1,1,1],[0,0,1],[0,0,1],[0,0,1]],
+  ];
+  // ~1 in 6 pieces drawn is a big (5–6 cell) one — often enough to feel like a
+  // regular part of the mix, rare enough that it doesn't dominate an 8x8 board.
+  var BIG_SHAPE_CHANCE = 0.16;
+
+  /* ================= Level definitions ================= */
+  // objective kinds: {k:'score', n:N} | {k:'combo', size:N, n:count} | {k:'color', hex:H, n:count}
+  // A level's objectives array must ALL be satisfied to complete it. Ranked by fewest moves.
+  var HAND_LEVELS = [
+    [{k:'score', n:150}],
+    [{k:'combo', size:2, n:3}],
+    [{k:'color', hex:'#E8A4B8', n:20}],
+    [{k:'score', n:400}],
+    [{k:'combo', size:2, n:5}, {k:'combo', size:3, n:2}],
+    [{k:'color', hex:'#A8D4B0', n:25}, {k:'color', hex:'#EEE880', n:25}],
+    [{k:'combo', size:2, n:5}, {k:'combo', size:3, n:3}, {k:'combo', size:5, n:1}],
+    [{k:'color', hex:'#E8A4B8', n:30}, {k:'color', hex:'#A8D4B0', n:30}, {k:'color', hex:'#EEE880', n:30}],
+    [{k:'score', n:900}],
+    [{k:'combo', size:4, n:2}],
+    [{k:'color', hex:'#C4B5D4', n:35}, {k:'color', hex:'#C4956A', n:35}],
+    [{k:'combo', size:2, n:8}, {k:'combo', size:4, n:1}],
+    [{k:'score', n:1400}],
+    [{k:'combo', size:3, n:5}, {k:'color', hex:'#E8A4B8', n:20}],
+    [{k:'combo', size:5, n:2}],
+  ];
+  function getLevelDef(idx){
+    if(idx < HAND_LEVELS.length) return HAND_LEVELS[idx];
+    // Unlimited procedural levels beyond the hand-authored set — difficulty scales with idx.
+    var n = idx - HAND_LEVELS.length;
+    var variant = n % 4;
+    var scale = 1 + Math.floor(n / 4) * 0.5;
+    if(variant === 0) return [{k:'score', n: Math.round(1600 * scale)}];
+    if(variant === 1) return [{k:'combo', size:2, n: Math.round(6*scale)}, {k:'combo', size:3, n: Math.round(3*scale)}];
+    if(variant === 2){
+      var c1 = COLORS[n % COLORS.length], c2 = COLORS[(n+2) % COLORS.length];
+      return [{k:'color', hex:c1, n: Math.round(30*scale)}, {k:'color', hex:c2, n: Math.round(30*scale)}];
+    }
+    return [{k:'combo', size:4, n: Math.max(1,Math.round(2*scale))}, {k:'combo', size:5, n: Math.max(1,Math.round(1*scale))}];
+  }
+  function objLabel(o){
+    if(o.k === 'score') return 'Sasniedz ' + o.n + ' punktus';
+    if(o.k === 'combo') return o.size + ' līnijas vienlaikus × ' + o.n;
+    if(o.k === 'color') return colorName(o.hex) + ' klucīši × ' + o.n;
+    return '';
+  }
+
+  // Honest difficulty estimate — a design-time heuristic, NOT a claim about real players.
+  // We do not track live pass/fail telemetry, so we never label this as "% of players".
+  var DIFFICULTY_TIERS = [
+    { max: 1.2,  label: 'Viegli',      stars: '⭐' },
+    { max: 2.4,  label: 'Vidēji',      stars: '⭐⭐' },
+    { max: 4.0,  label: 'Grūti',       stars: '⭐⭐⭐' },
+    { max: 6.0,  label: 'Ļoti grūti',  stars: '⭐⭐⭐⭐' },
+    { max: Infinity, label: 'Meistara līmenis', stars: '⭐⭐⭐⭐⭐' },
+  ];
+  function levelDifficulty(idx){
+    var def = getLevelDef(idx);
+    var diff = 0;
+    def.forEach(function(o){
+      if(o.k === 'score') diff += o.n/220;
+      else if(o.k === 'combo') diff += (o.size-1)*o.n*0.45;
+      else if(o.k === 'color') diff += o.n/16;
+    });
+    for(var i=0;i<DIFFICULTY_TIERS.length;i++) if(diff <= DIFFICULTY_TIERS[i].max) return DIFFICULTY_TIERS[i];
+    return DIFFICULTY_TIERS[DIFFICULTY_TIERS.length-1];
+  }
+  // Real, locally-tracked personal attempt history (honest — this is actual data about
+  // this device, never presented as "other players").
+  function loadAttemptStats(){
+    try{ return JSON.parse(localStorage.getItem('mg_attempt_stats') || '{}'); }catch(e){ return {}; }
+  }
+  function recordAttempt(idx, won){
+    var s = loadAttemptStats();
+    if(!s[idx]) s[idx] = { attempts:0, wins:0 };
+    s[idx].attempts++;
+    if(won) s[idx].wins++;
+    localStorage.setItem('mg_attempt_stats', JSON.stringify(s));
+  }
+
+  /* ================= Mode & level state ================= */
+  var mode = 'endless'; // 'endless' | 'levels'
+  var currentLevelIdx = 0;
+  var levelProgress = null; // {movesUsed, comboCounts:{}, colorCounts:{}, scoreAtStart}
+
+  function loadLevelBests(){
+    try{ return JSON.parse(localStorage.getItem('mg_level_bests') || '{}'); }catch(e){ return {}; }
+  }
+  function saveLevelBest(idx, moves){
+    var b = loadLevelBests();
+    if(!b[idx] || moves < b[idx]) b[idx] = moves;
+    localStorage.setItem('mg_level_bests', JSON.stringify(b));
+  }
+
+  /* ================= Board / core state ================= */
+  var board = [];
+  var score = 0;
+  var best = parseInt(localStorage.getItem('mg_game_best') || '0', 10);
+  var tray = [null, null, null];
+  var boardEl = document.getElementById('board');
+  var trayEl = document.getElementById('tray');
+  var cellEls = [];
+  var cellSize = 40, cellGap = 3, boardPad = 8; // measured live, defaults as fallback
+
+  function emptyBoard(){
+    var b = [];
+    for(var r=0;r<SIZE;r++){ var row=[]; for(var c=0;c<SIZE;c++) row.push(null); b.push(row); }
+    return b;
+  }
+
+  function buildBoardDom(){
+    boardEl.innerHTML = '';
+    cellEls = [];
+    for(var r=0;r<SIZE;r++){
+      var rowEls = [];
+      for(var c=0;c<SIZE;c++){
+        var d = document.createElement('div');
+        d.className = 'cell';
+        boardEl.appendChild(d);
+        rowEls.push(d);
+      }
+      cellEls.push(rowEls);
+    }
+  }
+  function fitBoard(){
+    // Calculate the largest square that fits inside .board-wrap without overflow.
+    // This replaces CSS aspect-ratio which misbehaves on iOS Safari with flex layouts.
+    var wrap = boardEl.parentElement;
+    var wrapW = wrap.clientWidth;
+    var wrapH = wrap.clientHeight;
+    var side = Math.min(wrapW, wrapH) - 4; // 4px breathing room
+    boardEl.style.width  = side + 'px';
+    boardEl.style.height = side + 'px';
+  }
+  function measureBoard(){
+    fitBoard();
+    var r0 = cellEls[0][0].getBoundingClientRect();
+    var r1 = cellEls[0][1] ? cellEls[0][1].getBoundingClientRect() : r0;
+    cellSize = r0.width;
+    cellGap  = Math.max(0, r1.left - r0.right);
+  }
+  window.addEventListener('resize', function(){ measureBoard(); });
+
+  function renderBoard(){
+    for(var r=0;r<SIZE;r++){
+      for(var c=0;c<SIZE;c++){
+        var el = cellEls[r][c];
+        var val = board[r][c];
+        if(val){ el.classList.add('filled'); el.style.background = val; }
+        else{ el.classList.remove('filled'); el.style.background = ''; }
+      }
+    }
+  }
+
+  /* ================= Piece validity ================= */
+  function shapeSize(shape){ var n=0; for(var i=0;i<shape.length;i++) for(var j=0;j<shape[i].length;j++) if(shape[i][j]) n++; return n; }
+  function canPlaceAt(b, shape, r0, c0){
+    for(var i=0;i<shape.length;i++){
+      for(var j=0;j<shape[i].length;j++){
+        if(!shape[i][j]) continue;
+        var r=r0+i, c=c0+j;
+        if(r<0||r>=SIZE||c<0||c>=SIZE) return false;
+        if(b[r][c]) return false;
+      }
+    }
+    return true;
+  }
+  function canPlaceSomewhere(b, shape){
+    for(var r=0;r<SIZE;r++) for(var c=0;c<SIZE;c++) if(canPlaceAt(b, shape, r, c)) return true;
+    return false;
+  }
+  function randomPiece(){
+    var pool = (Math.random() < BIG_SHAPE_CHANCE) ? BIG_SHAPES : SHAPES;
+    var shape = pool[Math.floor(Math.random()*pool.length)];
+    return { shape: shape, color: COLORS[Math.floor(Math.random()*COLORS.length)] };
+  }
+    function refillTrayIfEmpty(){
+    var allEmpty = tray.every(function(p){ return !p; });
+    if(!allEmpty) return;
+
+    var pieces = [];
+    var candidates = [];
+    var allShapes = SHAPES.concat(BIG_SHAPES);
+
+    // Evaluate combo potential for all shapes on current board state
+    for(var s=0; s<allShapes.length; s++){
+      var shape = allShapes[s];
+      var maxCombo = 0;
+      var canPlace = false;
+
+      for(var r=0; r<SIZE; r++){
+        for(var c=0; c<SIZE; c++){
+          if(canPlaceAt(board, shape, r, c)){
+            canPlace = true;
+            var clear = wouldClearLines(board, shape, r, c);
+            var combo = clear.rows.length + clear.cols.length;
+            if(combo > maxCombo) maxCombo = combo;
+          }
+        }
+      }
+
+      if(canPlace){
+        candidates.push({ shape: shape, combo: maxCombo });
+      }
+    }
+
+    if(candidates.length === 0){
+      candidates = SHAPES.map(function(sh){ return { shape: sh, combo: 0 }; });
+    }
+
+    // Sort candidates by combo potential (highest first)
+    candidates.sort(function(a, b){ return b.combo - a.combo; });
+
+    var smallShapes = [[[1]], [[1,1]], [[1],[1]], [[1,1],[1,0]], [[1,1],[0,1]]];
+
+    // Piece 1: Combos booster helper
+    var shape1 = null;
+    var highComboCandidates = candidates.filter(function(c){ return c.combo > 0; });
+    if(highComboCandidates.length > 0){
+      shape1 = highComboCandidates[Math.floor(Math.random() * highComboCandidates.length)].shape;
+    } else {
+      shape1 = candidates[Math.floor(Math.random() * Math.min(5, candidates.length))].shape;
+    }
+
+    // Piece 2: Small builder piece for easy tucking and combo bridging
+    var shape2 = null;
+    var playableSmall = smallShapes.filter(function(s){ return canPlaceSomewhere(board, s); });
+    if(playableSmall.length > 0){
+      shape2 = playableSmall[Math.floor(Math.random() * playableSmall.length)];
+    } else {
+      shape2 = smallShapes[0];
+    }
+
+    // Piece 3: Playable variety piece
+    var shape3 = null;
+    if(candidates.length > 1){
+      shape3 = candidates[Math.floor(Math.random() * candidates.length)].shape;
+    } else {
+      shape3 = shape2;
+    }
+
+    pieces = [
+      { shape: shape1, color: COLORS[Math.floor(Math.random() * COLORS.length)] },
+      { shape: shape2, color: COLORS[Math.floor(Math.random() * COLORS.length)] },
+      { shape: shape3, color: COLORS[Math.floor(Math.random() * COLORS.length)] }
+    ];
+
+    pieces = shuffleArray(pieces);
+
+    // Final check
+    var anyFits = pieces.some(function(p){ return canPlaceSomewhere(board, p.shape); });
+    if(!anyFits){
+      for(var s2=0; s2<smallShapes.length && !anyFits; s2++){
+        if(canPlaceSomewhere(board, smallShapes[s2])){
+          pieces[0] = { shape: smallShapes[s2], color: COLORS[Math.floor(Math.random()*COLORS.length)] };
+          anyFits = true;
+        }
+      }
+    }
+
+    tray[0] = pieces[0]; tray[1] = pieces[1]; tray[2] = pieces[2];
+  }
+  function anyTrayPieceFits(){
+    return tray.some(function(p){ return p && canPlaceSomewhere(board, p.shape); });
+  }
+
+  /* ================= Tray rendering ================= */
+  function renderTray(){
+    trayEl.innerHTML = '';
+    for(var i=0;i<3;i++){
+      var slot = document.createElement('div');
+      slot.className = 'tray-slot';
+      slot.dataset.idx = i;
+      if(tray[i]) slot.appendChild(buildPieceGrid(tray[i], 20));
+      trayEl.appendChild(slot);
+    }
+    attachDragHandlers();
+  }
+  function buildPieceGrid(piece, cellPx){
+    var rows = piece.shape.length, cols = piece.shape[0].length;
+    var g = document.createElement('div');
+    g.className = 'piece-grid';
+    g.style.gridTemplateColumns = 'repeat(' + cols + ',' + cellPx + 'px)';
+    g.style.gridTemplateRows = 'repeat(' + rows + ',' + cellPx + 'px)';
+    for(var i=0;i<rows;i++){
+      for(var j=0;j<cols;j++){
+        var c = document.createElement('div');
+        if(piece.shape[i][j]){ c.className = 'piece-cell'; c.style.background = piece.color; }
+        else{ c.className = 'piece-cell empty'; }
+        c.style.width = cellPx+'px'; c.style.height = cellPx+'px';
+        g.appendChild(c);
+      }
+    }
+    return g;
+  }
+
+  /* ================= Scoring & objectives UI ================= */
+  function updateScoreUi(){
+    document.getElementById('scoreNow').textContent = score;
+    document.getElementById('scoreBest').textContent = mode === 'levels' ? (levelProgress ? levelProgress.movesUsed : 0) : best;
+    document.getElementById('secondLbl').textContent = mode === 'levels' ? 'Soļi' : 'Rekords';
+  }
+  function addScore(n){
+    score += n;
+    if(mode === 'endless' && score > best){
+      best = score;
+      localStorage.setItem('mg_game_best', String(best));
+      saveBestToServer(best);
+    }
+    updateScoreUi();
+  }
+
+  function renderObjectives(){
+    var wrap = document.getElementById('objectives');
+    if(mode !== 'levels' || !levelProgress){ wrap.style.display = 'none'; return; }
+    wrap.style.display = 'flex';
+    wrap.innerHTML = '';
+    var def = getLevelDef(currentLevelIdx);
+    def.forEach(function(o){
+      var have = 0, need = o.n;
+      if(o.k === 'score') have = score;
+      else if(o.k === 'combo') have = levelProgress.comboCounts[o.size] || 0;
+      else if(o.k === 'color') have = levelProgress.colorCounts[o.hex] || 0;
+      var pct = Math.min(100, Math.round(have/need*100));
+      var row = document.createElement('div');
+      row.className = 'obj-row' + (have >= need ? ' done' : '');
+      var dotColor = o.k === 'color' ? o.hex : (o.k === 'combo' ? 'var(--rose-d)' : 'var(--gold)');
+      row.innerHTML = '<span class="dot" style="background:'+dotColor+'"></span>' +
+        '<span class="lbl">'+objLabel(o)+'</span>' +
+        '<span class="bar"><i style="width:'+pct+'%"></i></span>';
+      wrap.appendChild(row);
+    });
+    var mv = document.createElement('div');
+    mv.className = 'moves-tag';
+    mv.textContent = 'Soļi: ' + levelProgress.movesUsed;
+    wrap.appendChild(mv);
+  }
+
+  function checkLevelComplete(){
+    if(mode !== 'levels' || !levelProgress) return;
+    var def = getLevelDef(currentLevelIdx);
+    var allDone = def.every(function(o){
+      if(o.k === 'score') return score >= o.n;
+      if(o.k === 'combo') return (levelProgress.comboCounts[o.size]||0) >= o.n;
+      if(o.k === 'color') return (levelProgress.colorCounts[o.hex]||0) >= o.n;
+      return false;
+    });
+    if(allDone) showWin();
+  }
+
+  /* ================= Juice helpers ================= */
+
+  // Floating score popup that rises from the centre of the board
+  function spawnScorePopup(text, sizePx, colorStr){
+    var boardRect = boardEl.getBoundingClientRect();
+    var el = document.createElement('div');
+    el.className = 'score-popup';
+    el.textContent = text;
+    el.style.fontSize = (sizePx || 36) + 'px';
+    if(colorStr) el.style.color = colorStr;
+    // Position relative to the board element (which is position:relative)
+    el.style.left = '50%';
+    el.style.top = '42%';
+    el.style.transform = 'translateX(-50%)';
+    boardEl.appendChild(el);
+    el.addEventListener('animationend', function(){ el.remove(); });
+  }
+
+  // Big xN banner centred on the board
+  function spawnMultiplierBanner(n){
+    var labels = ['','','×2','×3','×4','×5','×6','×7','×8'];
+    var text = (n < labels.length ? labels[n] : '×'+n) + (n >= 4 ? ' 🔥' : '');
+    var fontSizes = [0,0,58,72,86,100,110,120,130];
+    var px = n < fontSizes.length ? fontSizes[n] : 130;
+    var colors = ['','','#FFD966','#FF9B3F','#FF5F3F','#FF2F6F','#D92BFF','#2BDDFF','#fff'];
+    var col = n < colors.length ? colors[n] : '#fff';
+    var el = document.createElement('div');
+    el.className = 'multiplier-banner';
+    el.textContent = text;
+    el.style.fontSize = px + 'px';
+    el.style.color = col;
+    el.style.top = '28%';
+    boardEl.appendChild(el);
+    el.addEventListener('animationend', function(){ el.remove(); });
+  }
+
+  // Confetti burst for big combos — small colored pieces flying outward from
+  // the board's centre. Count stays modest (mobile-friendly) and every piece
+  // removes itself when its animation ends, so nothing lingers in the DOM.
+  function spawnConfetti(count){
+    var palette = COLORS.concat(['#FFD966', '#FF9B3F']);
+    for(var i=0;i<count;i++){
+      var el = document.createElement('div');
+      el.className = 'confetti-piece';
+      var angle = Math.random() * Math.PI * 2;
+      var dist = 40 + Math.random() * 90;
+      el.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
+      el.style.setProperty('--dy', (Math.sin(angle) * dist - 24) + 'px');
+      el.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+      el.style.background = palette[Math.floor(Math.random() * palette.length)];
+      el.style.borderRadius = Math.random() < 0.5 ? '50%' : '2px';
+      el.style.left = '50%';
+      el.style.top = '40%';
+      boardEl.appendChild(el);
+      el.addEventListener('animationend', function(){ this.remove(); });
+    }
+  }
+
+  // Quick shake on the whole play area for really big combos.
+  function shakeBoard(){
+    var wrap = boardEl.parentElement;
+    wrap.classList.remove('shake');
+    void wrap.offsetWidth;
+    wrap.classList.add('shake');
+    wrap.addEventListener('animationend', function(){ wrap.classList.remove('shake'); }, {once:true});
+  }
+
+  // Score-box punch animation
+  function punchScoreBox(){
+    var box = document.querySelector('.score-box');
+    if(!box) return;
+    box.classList.remove('punch');
+    void box.offsetWidth; // reflow to restart animation
+    box.classList.add('punch');
+    box.addEventListener('animationend', function(){ box.classList.remove('punch'); }, {once:true});
+  }
+
+  // Staggered wave clear: cells animate column-by-column with tiny delay offsets
+  function waveClearCells(cellsToClear, delay){
+    cellsToClear.forEach(function(rc){
+      var el = cellEls[rc[0]][rc[1]];
+      var waveDelay = rc[1] * 18; // 18ms per column = smooth left→right wave
+      setTimeout(function(){ el.classList.add('clearing'); }, (delay||0) + waveDelay);
+    });
+  }
+
+  /* ================= Line clearing ================= */
+  function checkAndClearLines(){
+    var fullRows = [], fullCols = [];
+    for(var r=0;r<SIZE;r++){ var full=true; for(var c=0;c<SIZE;c++) if(!board[r][c]){ full=false; break; } if(full) fullRows.push(r); }
+    for(var c=0;c<SIZE;c++){ var full2=true; for(var r=0;r<SIZE;r++) if(!board[r][c]){ full2=false; break; } if(full2) fullCols.push(c); }
+    var total = fullRows.length + fullCols.length;
+    if(total === 0){ if(mode==='levels') checkLevelComplete(); return; }
+
+    var cellsToClear = [];
+    var colorTally = {};
+    var seen = {};
+    function addClearCell(r, c){
+      var key = r + '_' + c;
+      if(seen[key]) return;
+      seen[key] = true;
+      cellsToClear.push([r,c]);
+      var col = board[r][c];
+      if(col) colorTally[col] = (colorTally[col]||0) + 1;
+    }
+    fullRows.forEach(function(r){ for(var c=0;c<SIZE;c++) addClearCell(r, c); });
+    fullCols.forEach(function(c){ for(var r=0;r<SIZE;r++) addClearCell(r, c); });
+
+    // --- JUICE: staggered wave clear animation ---
+    waveClearCells(cellsToClear, 0);
+
+    if(mode === 'levels' && levelProgress){
+      levelProgress.comboCounts[total] = (levelProgress.comboCounts[total]||0) + 1;
+      Object.keys(colorTally).forEach(function(hex){
+        levelProgress.colorCounts[hex] = (levelProgress.colorCounts[hex]||0) + colorTally[hex];
+      });
+    }
+
+    var bonus = total * 10 * total;
+    var waveEnd = 8 * 18 + 380; // last column wave + animation duration
+
+    // --- JUICE: floating score popup ---
+    var popSize = total === 1 ? 36 : total === 2 ? 48 : total <= 4 ? 60 : 76;
+    var popColor = total === 1 ? '#fff' : total === 2 ? '#FFD966' : total <= 4 ? '#FF9B3F' : '#FF5F3F';
+    spawnScorePopup('+' + bonus, popSize, popColor);
+
+    // --- JUICE: xN multiplier banner for 2+ lines ---
+    if(total >= 2) spawnMultiplierBanner(total);
+
+    // --- JUICE: board flash for combos ---
+    if(total >= 2){
+      boardEl.classList.remove('flash');
+      void boardEl.offsetWidth;
+      boardEl.classList.add('flash');
+      boardEl.addEventListener('animationend', function(){ boardEl.classList.remove('flash'); }, {once:true});
+    }
+
+    // --- JUICE: confetti burst for solid combos, bigger burst for huge ones ---
+    if(total >= 3) spawnConfetti(total >= 5 ? 24 : 14);
+
+    // --- JUICE: a little screen shake for the really big combos ---
+    if(total >= 4) shakeBoard();
+
+    addScore(bonus);
+    punchScoreBox();
+    sfxClear(total);
+    if(total > 1){ sfxCombo(); haptic([20,30,20,30,40]); } else { haptic(25); }
+    toast(total > 1 ? ('🔥 ×' + total + ' Kombo! +' + bonus) : ('✨ +' + bonus));
+    renderObjectives();
+    if(mode === 'levels') checkLevelComplete();
+
+    setTimeout(function(){
+      fullRows.forEach(function(r){ for(var c=0;c<SIZE;c++) board[r][c] = null; });
+      fullCols.forEach(function(c){ for(var r=0;r<SIZE;r++) board[r][c] = null; });
+      cellsToClear.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.remove('clearing'); });
+      renderBoard();
+      saveState();
+    }, waveEnd);
+  }
+
+  /* ================= Placement ================= */
+  function commitPlacement(trayIdx, shape, color, r0, c0){
+    for(var i=0;i<shape.length;i++){
+      for(var j=0;j<shape[i].length;j++){
+        if(shape[i][j]) board[r0+i][c0+j] = color;
+      }
+    }
+    addScore(shapeSize(shape));
+    sfxPlace();
+    haptic(10);
+    if(mode === 'levels' && levelProgress) levelProgress.movesUsed++;
+    renderBoard();
+    tray[trayIdx] = null;
+    renderObjectives();
+    checkAndClearLines();
+    setTimeout(function(){
+      refillTrayIfEmpty();
+      renderTray();
+      saveState();
+      if(!anyTrayPieceFits()) showGameOver();
+    }, 560);
+  }
+
+  /* ================= Drag interaction — precise + rAF-throttled ================= */
+  var dragGhost = document.getElementById('dragGhost');
+  var dragging = null;
+  var pendingMove = null;
+  var rafScheduled = false;
+  var lastMoveTs = 0;
+  var watchdogTimer = null;
+  // If no pointermove arrives for this long mid-drag, the browser has silently
+  // dropped the gesture (this is the "stuck between tray and board" bug) —
+  // we self-heal instead of leaving the piece floating.
+  var DRAG_STALL_MS = 400;
+
+  function attachDragHandlers(){
+    var slots = trayEl.querySelectorAll('.tray-slot');
+    slots.forEach(function(slot){
+      var idx = parseInt(slot.dataset.idx, 10);
+      if(!tray[idx]) return;
+      slot.addEventListener('pointerdown', function(ev){ startDrag(ev, idx); });
+    });
+  }
+
+  function startDrag(ev, idx){
+    var piece = tray[idx];
+    if(!piece) return;
+    // Prevent starting a second drag if one is already in progress
+    if(dragging) return;
+    ev.preventDefault();
+    measureBoard();
+    dragging = { idx: idx, piece: piece };
+    lastMoveTs = Date.now();
+
+    var slotEl = document.querySelectorAll('.tray-slot')[idx];
+
+    // Pointer capture locks all further events for this finger/pointer to the
+    // element that started the drag, no matter what it moves over afterwards.
+    // This is the main structural fix for pieces getting stuck: without it,
+    // some mobile browsers can lose track of a fast-moving pointer as it
+    // crosses the thin gap between the tray and the board.
+    try{ ev.target.setPointerCapture(ev.pointerId); }catch(e){}
+
+    var ghostCell = Math.max(22, Math.round(cellSize));
+    dragGhost.style.setProperty('--gc', ghostCell + 'px');
+    dragGhost.innerHTML = '';
+    dragGhost.appendChild(buildGhostGrid(piece, ghostCell));
+    dragGhost.style.display = 'grid';
+    dragGhost.style.gridTemplateColumns = 'repeat(' + piece.shape[0].length + ',' + ghostCell + 'px)';
+    positionGhost(ev.clientX, ev.clientY, piece, ghostCell);
+    slotEl.classList.add('used');
+
+    function onMove(e){
+      lastMoveTs = Date.now();
+      pendingMove = e;
+      if(!rafScheduled){
+        rafScheduled = true;
+        requestAnimationFrame(function(){
+          rafScheduled = false;
+          if(pendingMove){ positionGhost(pendingMove.clientX, pendingMove.clientY, piece, ghostCell); updateHoverPreview(pendingMove.clientX, pendingMove.clientY); }
+        });
+      }
+    }
+    // Use a once-flag so pointercancel + pointerup + watchdog can't double-fire
+    var ended = false;
+    function detachAll(){
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onCancel);
+      // slotEl.removeEventListener('lostpointercapture', onLostCapture);
+      if(watchdogTimer){ clearInterval(watchdogTimer); watchdogTimer = null; }
+    }
+    function onUp(e){
+      if(ended) return;
+      ended = true;
+      detachAll();
+      finishDrag(e.clientX, e.clientY);
+    }
+    function returnPieceToTray(){
+      clearHoverPreview();
+      dragGhost.style.display = 'none';
+      dragging = null;
+      pendingMove = null;
+      renderTray();
+    }
+    function onCancel(){
+      if(ended) return;
+      ended = true;
+      detachAll();
+      returnPieceToTray();
+    }
+    function onLostCapture(){ onCancel(); }
+    function onWatchdogTimeout(){
+      if(ended) return;
+      ended = true;
+      detachAll();
+      returnPieceToTray();
+      toast('Figūra atgriezta atpakaļ 🌸');
+    }
+
+    document.addEventListener('pointermove', onMove, {passive:true});
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onCancel);
+    // slotEl.addEventListener('lostpointercapture', onLostCapture);
+
+    watchdogTimer = setInterval(function(){
+      if(!ended && Date.now() - lastMoveTs > DRAG_STALL_MS) onWatchdogTimeout();
+    }, 200);
+  }
+  function buildGhostGrid(piece, px){
+    var rows = piece.shape.length, cols = piece.shape[0].length;
+    var g = document.createElement('div');
+    g.style.display = 'grid'; g.style.gap = '3px';
+    g.style.gridTemplateColumns = 'repeat('+cols+','+px+'px)';
+    for(var i=0;i<rows;i++) for(var j=0;j<cols;j++){
+      var c = document.createElement('div');
+      c.className = 'piece-cell' + (piece.shape[i][j] ? '' : ' empty');
+      if(piece.shape[i][j]) c.style.background = piece.color;
+      c.style.width = px+'px'; c.style.height = px+'px';
+      g.appendChild(c);
+    }
+    return g;
+  }
+
+  // Vertical lift so the piece is visible above the fingertip instead of hidden under it.
+  // Both the ghost rendering and the placement anchor use this same offset, so what you
+  // see is exactly where it lands.
+  var FINGER_LIFT = 70;
+  function positionGhost(x, y, piece, ghostCell){
+    var w = piece.shape[0].length * (ghostCell+3);
+    var h = piece.shape.length * (ghostCell+3);
+    dragGhost.style.left = (x - w/2) + 'px';
+    dragGhost.style.top = (y - h/2 - FINGER_LIFT) + 'px';
+  }
+
+  var lastHover = null;
+  var lastFireCells = null;
+  var comboBadge = null;
+
+  function anchorFromPoint(x, y, shape){
+    // The shape's bounding-box centre is pinned exactly under the pointer —
+    // matches positionGhost 1:1, so what you see is exactly where it lands.
+    var rect = boardEl.getBoundingClientRect();
+    var step = cellSize + cellGap;
+    var rows = shape.length, cols = shape[0].length;
+    var localX = x - rect.left - boardPad - (cols*step)/2;
+    var localY = (y - FINGER_LIFT) - rect.top - boardPad - (rows*step)/2;
+    var c0 = Math.round(localX/step);
+    var r0 = Math.round(localY/step);
+    return {r:r0, c:c0};
+  }
+
+  function wouldClearLines(b, shape, r0, c0){
+    // Non-destructive simulation: which rows/cols would be full if this piece landed here.
+    var tmp = b.map(function(row){ return row.slice(); });
+    for(var i=0;i<shape.length;i++) for(var j=0;j<shape[i].length;j++){
+      if(shape[i][j]){ var r=r0+i, c=c0+j; if(r>=0&&r<SIZE&&c>=0&&c<SIZE) tmp[r][c] = '#000'; }
+    }
+    var rows=[], cols=[];
+    for(var r=0;r<SIZE;r++){ var full=true; for(var c=0;c<SIZE;c++) if(!tmp[r][c]){full=false;break;} if(full) rows.push(r); }
+    for(var c2=0;c2<SIZE;c2++){ var full2=true; for(var r2=0;r2<SIZE;r2++) if(!tmp[r2][c2]){full2=false;break;} if(full2) cols.push(c2); }
+    return {rows:rows, cols:cols};
+  }
+
+  function ensureComboBadge(){
+    if(comboBadge) return comboBadge;
+    comboBadge = document.createElement('div');
+    comboBadge.className = 'combo-badge';
+    document.body.appendChild(comboBadge);
+    return comboBadge;
+  }
+  function hideComboBadge(){ if(comboBadge) comboBadge.classList.remove('show'); }
+
+  function clearHoverPreview(){
+    if(lastHover){
+      lastHover.forEach(function(rc){
+        if(rc[0]>=0 && rc[0]<SIZE && rc[1]>=0 && rc[1]<SIZE) cellEls[rc[0]][rc[1]].classList.remove('ghost-ok','ghost-bad');
+      });
+      lastHover = null;
+    }
+    if(lastFireCells){
+      lastFireCells.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.remove('ghost-fire'); });
+      lastFireCells = null;
+    }
+    dragGhost.classList.remove('ghost-valid','ghost-fire-piece');
+    hideComboBadge();
+  }
+
+  function updateHoverPreview(x, y){
+    clearHoverPreview();
+    if(!dragging) return;
+    var shape = dragging.piece.shape;
+    var anchor = anchorFromPoint(x, y, shape);
+    var valid = canPlaceAt(board, shape, anchor.r, anchor.c);
+    var cells = [];
+    for(var i=0;i<shape.length;i++){
+      for(var j=0;j<shape[i].length;j++){
+        if(!shape[i][j]) continue;
+        var r = anchor.r+i, c = anchor.c+j;
+        cells.push([r,c]);
+        if(r>=0 && r<SIZE && c>=0 && c<SIZE) cellEls[r][c].classList.add(valid ? 'ghost-ok' : 'ghost-bad');
+      }
+    }
+    lastHover = cells;
+
+    if(!valid) return;
+    dragGhost.classList.add('ghost-valid');
+
+    var clear = wouldClearLines(board, shape, anchor.r, anchor.c);
+    var total = clear.rows.length + clear.cols.length;
+    if(total > 0){
+      dragGhost.classList.add('ghost-fire-piece');
+      var fireCells = [];
+      clear.rows.forEach(function(r){ for(var c=0;c<SIZE;c++) fireCells.push([r,c]); });
+      clear.cols.forEach(function(c){ for(var r=0;r<SIZE;r++) fireCells.push([r,c]); });
+      fireCells.forEach(function(rc){ cellEls[rc[0]][rc[1]].classList.add('ghost-fire'); });
+      lastFireCells = fireCells;
+
+      var badge = ensureComboBadge();
+      badge.textContent = '×' + total;
+      badge.style.left = x + 'px';
+      badge.style.top = (y - FINGER_LIFT - 60) + 'px';
+      badge.classList.add('show');
+    }
+  }
+
+  function finishDrag(x, y){
+    if(!dragging){ dragGhost.style.display = 'none'; return; } // safety guard
+    clearHoverPreview();
+    dragGhost.style.display = 'none';
+    var idx = dragging.idx, piece = dragging.piece;
+    dragging = null; pendingMove = null;
+    var anchor = anchorFromPoint(x, y, piece.shape);
+    if(canPlaceAt(board, piece.shape, anchor.r, anchor.c)){
+      commitPlacement(idx, piece.shape, piece.color, anchor.r, anchor.c);
+    } else {
+      renderTray();
+    }
+  }
+
+  /* ================= State persistence ================= */
+  function loadState(){
+    try{
+      var raw = localStorage.getItem('mg_game_state_' + mode + (mode==='levels' ? ('_'+currentLevelIdx) : ''));
+      if(!raw) return false;
+      var s = JSON.parse(raw);
+      if(!s.board || s.board.length !== SIZE) return false;
+      board = s.board; score = s.score || 0; tray = s.tray || [null,null,null];
+      if(mode === 'levels' && s.levelProgress) levelProgress = s.levelProgress;
+      return true;
+    }catch(e){ return false; }
+  }
+  function saveState(){
+    try{
+      var key = 'mg_game_state_' + mode + (mode==='levels' ? ('_'+currentLevelIdx) : '');
+      localStorage.setItem(key, JSON.stringify({board:board, score:score, tray:tray, levelProgress:levelProgress}));
+    }catch(e){}
+  }
+
+  function clearSavedState(){
+    try{
+      var key = 'mg_game_state_' + mode + (mode==='levels' ? ('_'+currentLevelIdx) : '');
+      localStorage.removeItem(key);
+    }catch(e){}
+  }
+
+  /* ================= Mode switching ================= */
+  function startEndless(){
+    mode = 'endless'; levelProgress = null;
+    document.getElementById('tabEndless').classList.add('act');
+    document.getElementById('tabLevels').classList.remove('act');
+    document.getElementById('hint').textContent = 'Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸';
+    score = 0; buildBoardDom();
+    if(!loadState()){ board = emptyBoard(); tray = [null,null,null]; }
+    measureBoard(); refillTrayIfEmpty(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
+    if(!anyTrayPieceFits()) showGameOver();
+  }
+  function startLevel(idx){
+    mode = 'levels'; currentLevelIdx = Math.max(0, idx);
+    document.getElementById('tabLevels').classList.add('act');
+    document.getElementById('tabEndless').classList.remove('act');
+    var diff = levelDifficulty(idx);
+    var stats = loadAttemptStats()[idx];
+    var histTxt = stats ? (' · Tavi mēģinājumi: ' + stats.attempts) : '';
+    document.getElementById('hint').textContent = diff.stars + ' ' + diff.label + histTxt + ' — centies uz mazāk soļu!';
+    score = 0; levelProgress = { movesUsed:0, comboCounts:{}, colorCounts:{} };
+    buildBoardDom();
+    board = emptyBoard(); tray=[null,null,null];
+    measureBoard(); refillTrayIfEmpty(); renderBoard(); renderTray(); renderObjectives(); updateScoreUi(); saveState();
+    recordAttempt(idx, false);
+  }
+
+  /* ================= Lives system (3 lives, quiz to refill) ================= */
+  var MAX_LIVES = 3;
+  var LIFE_REGEN_MS = 24 * 60 * 60 * 1000 / MAX_LIVES; // one per 8h as fallback
+
+  function loadLivesData(){
+    try{ return JSON.parse(localStorage.getItem('mg_lives') || 'null'); }catch(e){ return null; }
+  }
+  function saveLivesData(d){ localStorage.setItem('mg_lives', JSON.stringify(d)); }
+
+  function getLives(){
+    var d = loadLivesData();
+    if(!d) return { lives: MAX_LIVES, lastRegen: Date.now() };
+    var now = Date.now();
+    var elapsed = now - d.lastRegen;
+    var regen = Math.floor(elapsed / LIFE_REGEN_MS);
+    if(regen > 0){
+      d.lives = Math.min(MAX_LIVES, d.lives + regen);
+      d.lastRegen = d.lastRegen + regen * LIFE_REGEN_MS;
+    }
+    return d;
+  }
+
+  function spendLife(){
+    var d = getLives();
+    if(d.lives <= 0) return false;
+    d.lives--;
+    saveLivesData(d);
+    renderLivesBar();
+    return true;
+  }
+
+  function addLives(n){
+    var d = getLives();
+    var oldLives = d.lives;
+    d.lives = Math.min(MAX_LIVES, d.lives + n);
+    if(d.lives === MAX_LIVES) d.lastRegen = Date.now();
+    saveLivesData(d);
+    // Animate each new heart
+    renderLivesBar(oldLives);
+  }
+
+  function msUntilNextLife(){
+    var d = getLives();
+    if(d.lives >= MAX_LIVES) return 0;
+    return LIFE_REGEN_MS - (Date.now() - d.lastRegen);
+  }
+
+  function formatCountdown(ms){
+    if(ms <= 0) return '0:00';
+    var s = Math.ceil(ms / 1000);
+    var h = Math.floor(s / 3600); s -= h * 3600;
+    var m = Math.floor(s / 60); s -= m * 60;
+    return (h > 0 ? h + ':' : '') + (m < 10 && h > 0 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  // Lives bar
+  var livesBarEl = null;
+  function buildLivesBar(){
+    if(livesBarEl) return;
+    livesBarEl = document.createElement('div');
+    livesBarEl.className = 'lives-bar';
+    livesBarEl.setAttribute('aria-label', 'Dzīvības');
+    var header = document.querySelector('header');
+    var soundBtn = document.getElementById('soundToggle');
+    header.insertBefore(livesBarEl, soundBtn);
+  }
+  function renderLivesBar(prevLives){
+    if(!livesBarEl) return;
+    var d = getLives();
+    var html = '';
+    for(var i = 0; i < MAX_LIVES; i++){
+      var gained = (prevLives !== undefined) && i >= prevLives && i < d.lives;
+      html += '<span class="life-heart' + (i < d.lives ? '' : ' empty') + (gained ? ' gain' : '') + '">❤️</span>';
+    }
+    livesBarEl.innerHTML = html;
+    livesBarEl.dataset.last = String(d.lives);
+  }
+
+  var livesTickInterval = null;
+  function startLivesTicker(){
+    if(livesTickInterval) clearInterval(livesTickInterval);
+    livesTickInterval = setInterval(function(){
+      var d = getLives();
+      var last = parseInt(livesBarEl ? livesBarEl.dataset.last || '0' : '0');
+      if(d.lives !== last) renderLivesBar();
+      var timerEl = document.getElementById('nextLifeTimer');
+      if(timerEl && document.getElementById('noLivesOverlay').classList.contains('show')){
+        timerEl.textContent = formatCountdown(msUntilNextLife());
+      }
+    }, 1000);
+  }
+
+  /* ================= Quiz data ================= */
+  var QUIZ_BANK = [
+    { q:'Kā Macaroon Garden veido katru macaronu čaumalu?',
+      a:'Rokām pipo un žāvē 24 stundas pirms cepšanas',
+      w:['Ar mašīnu štancē un cep uzreiz','Iepērk gatavas čaumalas no Francijas','Ceļ cepšanā ar tvaiku'] },
+    { q:'No kā sastāv macaronu čaumalas pamats?',
+      a:'Smalki maltiem franču mandeļu miltiem un dabīgiem pigmentiem',
+      w:['Parastiem kviešu miltiem ar mākslīgām krāsvielām','Kokosriekstu miltiem un cukura sīrupu','Rīsu miltiem un piena pulveri'] },
+    { q:'Kāda ir Macaroon Garden klasiskā roze un aveņu garša?',
+      a:'Maigs rožu krēms ar svaigām avenēm',
+      w:['Ķiploku un sīpolu krēms','Curry un kokosriekstu pasta','Šķiņķa un siera pildījums'] },
+    { q:'Kā tiek veidots katras garšas pildījums?',
+      a:'Individuāli – ganāša, krēms vai augļu konfitūra katrai atsevišķi',
+      w:['Viena universāla krēma receptūra visām garšām','Tikai ar šokolādes kausējumu','Ar gatavu ievārījumu no veikala'] },
+    { q:'Kad Macaroon Garden cep macaronus?',
+      a:'Pasūtījuma nedēļā, lai tie būtu svaigi',
+      w:['Reizi mēnesī lielā partijā un glabā saldētavā','Tikai svētku sezonā','Gadu iepriekš un tad atkausē'] },
+    { q:'Cik klientu jau ir priecējuši Macaroon Garden macaroni?',
+      a:'Vairāk nekā 500',
+      w:['Aptuveni 50','Vairāk nekā 10 000','Tikai 12'] },
+    { q:'Kādas izejvielas izmanto Macaroon Garden?',
+      a:'Tikai labākās mandeles, dabīgās krāsvielas un svaigus augļus',
+      w:['Galvenokārt mākslīgās aromātvielas un konservantus','Tikai cukuru un ūdeni','Gatavus pulverus no lielveikala'] },
+    { q:'Kas padara Macaroon Garden dāvanu komplektus īpašus?',
+      a:'Skaisti iepakotas kastītes, ideāli dzimšanas dienām un svētkiem',
+      w:['Tikai lieli vairumtirdzniecības pasūtījumi','Gatavi komplekti bez iespējas izvēlēties','Tikai viena fiksēta garša'] },
+    { q:'Kur Macaroon Garden piegādā svaigus macaronus?',
+      a:'Visā Rīgas teritorijā līdz durvīm',
+      w:['Tikai Jūrmalā','Visā Latvijā ar 7 dienu piegādi','Tikai starptautiski'] },
+    { q:'Kā klients var izveidot savu ideālo kastīti?',
+      a:'Izvēlas izmēru, garšas un daudzumu – viss tiek komplektēts individuāli',
+      w:['Saņem nejaušu komplektu','Var izvēlēties tikai vienu garšu','Kastīte tiek piegādāta tukša'] },
+    { q:'Cik dažādas garšas ir Macaroon Garden kolekcijā?',
+      a:'5',
+      w:['12','3','20'] },
+    { q:'Cik ātri Macaroon Garden piegādā macaronus Rīgā?',
+      a:'24 stundu laikā',
+      w:['5–7 darba dienu laikā','Tikai nākamajā mēnesī','Uzreiz pēc zvana ar dronu'] },
+    { q:'Kur var sekot Macaroon Garden jaunākajiem darbiem?',
+      a:'Instagram kontā @macarongardenlv',
+      w:['@macaronlatvija','@frenchmacaronsriga','@gardenvacuum'] },
+    { q:'Kad var veikt pasūtījumu Macaroon Garden?',
+      a:'Jebkurā diennakts laikā',
+      w:['Tikai no 9:00 līdz 12:00','Tikai svētdienās','Tikai tad, kad ir pilnmēness'] },
+    { q:'Kas ir Macaroon Garden "Makarūnu Mozaīka"?',
+      a:'Nebeidzama, atslābinoša puzle, kur figūras vienmēr var izlikt',
+      w:['Sacensība, kurā jāēd pēc iespējas vairāk macaronu','Spēle, kurā jāmeklē pazudušie macaroni Rīgā','Virtuāla cepšanas skola'] },
+    { q:'Kāda ir Macaroon Garden piegādes svaiguma filozofija?',
+      a:'Macaroni tiek cepti pasūtījuma nedēļā un piegādāti svaigi',
+      w:['Tie ir bijuši saldētavā vismaz gadu','Tie tiek atkausēti mikroviļņu krāsnī','Tie ir vakuumā iepakoti no 2019. gada'] },
+    { q:'Kā Macaroon Garden raksturo katru macaronu?',
+      a:'Kā mazu mākslas darbu',
+      w:['Kā industriāli ražotu cepumu','Kā dekorāciju, ne ēdienu','Kā bezgaršīgu, bet ļoti krāsainu priekšmetu'] },
+    { q:'Kāds ir Macaroon Garden e-pasta adrese?',
+      a:'info@macaroongarden.lv',
+      w:['pasutijumi@makaroni.lv','hello@frenchpastry.com','macaron@riga.gov.lv'] },
+    { q:'Ko piedāvā Macaroon Garden interaktīvais kastītes veidotājs?',
+      a:'Izvēlēties izmēru un garšas, lai viss automātiski nonāktu pasūtījumā',
+      w:['Spēlēt Tetris ar macaroniem','Tikai skatīties bildes bez iespējas pasūtīt','Mainīt lapas krāsu uz zaļu'] },
+    { q:'Kāda ir Macaroon Garden galvenā filozofija?',
+      a:'Katrs macarons ir mazs prieka brīdis – kraukšķīgs apvalks, maiga pildīšana un perfekts balanss',
+      w:['Galvenais ir ātrums un zemā cena','Macaroni jāēd tikai ar karoti','Jo vairāk cukura, jo labāk'] },
+  ];
+
+  /* ================= Quiz engine ================= */
+  var quizQuestions = [];   // 5 shuffled from bank
+  var quizCurrent = 0;
+  var quizCorrect = 0;
+  var quizAnswered = false;
+
+  function shuffleArray(arr){
+    var a = arr.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function buildQuizRound(){
+    quizQuestions = shuffleArray(QUIZ_BANK).slice(0, 5);
+    quizCurrent = 0;
+    quizCorrect = 0;
+    quizAnswered = false;
+  }
+
+  function renderQuizProgress(){
+    var pip = document.getElementById('quizProgress');
+    pip.innerHTML = '';
+    for(var i = 0; i < 5; i++){
+      var d = document.createElement('div');
+      d.className = 'quiz-pip' + (i < quizCurrent ? ' done' : i === quizCurrent ? ' active' : '');
+      pip.appendChild(d);
+    }
+  }
+
+  function renderQuizQuestion(){
+    var q = quizQuestions[quizCurrent];
+    document.getElementById('quizQuestion').textContent = q.q;
+    document.getElementById('quizResult').textContent = '';
+    document.getElementById('quizResult').className = 'quiz-result';
+    document.getElementById('quizNextBtn').style.display = 'none';
+    quizAnswered = false;
+
+    // Shuffle answer options
+    var opts = shuffleArray([q.a, q.w[0], q.w[1], q.w[2]]);
+    var container = document.getElementById('quizOpts');
+    container.innerHTML = '';
+    opts.forEach(function(text){
+      var btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = text;
+      btn.addEventListener('click', function(){ handleQuizAnswer(text === q.a, btn, q.a); });
+      container.appendChild(btn);
+    });
+    renderQuizProgress();
+  }
+
+  function handleQuizAnswer(isCorrect, clickedBtn, correctText){
+    if(quizAnswered) return;
+    quizAnswered = true;
+    // Disable all options
+    document.querySelectorAll('.quiz-opt').forEach(function(b){
+      b.disabled = true;
+      if(b.textContent === correctText) b.classList.add('correct');
+    });
+    var res = document.getElementById('quizResult');
+    if(isCorrect){
+      clickedBtn.classList.add('correct');
+      quizCorrect++;
+      res.textContent = '✓ Pareizi! 🍬';
+      res.className = 'quiz-result ok';
+      playTone(600, 0.12, 'sine', 0.2);
+      haptic(20);
+    } else {
+      clickedBtn.classList.add('wrong');
+      res.textContent = '✗ Nepareizi';
+      res.className = 'quiz-result bad';
+      playTone(220, 0.18, 'sawtooth', 0.15);
+      haptic([20,20]);
+    }
+    // Auto-advance after short pause, or show Next button
+    if(quizCurrent < 4){
+      setTimeout(function(){
+        if(!quizAnswered) return; // safety
+        quizCurrent++;
+        renderQuizQuestion();
+      }, 1100);
+    } else {
+      setTimeout(finishQuiz, 1100);
+    }
+  }
+
+  function finishQuiz(){
+    document.getElementById('quizGame').style.display = 'none';
+    document.getElementById('quizDone').style.display = 'block';
+    document.getElementById('quizCorrectCount').textContent = quizCorrect;
+    var livesEarned = quizCorrect; // 1 life per correct answer, max 3
+    livesEarned = Math.min(MAX_LIVES, livesEarned);
+    var el = document.getElementById('quizLivesEarned');
+    if(livesEarned > 0){
+      el.textContent = '❤️'.repeat(livesEarned) + '  Tu nopelnīji ' + livesEarned + ' dzīvīb' + (livesEarned === 1 ? 'u' : 'as') + '!';
+      addLives(livesEarned);
+      sfxWin();
+      haptic([30,40,60]);
+    } else {
+      el.textContent = 'Diemžēl šoreiz dzīvības netika atgūtas. Mēģini vēlreiz vēlāk!';
+      el.style.background = 'rgba(224,112,112,.12)';
+      el.style.color = '#c0504d';
+    }
+  }
+
+  function showNoLives(){
+    // Reset quiz UI to offer screen
+    document.getElementById('quizOffer').style.display = 'block';
+    document.getElementById('quizGame').style.display = 'none';
+    document.getElementById('quizDone').style.display = 'none';
+    document.getElementById('nextLifeTimer').textContent = formatCountdown(msUntilNextLife());
+    document.getElementById('noLivesOverlay').classList.add('show');
+  }
+
+  document.getElementById('startQuizBtn').addEventListener('click', function(){
+    document.getElementById('quizOffer').style.display = 'none';
+    document.getElementById('quizGame').style.display = 'block';
+    buildQuizRound();
+    renderQuizQuestion();
+  });
+
+  document.getElementById('closeLives').addEventListener('click', function(){
+    document.getElementById('noLivesOverlay').classList.remove('show');
+  });
+
+  document.getElementById('quizPlayBtn').addEventListener('click', function(){
+    document.getElementById('noLivesOverlay').classList.remove('show');
+    var d = getLives();
+    if(d.lives <= 0) return;
+    if(mode === 'levels'){
+      openLevelSelect();
+    } else {
+      // Player ran out of lives in Endless mode — take them back into a fresh
+      // Endless board instead of always dropping them into Level select.
+      spendLife();
+      clearSavedState();
+      startEndless();
+    }
+  });
+
+  /* ================= Unlocked levels ================= */
+  function getMaxUnlockedLevel(){
+    var bests = loadLevelBests();
+    var completed = Object.keys(bests).map(Number);
+    if(completed.length === 0) return 0;
+    return Math.max.apply(null, completed) + 1;
+  }
+
+  /* ================= Cumulative session score ================= */
+  var sessionTotalScore = 0;
+  var sessionHighestLevel = 0;
+
+  /* ================= Level select overlay ================= */
+  var lvlOverlay = document.getElementById('lvlOverlay');
+  document.getElementById('closeLvl').addEventListener('click', function(){ lvlOverlay.classList.remove('show'); });
+  lvlOverlay.addEventListener('click', function(e){ if(e.target===lvlOverlay) lvlOverlay.classList.remove('show'); });
+
+  function openLevelSelect(){
+    var grid = document.getElementById('lvlGrid');
+    grid.innerHTML = '';
+    var bests = loadLevelBests();
+    var maxUnlocked = getMaxUnlockedLevel();
+    var showCount = Math.max(HAND_LEVELS.length,
+      (Object.keys(bests).length ? Math.max.apply(null, Object.keys(bests).map(Number)) + 2 : 0),
+      maxUnlocked + 1, 15);
+    for(var i = 0; i < showCount; i++){
+      (function(i){
+        var locked = i > maxUnlocked;
+        var done = bests[i] !== undefined;
+        var b = document.createElement('button');
+        b.className = 'lvl-cell' + (done ? ' done' : '') + (locked ? ' locked' : '');
+        if(locked){
+          b.setAttribute('aria-label', 'Līmenis ' + (i+1) + ' slēgts');
+          b.disabled = true;
+        } else {
+          var diff = levelDifficulty(i);
+          b.innerHTML =
+            '<span class="lvl-num" style="font-size:.95rem">' + (i+1) + '</span>' +
+            '<span class="lvl-best" style="opacity:.7">' + diff.stars + '</span>' +
+            (done ? '<span class="lvl-best">✓ ' + bests[i] + ' soļi</span>' : '');
+          b.addEventListener('click', function(){
+            lvlOverlay.classList.remove('show');
+            tryStartLevel(i);
+          });
+        }
+        grid.appendChild(b);
+      })(i);
+    }
+    lvlOverlay.classList.add('show');
+  }
+
+  function tryStartLevel(idx){
+    var d = getLives();
+    if(d.lives <= 0){
+      showNoLives();
+      return;
+    }
+    spendLife();
+    startLevel(idx);
+  }
+
+  /* ================= Win overlay ================= */
+  function showWin(){
+    sfxWin();
+    haptic([30,40,30,40,60]);
+    saveLevelBest(currentLevelIdx, levelProgress.movesUsed);
+    recordAttempt(currentLevelIdx, true);
+
+    sessionTotalScore += score;
+    sessionHighestLevel = Math.max(sessionHighestLevel, currentLevelIdx + 1);
+
+    document.getElementById('winMoves').textContent = levelProgress.movesUsed;
+    var bests = loadLevelBests();
+    var b = bests[currentLevelIdx];
+    document.getElementById('winBest').textContent = b ? (b + ' soļi') : '—';
+    document.getElementById('winTotalScore').textContent = sessionTotalScore;
+
+    // Show register nudge only for guests
+    var regBox = document.getElementById('winRegBox');
+    var actions = document.getElementById('winActions');
+    if(!currentUser){
+      regBox.style.display = 'block';
+      actions.style.display = 'none';
+    } else {
+      regBox.style.display = 'none';
+      actions.style.display = 'block';
+    }
+    document.getElementById('winOverlay').classList.add('show');
+  }
+
+  document.getElementById('winNext').addEventListener('click', function(){
+    document.getElementById('winOverlay').classList.remove('show');
+    tryStartLevel(currentLevelIdx + 1);
+  });
+  document.getElementById('winReplay').addEventListener('click', function(){
+    document.getElementById('winOverlay').classList.remove('show');
+    tryStartLevel(currentLevelIdx);
+  });
+  document.getElementById('winRegSkip').addEventListener('click', function(){
+    // Guest chose to continue without registering
+    document.getElementById('winRegBox').style.display = 'none';
+    document.getElementById('winActions').style.display = 'block';
+  });
+
+  /* ================= Game-over overlay ================= */
+  function showGameOver(){
+    sfxGameOver();
+    document.getElementById('goScore').textContent = score;
+
+    var d = getLives();
+    var livesLeft = d.lives;
+
+    // Update lives display inside game-over sheet
+    var livesEl = document.getElementById('goLivesLeft');
+    if(livesEl){
+      if(livesLeft > 0){
+        livesEl.textContent = 'Atlikušās dzīvības: ' + '❤️'.repeat(livesLeft) + '🖤'.repeat(MAX_LIVES - livesLeft);
+        livesEl.style.display = 'block';
+      } else {
+        livesEl.textContent = 'Dzīvības iztērētas 💔';
+        livesEl.style.display = 'block';
+      }
+    }
+
+    // Registration nudge is shown for guests, but it NEVER blocks the life-gated
+    // action below anymore — previously guests couldn't see the restart/quiz choice
+    // at all until they dismissed this box, and lives were never spent for Endless
+    // mode, so losing never visibly cost anything.
+    var regBox = document.getElementById('goRegBox');
+    var actions = document.getElementById('goActions');
+    var noLivesMsg = document.getElementById('goNoLivesMsg');
+
+    regBox.style.display = currentUser ? 'none' : 'block';
+
+    if(livesLeft > 0){
+      actions.style.display = 'block';
+      if(noLivesMsg) noLivesMsg.style.display = 'none';
+    } else {
+      actions.style.display = 'none';
+      if(noLivesMsg) noLivesMsg.style.display = 'block';
+    }
+    document.getElementById('gameOverOverlay').classList.add('show');
+  }
+
+  document.getElementById('goRegSkip').addEventListener('click', function(){
+    // Just dismiss the nudge — the restart/quiz action underneath is already visible.
+    document.getElementById('goRegBox').style.display = 'none';
+  });
+
+  document.getElementById('goRestart').addEventListener('click', function(){
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    clearSavedState();
+    // A fresh board — in EITHER mode — always costs a life now. Previously Endless
+    // mode never called spendLife() at all, so losing never actually reduced lives.
+    var d = getLives();
+    if(d.lives <= 0){ showNoLives(); return; }
+    spendLife();
+    if(mode === 'levels'){
+      startLevel(currentLevelIdx);
+    } else {
+      startEndless();
+    }
+  });
+
+  document.getElementById('goQuizBtn').addEventListener('click', function(){
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    showNoLives();
+  });
+
+  document.getElementById('goFinalBtn').addEventListener('click', function(){
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    showFinalScreen();
+  });
+
+  /* ================= Final screen (all lives gone after all attempts) ================= */
+  function showFinalScreen(){
+    document.getElementById('finalScore').textContent = sessionTotalScore;
+    document.getElementById('finalLevel').textContent = sessionHighestLevel;
+    document.getElementById('finalOverlay').classList.add('show');
+  }
+
+  document.getElementById('finalContinueAnon').addEventListener('click', function(){
+    document.getElementById('finalOverlay').classList.remove('show');
+    // Reset everything for a fresh anonymous run
+    sessionTotalScore = 0;
+    sessionHighestLevel = 0;
+    // Give back 1 life so they can actually play
+    var d = getLives();
+    d.lives = 1;
+    saveLivesData(d);
+    renderLivesBar();
+    openLevelSelect();
+  });
+
+  /* ================= Leaderboard ================= */
+  var lbOverlay = document.getElementById('lbOverlay');
+  document.getElementById('openLb').addEventListener('click', function(){ lbOverlay.classList.add('show'); loadLeaderboard(); });
+  document.getElementById('closeLb').addEventListener('click', function(){ lbOverlay.classList.remove('show'); });
+  lbOverlay.addEventListener('click', function(e){ if(e.target === lbOverlay) lbOverlay.classList.remove('show'); });
+
+  async function loadLeaderboard(){
+    var listEl = document.getElementById('lbList');
+    var nudgeEl = document.getElementById('lbLoginNudge');
+    nudgeEl.innerHTML = currentUser ? '' :
+      '<div class="login-nudge">Ielogojies galvenajā lapā, lai tavs rezultāts parādītos šeit! <a href="/#home" target="_top">Ieiet →</a></div>';
+    if(!sb){ listEl.innerHTML = '<p class="lb-empty">Līderu saraksts pagaidām nav pieejams.</p>'; return; }
+    listEl.innerHTML = '<p class="lb-empty">Ielādē...</p>';
+    try{
+      var res = await sb.from('game_scores').select('display_name,score').order('score', { ascending:false }).limit(10);
+      if(res.error) throw res.error;
+      var data = res.data || [];
+      if(data.length === 0){ listEl.innerHTML = '<p class="lb-empty">Vēl nav neviena rezultāta — esi pirmais! 🌸</p>'; return; }
+      listEl.innerHTML = '';
+      data.forEach(function(row, i){
+        var el = document.createElement('div');
+        el.className = 'lb-row';
+        el.innerHTML = '<span class="lb-rank">#'+(i+1)+'</span><span class="lb-name">'+
+          (row.display_name || 'Anonīms spēlētājs') + '</span><span class="lb-score">'+row.score+'</span>';
+        listEl.appendChild(el);
+      });
+    }catch(e){ listEl.innerHTML = '<p class="lb-empty">Neizdevās ielādēt līderu sarakstu.</p>'; }
+  }
+
+  /* ================= Server score sync ================= */
+  var sessionStartScore = 0;
+  var MAX_PLAUSIBLE_SCORE_PER_SESSION = 20000;
+  async function saveBestToServer(newBest){
+    if(!sb || !currentUser) return;
+    if(newBest - sessionStartScore > MAX_PLAUSIBLE_SCORE_PER_SESSION) return;
+    try{
+      await sb.from('game_scores').upsert({
+        user_id: currentUser.id,
+        display_name: (currentUser.user_metadata && currentUser.user_metadata.full_name) || currentUser.email,
+        score: newBest,
+        updated_at: new Date().toISOString()
+      });
+    }catch(e){ console.warn('Neizdevās saglabāt rezultātu serverī', e); }
+  }
+  async function syncBestFromServer(){
+    if(!sb || !currentUser) return;
+    try{
+      var res = await sb.from('game_scores').select('score').eq('user_id', currentUser.id).maybeSingle();
+      if(res.data && res.data.score > best){ best = res.data.score; localStorage.setItem('mg_game_best', String(best)); updateScoreUi(); }
+      else if(best > 0){ saveBestToServer(best); }
+    }catch(e){}
+  }
+
+  document.getElementById('soundToggle').addEventListener('click', function(){ setSoundOn(!soundOn); });
+
+  /* ================= Fullscreen — consistent on Android AND iPhone ================= */
+  var fsBtn = document.getElementById('fullscreenBtn');
+  var pseudoFsOn = false;
+
+  function isFullscreen(){
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+  }
+
+  function updateFsIcon(){
+    var active = isFullscreen() || pseudoFsOn;
+    fsBtn.textContent = active ? '✕' : '⛶';
+    fsBtn.setAttribute('aria-label', active ? 'Iziet no pilnekrāna' : 'Pilnekrāns');
+  }
+
+  // CSS-only "fill the screen" mode. The native Fullscreen API depends on a
+  // permission this file alone can't grant when embedded in an <iframe> (see
+  // note below), so this is the part that behaves identically everywhere: it
+  // makes the game fill all the space it actually has, edge-to-edge, on both
+  // Android and iPhone, with or without native fullscreen support.
+  function setPseudoFullscreen(on){
+    pseudoFsOn = on;
+    document.body.classList.toggle('pseudo-fs', on);
+    updateFsIcon();
+    // The board sizes itself from its container's box, which just changed —
+    // no native "resize" event fires for a CSS class toggle, so trigger it.
+    requestAnimationFrame(function(){ measureBoard(); });
+  }
+
+  function enterFullscreen(){
+    setPseudoFullscreen(true); // instant, works everywhere
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if(req){
+      var result = req.call(el);
+      if(result && result.then){
+        result.then(updateFsIcon).catch(function(){
+          // Most common cause: this page is inside an <iframe> that doesn't
+          // grant fullscreen permission. The CSS fallback above still applies,
+          // so the game still fills its space — this is just extra feedback
+          // instead of the button silently appearing to do nothing.
+          toast('Pilnekrāns bloķēts iframe atļaujās — spēle pielāgota pieejamajai vietai 🌸');
+        });
+      }
+    } else {
+      // No Fullscreen API at all for page elements — normal on iOS Safari.
+      showIosFsTip();
+    }
+  }
+
+  function exitFullscreen(){
+    setPseudoFullscreen(false);
+    var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+    if(ex && isFullscreen()) ex.call(document).then(updateFsIcon).catch(function(){});
+  }
+
+  fsBtn.addEventListener('click', function(){
+    if(isFullscreen() || pseudoFsOn) exitFullscreen(); else enterFullscreen();
+  });
+
+  document.addEventListener('fullscreenchange', updateFsIcon);
+  document.addEventListener('webkitfullscreenchange', updateFsIcon);
+  document.addEventListener('mozfullscreenchange', updateFsIcon);
+
+  // iOS Safari tip — shown instead of Fullscreen API which Safari doesn't support
+  function showIosFsTip(){
+    if(document.getElementById('iosFsTip')) return;
+    var tip = document.createElement('div');
+    tip.id = 'iosFsTip';
+    tip.style.cssText = [
+      'position:fixed','inset:0','z-index:950','background:rgba(61,35,20,.55)',
+      'backdrop-filter:blur(6px)','display:flex','align-items:center','justify-content:center'
+    ].join(';');
+    tip.innerHTML = [
+      '<div style="background:var(--white);border-radius:22px;padding:1.6rem 1.4rem;max-width:300px;text-align:center;font-family:\'DM Sans\',sans-serif">',
+      '<div style="font-size:2rem;margin-bottom:.5rem">📱</div>',
+      '<h3 style="margin:0 0 .7rem;font-family:\'Cormorant Garamond\',serif;font-size:1.3rem;color:var(--chocolate)">',
+      'Pilnekrāns iPhone / iPad</h3>',
+      '<p style="font-size:.82rem;color:var(--text-m);line-height:1.55;margin:0 0 1rem">',
+      'Nospied <b>↑ Kopīgot</b> apakšā, tad izvēlies<br><b>„Pievienot sākuma ekrānam"</b> — ',
+      'tad spēle atveras pilnā ekrānā bez pārlūka joslām.</p>',
+      '<button id="iosFsTipClose" style="width:100%;background:var(--rose-d);color:#fff;border:none;',
+      'border-radius:12px;padding:.75rem;font-weight:700;font-size:.88rem;cursor:pointer">Sapratu!</button>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(tip);
+    document.getElementById('iosFsTipClose').addEventListener('click', function(){ tip.remove(); });
+    tip.addEventListener('click', function(e){ if(e.target === tip) tip.remove(); });
+  }
+  /* ================= Back button — safe top-level navigation ================= */
+  // On the real site this game sits inside an <iframe>, and target="_top" is what
+  // correctly sends the player back to the main page instead of just navigating
+  // inside the iframe. The problem: if this file is ever opened somewhere that
+  // blocks top-level navigation (a sandboxed preview/test environment, some
+  // in-app webviews, etc.), the browser's forced "_top" attempt gets refused
+  // mid-navigation and can leave the screen in a broken, blank/gray state with
+  // nothing the player can do. We now handle that safely instead.
+  var backLink = document.getElementById('backLink');
+  if(backLink){
+    backLink.addEventListener('click', function(ev){
+      // Not embedded at all (opened directly as its own page/tab) — plain default
+      // navigation is safe and normal, let the browser handle it as usual.
+      if(window.self === window.top) return;
+
+      // Embedded in a frame — try to send the real top-level page there.
+      ev.preventDefault();
+      var url = backLink.getAttribute('href');
+      try{
+        window.top.location.href = url;
+      }catch(e){
+        // A sandboxed/restrictive parent blocked it. Rather than leaving a
+        // broken gray screen, just stay on the game — nothing is lost.
+        console.warn('Back navigation was blocked by the parent frame.', e);
+        toast('Neizdevās atgriezties — atver spēli tieši lapā macarongarden.netlify.app');
+      }
+    });
+  }
+
+  /* ================= Mode-switch confirmation ================= */
+  // "Active game" = the player has actually made at least one move in the
+  // current mode (score > 0 covers both Endless and Levels, since placing any
+  // piece scores points immediately). A fresh, untouched board switches modes
+  // with no prompt — there's nothing to protect yet.
+  function hasActiveProgress(){
+    return score > 0;
+  }
+
+  var pendingModeSwitch = null;
+  var modeConfirmOverlay = document.getElementById('modeConfirmOverlay');
+
+  function requestModeSwitch(targetMode, action){
+    if(mode !== targetMode && hasActiveProgress()){
+      pendingModeSwitch = action;
+      modeConfirmOverlay.classList.add('show');
+    } else {
+      action();
+    }
+  }
+
+  document.getElementById('modeConfirmYes').addEventListener('click', function(){
+    modeConfirmOverlay.classList.remove('show');
+    var action = pendingModeSwitch;
+    pendingModeSwitch = null;
+    if(action) action();
+  });
+  document.getElementById('modeConfirmNo').addEventListener('click', function(){
+    modeConfirmOverlay.classList.remove('show');
+    pendingModeSwitch = null;
+  });
+
+  document.getElementById('tabEndless').addEventListener('click', function(){
+    requestModeSwitch('endless', startEndless);
+  });
+  document.getElementById('tabLevels').addEventListener('click', function(){
+    requestModeSwitch('levels', openLevelSelect);
+  });
+
+  /* ================= Init ================= */
+  setSoundOn(soundOn);
+  buildLivesBar();
+  renderLivesBar();
+  startLivesTicker();
+  buildBoardDom();
+  startEndless();
+})();
+</script>
+</body>
+</html>
