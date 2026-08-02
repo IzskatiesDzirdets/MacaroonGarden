@@ -44,6 +44,7 @@ export default function HeroExplode() {
   const [isDesktop, setIsDesktop] = useState(true)
   const [isTestMode, setIsTestMode] = useState(false)
   const [activeFlavor, setActiveFlavor] = useState(0)
+  const [isSectionVisible, setIsSectionVisible] = useState(true)
 
   useEffect(() => {
     setIsDesktop(window.matchMedia('(min-width: 768px)').matches)
@@ -51,6 +52,19 @@ export default function HeroExplode() {
       window.location.search.includes('test=true') ||
       /headless/i.test(navigator.userAgent)
     )
+  }, [])
+
+  // Viewport visibility observer to completely pause/unmount WebGL canvas when off-screen
+  useEffect(() => {
+    if (!sectionRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsSectionVisible(entry.isIntersecting)
+      },
+      { threshold: 0.01 }
+    )
+    observer.observe(sectionRef.current)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -94,7 +108,7 @@ export default function HeroExplode() {
       style={{ background: GRADIENTS[activeFlavor] }}
     >
       <div className="absolute inset-0">
-        {!isTestMode ? (
+        {!isTestMode && isSectionVisible ? (
           <Suspense
             fallback={
               <div className="h-full w-full animate-pulse bg-espresso-2" />

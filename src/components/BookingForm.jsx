@@ -314,10 +314,29 @@ export default function BookingForm({ boxFlavors }) {
                   </div>
                 ))}
 
-                {Array.from({ length: start }).map((_, i) => (
-                  <div key={`empty-${i}`} className="aspect-square" />
-                ))}
+                {/* Preceding month trailing days */}
+                {Array.from({ length: start }).map((_, i) => {
+                  const prevM = m === 0 ? 11 : m - 1
+                  const prevY = m === 0 ? y - 1 : y
+                  const prevDaysTotal = new Date(prevY, prevM + 1, 0).getDate()
+                  const day = prevDaysTotal - start + i + 1
 
+                  return (
+                    <div
+                      key={`prev-${day}`}
+                      className="cal-day aspect-square flex flex-col items-center justify-center rounded-lg text-[10px] sm:text-xs font-semibold text-ivory/20 hover:text-gold hover:scale-105 cursor-pointer transition-all"
+                      onClick={() => {
+                        const nextCal = new Date(cal)
+                        nextCal.setMonth(m - 1)
+                        setCal(nextCal)
+                      }}
+                    >
+                      <span>{day}</span>
+                    </div>
+                  )
+                })}
+
+                {/* Current month days */}
                 {Array.from({ length: total }).map((_, i) => {
                   const day = i + 1
                   const d = fmtDate(y, m, day)
@@ -356,6 +375,25 @@ export default function BookingForm({ boxFlavors }) {
                           ))}
                         </div>
                       )}
+                    </div>
+                  )
+                })}
+
+                {/* Succeeding month leading days */}
+                {Array.from({ length: (7 - ((start + total) % 7)) % 7 }).map((_, i) => {
+                  const day = i + 1
+
+                  return (
+                    <div
+                      key={`next-${day}`}
+                      className="cal-day aspect-square flex flex-col items-center justify-center rounded-lg text-[10px] sm:text-xs font-semibold text-ivory/20 hover:text-gold hover:scale-105 cursor-pointer transition-all"
+                      onClick={() => {
+                        const nextCal = new Date(cal)
+                        nextCal.setMonth(m + 1)
+                        setCal(nextCal)
+                      }}
+                    >
+                      <span>{day}</span>
                     </div>
                   )
                 })}

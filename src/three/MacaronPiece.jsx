@@ -43,34 +43,54 @@ export default function MacaronPiece({ geometry, color, direction, window, progr
 }
 
 function ShellMesh({ color }) {
+  const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || 'ontouchstart' in window || navigator.maxTouchPoints > 0)
+
   return (
     <group>
       {/* dome */}
       <mesh castShadow receiveShadow scale={[1, 0.62, 1]}>
-        <sphereGeometry args={[1, 64, 48, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshPhysicalMaterial
-          color={color}
-          roughness={0.38}
-          clearcoat={0.6}
-          clearcoatRoughness={0.25}
-          sheen={1}
-          sheenColor={color}
-        />
+        <sphereGeometry args={isMobile ? [1, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2] : [1, 64, 48, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        {isMobile ? (
+          <meshStandardMaterial
+            color={color}
+            roughness={0.4}
+            metalness={0.1}
+          />
+        ) : (
+          <meshPhysicalMaterial
+            color={color}
+            roughness={0.38}
+            clearcoat={0.6}
+            clearcoatRoughness={0.25}
+            sheen={1}
+            sheenColor={color}
+          />
+        )}
       </mesh>
       {/* macaron "feet" ruffle at the base */}
       <mesh position={[0, 0.02, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[1, 0.07, 12, 96]} />
-        <meshPhysicalMaterial color={color} roughness={0.55} clearcoat={0.3} />
+        <torusGeometry args={isMobile ? [1, 0.07, 6, 24] : [1, 0.07, 12, 96]} />
+        {isMobile ? (
+          <meshStandardMaterial color={color} roughness={0.6} />
+        ) : (
+          <meshPhysicalMaterial color={color} roughness={0.55} clearcoat={0.3} />
+        )}
       </mesh>
     </group>
   )
 }
 
 function FillingMesh({ color }) {
+  const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || 'ontouchstart' in window || navigator.maxTouchPoints > 0)
+
   return (
     <mesh castShadow receiveShadow>
-      <cylinderGeometry args={[0.92, 0.92, 0.34, 64]} />
-      <meshPhysicalMaterial color={color} roughness={0.25} clearcoat={0.4} transmission={0.05} />
+      <cylinderGeometry args={isMobile ? [0.92, 0.92, 0.34, 16] : [0.92, 0.92, 0.34, 64]} />
+      {isMobile ? (
+        <meshStandardMaterial color={color} roughness={0.3} />
+      ) : (
+        <meshPhysicalMaterial color={color} roughness={0.25} clearcoat={0.4} transmission={0.05} />
+      )}
     </mesh>
   )
 }

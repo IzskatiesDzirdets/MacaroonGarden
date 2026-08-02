@@ -26,3 +26,8 @@ If you intend to import that asset, put the file in the src directory, and use /
 If you intend to use the URL of that asset, use /game.html?url&raw.
 2:45:18 PM [vite] (client) page reload src/game.html
 2:46:08 PM [vite] (client) hmr update /src/components/GameSection.jsx, /src/index.css
+6:35:14 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+6:37:16 AM [vite] (client) hmr update /src/index.css, /src/three/MacaronPiece.jsx
+6:38:35 AM [vite] (client) hmr update /src/components/HeroExplode.jsx, /src/index.css
+6:38:43 AM [vite] (client) hmr update /src/components/HeroExplode.jsx, /src/index.css
+6:48:09 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
