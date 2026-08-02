@@ -21,6 +21,9 @@ export default function App() {
   // State shared from BoxBuilder to BookingForm
   const [boxFlavors, setBoxFlavors] = useState([])
 
+  // Active flavor state lifted to synchronize background colors across Hero and Game iframe
+  const [activeFlavor, setActiveFlavor] = useState(0)
+
   // Modal states
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authModalTab, setAuthModalTab] = useState('login')
@@ -78,7 +81,7 @@ export default function App() {
 
       <main>
         {/* Cinematic 3D Hero Explosion Section */}
-        <HeroExplode />
+        <HeroExplode activeFlavor={activeFlavor} setActiveFlavor={setActiveFlavor} />
 
         {/* Responsive Mobile Layout features list */}
         <MobileFeatureList />
@@ -96,7 +99,7 @@ export default function App() {
         <BookingForm boxFlavors={boxFlavors} />
 
         {/* Embedded beautiful retro/procedural puzzle game */}
-        <GameSection />
+        <GameSection activeFlavor={activeFlavor} />
 
         {/* WhatsApp/Email details and styled Instagram CTA box */}
         <ContactSection />

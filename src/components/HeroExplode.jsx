@@ -34,7 +34,7 @@ const FLAVORS_DATA = [
   { name: 'Citrons',   c1: '#EEE880', c2: '#C8C038' },
 ]
 
-export default function HeroExplode() {
+export default function HeroExplode({ activeFlavor, setActiveFlavor }) {
   const sectionRef = useRef(null)
   const headingRef = useRef(null)
   const subRef = useRef(null)
@@ -43,7 +43,6 @@ export default function HeroExplode() {
   const progressRef = useRef(0)
   const [isDesktop, setIsDesktop] = useState(true)
   const [isTestMode, setIsTestMode] = useState(false)
-  const [activeFlavor, setActiveFlavor] = useState(0)
   const [isSectionVisible, setIsSectionVisible] = useState(true)
 
   useEffect(() => {
