@@ -31,6 +31,10 @@ def run_cuj(page, context):
 
     context.route("**", handle_external_route)
 
+    # Attach console and error logging for debugging
+    page.on("pageerror", lambda err: print(f"PAGE ERROR: {err}"))
+    page.on("console", lambda msg: print(f"BROWSER CONSOLE {msg.type}: {msg.text}"))
+
     print("Opening Macaroon Garden high-end home page...")
     page.goto("http://localhost:5173/?test=true") # Load with test=true to disable WebGL and ensure speed
 

@@ -17,7 +17,14 @@ export default function MobileFeatureList() {
           const tone = TONE_BY_PIECE[f.piece]
           const accentText = { blush: 'text-blush', gold: 'text-gold', sage: 'text-sage' }[tone]
           return (
-            <GlassCard key={f.id} tone={tone}>
+            <GlassCard key={f.id} tone={tone} className="overflow-hidden">
+              {f.imageUrl && (
+                <img
+                  src={f.imageUrl}
+                  alt={f.title}
+                  className="w-full h-44 object-cover rounded-2xl mb-4 shadow-[0_6px_16px_rgba(61,35,20,0.12)] border border-white/5"
+                />
+              )}
               <p className={`font-mono text-[0.65rem] tracking-[0.18em] uppercase ${accentText}`}>
                 {f.eyebrow}
               </p>

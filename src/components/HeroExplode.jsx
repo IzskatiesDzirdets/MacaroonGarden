@@ -1,14 +1,21 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import FeatureCard from './FeatureCard'
 import { FEATURES } from '../data/features'
 
-const MacaronScene = lazy(() => import('../three/MacaronScene'))
-
 gsap.registerPlugin(ScrollTrigger)
 
 const TL_DURATION = 10
+
+const FLAVOR_IMAGES = [
+  'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=1200&q=80', // Rose
+  'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=1200&q=80', // Pistachio
+  'https://images.unsplash.com/photo-1558961309-dbdf717a13d9?auto=format&fit=crop&w=1200&q=80', // Lavender
+  'https://images.unsplash.com/photo-1570797197174-b5b76d816439?auto=format&fit=crop&w=1200&q=80', // Chocolate
+  'https://images.unsplash.com/photo-1543157148-f79f21d4851a?auto=format&fit=crop&w=1200&q=80', // Lemon
+]
 const CARD_POSITION_CLASS = [
   'absolute left-[4%] top-[16%]',
   'absolute right-[4%] top-[18%]',
@@ -106,18 +113,29 @@ export default function HeroExplode({ activeFlavor, setActiveFlavor }) {
       className={`relative w-full overflow-hidden transition-all duration-1000 ${isDesktop ? 'h-screen' : 'min-h-[105vh]'}`}
       style={{ background: GRADIENTS[activeFlavor] }}
     >
-      <div className="absolute inset-0">
-        {!isTestMode && isSectionVisible ? (
-          <Suspense
-            fallback={
-              <div className="h-full w-full animate-pulse bg-espresso-2" />
-            }
-          >
-            <MacaronScene progressRef={progressRef} static={!isDesktop} flavorIndex={activeFlavor} />
-          </Suspense>
-        ) : (
-          <div className="h-full w-full bg-espresso-2" />
-        )}
+      {/* Dynamic 2D Macaron Hero Visual replacing WebGL to optimize performance and restore original 2D asset behavior */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <motion.div
+          key={activeFlavor}
+          initial={{ scale: 0.85, opacity: 0, rotate: -10 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative w-[min(80vw,380px)] aspect-square rounded-full shadow-[0_24px_70px_rgba(61,35,20,0.18)] border-4 border-white overflow-hidden"
+        >
+          <motion.img
+            src={FLAVOR_IMAGES[activeFlavor]}
+            alt="Macaroon Garden dāvanu ateljē"
+            className="w-full h-full object-cover"
+            animate={{
+              y: [0, -10, 0],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        </motion.div>
       </div>
 
       <div className="absolute inset-0 flex flex-col items-center justify-between text-center px-6 py-24 md:py-28">

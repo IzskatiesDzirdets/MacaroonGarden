@@ -51,3 +51,8 @@ If you intend to use the URL of that asset, use /game.html?url&raw.
 8:00:25 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
 8:00:37 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
 8:01:55 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
+1:28:36 PM [vite] (client) hmr update /src/index.css, /src/components/HeroExplode.jsx, /src/components/MobileFeatureList.jsx, /src/three/MacaronScene.jsx
+1:28:43 PM [vite] (client) hmr update /src/index.css, /src/components/FeatureCard.jsx
+1:28:49 PM [vite] (client) hmr update /src/components/MobileFeatureList.jsx, /src/index.css
+1:29:01 PM [vite] (client) hmr update /src/components/HeroExplode.jsx, /src/index.css
+1:31:18 PM [vite] (client) hmr update /src/components/HeroExplode.jsx, /src/index.css
