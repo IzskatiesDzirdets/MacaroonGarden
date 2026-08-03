@@ -18,14 +18,14 @@ export default function ContactSection() {
                 📱
               </div>
               <div>
-                <h3 className="font-display text-base font-semibold text-gold">WhatsApp</h3>
+                <h3 className="font-display text-base font-semibold text-gold">WhatsApp un Tālrunis</h3>
                 <a
-                  href="https://wa.me/37100000000"
+                  href="https://wa.me/37129999999"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 block text-sm text-ivory-dim transition-colors hover:text-blush"
+                  className="mt-1 block text-sm text-ivory-dim transition-colors hover:text-blush font-semibold"
                 >
-                  Rakstiet mums WhatsApp ↗
+                  +371 29999999 (Sazinies WhatsApp) ↗
                 </a>
               </div>
             </div>
@@ -38,7 +38,7 @@ export default function ContactSection() {
                 <h3 className="font-display text-base font-semibold text-gold">E-pasts</h3>
                 <a
                   href="mailto:info@macaroongarden.lv"
-                  className="mt-1 block text-sm text-ivory-dim transition-colors hover:text-blush"
+                  className="mt-1 block text-sm text-ivory-dim transition-colors hover:text-blush font-semibold"
                 >
                   info@macaroongarden.lv
                 </a>
@@ -50,10 +50,10 @@ export default function ContactSection() {
                 📍
               </div>
               <div>
-                <h3 className="font-display text-base font-semibold text-gold">Atrašanās vieta</h3>
+                <h3 className="font-display text-base font-semibold text-gold">Atrašanās vieta un Salons</h3>
                 <p className="mt-1 text-sm text-ivory-dim leading-relaxed">
-                  Rīga, Latvija <br />
-                  <span className="text-xs text-ivory-dim/60">Piegāde visā Rīgas teritorijā līdz durvīm</span>
+                  Kalnciema iela 40, Rīga, LV-1046 <br />
+                  <span className="text-xs text-ivory-dim/60">Piegāde visā Rīgas teritorijā tieši līdz durvīm vai saņemšana uz vietas salonā.</span>
                 </p>
               </div>
             </div>
@@ -66,7 +66,7 @@ export default function ContactSection() {
                 <h3 className="font-display text-base font-semibold text-gold">Darba laiks</h3>
                 <p className="mt-1 text-sm text-ivory-dim leading-relaxed">
                   P–Sk 9:00–20:00 <br />
-                  <span className="text-xs text-ivory-dim/60">Tiešsaistes pasūtījumus pieņemam 24/7</span>
+                  <span className="text-xs text-ivory-dim/60">Tiešsaistes pasūtījumus un dāvanu komplektu pieteikumus pieņemam 24/7.</span>
                 </p>
               </div>
             </div>
@@ -79,18 +79,28 @@ export default function ContactSection() {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-[#E1306C] to-[#833AB4] text-3xl shadow-lg text-white">
                 📸
               </div>
-              <h3 className="font-display text-xl font-bold text-ivory">Sekojiet mūsu ceļojumam</h3>
+              <h3 className="font-display text-xl font-bold text-ivory">Sekojiet dāvanu ateljē ceļojumam</h3>
               <p className="text-sm leading-relaxed text-ivory-dim">
-                Skatiet mūsu jaunākos darbus, iedvesmu un gardos aizkulišu stāstus mūsu Instagram profilā. Svinēsim un radīsim saldus mirkļus kopā!
+                Skatiet mūsu jaunākos darbus, iedvesmu un gardos aizkulišu stāstus mūsu Instagram profilā. Svinēsim un radīsim saldus, ekskluzīvus un neizmirstamus mirkļus kopā!
               </p>
-              <a
-                href="https://www.instagram.com/macarongardenlv"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#E1306C] to-[#833AB4] px-6 py-3 font-mono text-xs uppercase tracking-wider text-white shadow-lg transition-transform hover:scale-105"
-              >
-                @macarongardenlv ↗
-              </a>
+              <div className="flex flex-col gap-2.5 items-center">
+                <a
+                  href="https://www.instagram.com/macarongardenlv"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#E1306C] to-[#833AB4] px-6 py-3 font-mono text-xs uppercase tracking-wider text-white shadow-lg transition-transform hover:scale-105"
+                >
+                  @macarongardenlv ↗
+                </a>
+                <a
+                  href="https://www.facebook.com/macarongardenlv"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-ivory-dim/70 hover:text-gold transition-colors font-mono uppercase tracking-wider"
+                >
+                  Mūsu Facebook lapa ↗
+                </a>
+              </div>
             </div>
           </div>
         </div>
