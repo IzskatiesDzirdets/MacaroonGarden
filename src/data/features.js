@@ -10,7 +10,7 @@ export const FEATURES = [
     eyebrow: 'Virsčaumala',
     title: 'Rokām veidots, ne štancēts',
     body: 'Katra čaumala tiek pipota ar roku un žāvēta 24 stundas pirms cepšanas — tāpēc katrā makarūnā ir sava, nelīdzena, dzīva forma.',
-    imageUrl: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=600&q=80',
   },
   {
     id: 'shell-bottom',
@@ -20,7 +20,7 @@ export const FEATURES = [
     eyebrow: 'Apakšējā čaumala',
     title: 'Franču mandeļu milti',
     body: 'Tikai smalki maltas franču mandeles un dabīgi pigmenti — bez mākslīgo krāsvielu pēcgaršas, bez saīsinājumiem receptē.',
-    imageUrl: 'https://images.unsplash.com/photo-1508840412846-24e937d04a62?auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1543157148-f79f21d4851a?auto=format&fit=crop&w=600&q=80',
   },
   {
     id: 'filling',
@@ -40,7 +40,7 @@ export const FEATURES = [
     eyebrow: 'Rozes smarža',
     title: 'Pēc tava pasūtījuma',
     body: 'Izvēlies garšas, krāsas un daudzumu savā kastītē — katrs pasūtījums tiek komplektēts individuāli, ne no gatavas veidnes.',
-    imageUrl: 'https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
   },
   {
     id: 'crumb-pistachio',
@@ -50,7 +50,7 @@ export const FEATURES = [
     eyebrow: 'Pistācijas notis',
     title: 'Dāvanu ateljē',
     body: 'Kāzām, dzimšanas dienām, korporatīvām dāvanām — kastīte tiek noformēta atbilstoši reizei, ne pēc vienas veidnes visiem.',
-    imageUrl: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=600&q=80',
   },
   {
     id: 'crumb-cocoa',
@@ -60,6 +60,6 @@ export const FEATURES = [
     eyebrow: 'Kakao skaidiņas',
     title: 'Svaigi, ne no saldētavas',
     body: 'Makarūni tiek cepti pasūtījuma nedēļā un piegādāti Rīgā tajā pašā vai nākamajā dienā — nekad no ilgtermiņa krājuma.',
-    imageUrl: 'https://images.unsplash.com/photo-1600431521340-491eca880813?auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1570797197174-b5b76d816439?auto=format&fit=crop&w=600&q=80',
   },
 ]
