@@ -10,11 +10,11 @@ gsap.registerPlugin(ScrollTrigger)
 const TL_DURATION = 10
 
 const FLAVOR_IMAGES = [
-  'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=1200&q=80', // Rose
-  'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=1200&q=80', // Pistachio
-  'https://images.unsplash.com/photo-1558961309-dbdf717a13d9?auto=format&fit=crop&w=1200&q=80', // Lavender
-  'https://images.unsplash.com/photo-1570797197174-b5b76d816439?auto=format&fit=crop&w=1200&q=80', // Chocolate
-  'https://images.unsplash.com/photo-1543157148-f79f21d4851a?auto=format&fit=crop&w=1200&q=80', // Lemon
+  'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=800&q=80', // Rose
+  'https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=800&q=80', // Pistachio (isolated single green)
+  'https://images.unsplash.com/photo-1558961309-dbdf717a13d9?auto=format&fit=crop&w=800&q=80', // Lavender (isolated single purple)
+  'https://images.unsplash.com/photo-1501747315-124a0eaca060?auto=format&fit=crop&w=800&q=80', // Chocolate (isolated single chocolate)
+  'https://images.unsplash.com/photo-1612201142855-7873bc1661b4?auto=format&fit=crop&w=800&q=80', // Lemon (isolated single yellow)
 ]
 const CARD_POSITION_CLASS = [
   'absolute left-[4%] top-[16%]',

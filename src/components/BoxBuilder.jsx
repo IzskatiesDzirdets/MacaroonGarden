@@ -19,6 +19,7 @@ export default function BoxBuilder({ selectedBoxes = [], setSelectedBoxes }) {
   const [sz, setSz] = useState(12)
   const [box, setBox] = useState([])
   const [hint, setHint] = useState('')
+  const [editingBoxId, setEditingBoxId] = useState(null)
 
   const chgSz = (s) => {
     setSz(s)
@@ -30,17 +31,48 @@ export default function BoxBuilder({ selectedBoxes = [], setSelectedBoxes }) {
 
   const handleAddBoxToOrder = () => {
     if (box.length === 0) return
-    const newBox = {
-      id: Date.now(),
-      size: sz,
-      flavors: [...box],
+
+    if (editingBoxId) {
+      // Save changes to the existing custom box
+      setSelectedBoxes(
+        selectedBoxes.map((b) =>
+          b.id === editingBoxId ? { ...b, size: sz, flavors: [...box] } : b
+        )
+      )
+      setEditingBoxId(null)
+      setBox([]) // clear workspace
+      setHint('🎉 Izmaiņas kastītē veiksmīgi saglabātas! 🌸')
+    } else {
+      // Add a new custom box to order
+      const newBox = {
+        id: Date.now(),
+        size: sz,
+        flavors: [...box],
+      }
+      setSelectedBoxes([...selectedBoxes, newBox])
+      setBox([]) // clear workspace for building the next box
+      setHint('🎉 Kastīte pievienota pasūtījumam! Saliec nākamo vai dodies lejā uz pasūtījuma formu. 🌸')
     }
-    setSelectedBoxes([...selectedBoxes, newBox])
-    setBox([]) // clear workspace for building the next box
-    setHint('🎉 Kastīte pievienota pasūtījumam! Saliec nākamo vai dodies lejā uz pasūtījuma formu. 🌸')
+  }
+
+  const handleEditAddedBox = (addedBox) => {
+    setEditingBoxId(addedBox.id)
+    setSz(addedBox.size)
+    setBox([...addedBox.flavors])
+    setHint('🛠️ Tagad tu labo kastītes sastāvu. Veic izmaiņas un saglabā tās zemāk!')
+  }
+
+  const handleStartNewBox = () => {
+    setEditingBoxId(null)
+    setBox([])
+    setHint('🌸 Sāc veidot jaunu kastīti! Izvēlies izmēru un pievieno garšas.')
   }
 
   const handleRemoveAddedBox = (boxId) => {
+    if (editingBoxId === boxId) {
+      setEditingBoxId(null)
+      setBox([])
+    }
     setSelectedBoxes(selectedBoxes.filter((b) => b.id !== boxId))
   }
 
@@ -160,7 +192,11 @@ export default function BoxBuilder({ selectedBoxes = [], setSelectedBoxes }) {
           <div className="lg:col-span-5">
             <div className="rounded-2xl border border-white/10 bg-espresso-3 p-6 shadow-2xl ring-1 ring-white/5">
               <div className="text-center pb-4 border-b border-white/5">
-                <h3 className="font-display text-lg font-bold text-gold">🎁 {sz}-Makarūnu Kastīte</h3>
+                <h3 className="font-display text-lg font-bold text-gold">
+                  {editingBoxId
+                    ? `🛠️ Labot kastīti #${selectedBoxes.findIndex(b => b.id === editingBoxId) + 1}`
+                    : `🎁 ${sz}-Makarūnu Kastīte`}
+                </h3>
                 <p className="text-[0.7rem] text-ivory-dim/60 mt-0.5">
                   {box.length === 0
                     ? 'Kastīte pagaidām ir tukša'
@@ -232,18 +268,28 @@ export default function BoxBuilder({ selectedBoxes = [], setSelectedBoxes }) {
                 onClick={handleAddBoxToOrder}
                 className="w-full rounded-full bg-gold py-3.5 font-mono text-xs uppercase tracking-widest text-espresso font-bold shadow-[0_4px_24px_rgba(201,161,90,0.25)] transition-all hover:bg-gold-soft hover:shadow-[0_8px_32px_rgba(201,161,90,0.35)] disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-2"
               >
-                <span>🎁</span>
-                <span>Pievienot šo kastīti pasūtījumam ({box.length}/{sz})</span>
+                <span>{editingBoxId ? '💾' : '🎁'}</span>
+                <span>{editingBoxId ? 'Saglabāt izmaiņas kastītē' : `Pievienot šo kastīti pasūtījumam (${box.length}/${sz})`}</span>
               </button>
 
-              {box.length > 0 && (
-                <button
-                  onClick={clear}
-                  className="w-full mt-3 text-center text-[0.7rem] font-mono text-ivory-dim/60 underline hover:text-ivory cursor-pointer"
-                >
-                  Iztīrīt kastīti
-                </button>
-              )}
+              <div className="flex justify-center gap-4 mt-3">
+                {box.length > 0 && (
+                  <button
+                    onClick={clear}
+                    className="text-[0.7rem] font-mono text-ivory-dim/60 underline hover:text-ivory cursor-pointer"
+                  >
+                    Iztīrīt kastīti
+                  </button>
+                )}
+                {editingBoxId && (
+                  <button
+                    onClick={handleStartNewBox}
+                    className="text-[0.7rem] font-mono text-gold font-bold underline hover:text-gold-soft cursor-pointer"
+                  >
+                    Atcelt labošanu (Sākt jaunu)
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* List of currently added customized boxes */}
@@ -254,12 +300,21 @@ export default function BoxBuilder({ selectedBoxes = [], setSelectedBoxes }) {
                     <span>🛍️</span>
                     <span>Tavs iepirkumu grozs ({selectedBoxes.length} kastīt{selectedBoxes.length === 1 ? 'e' : 'es'})</span>
                   </h4>
-                  <button
-                    onClick={() => setSelectedBoxes([])}
-                    className="text-[0.65rem] font-mono text-blush-deep hover:underline cursor-pointer"
-                  >
-                    Iztīrīt grozu
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleStartNewBox}
+                      className="text-[0.65rem] font-mono text-gold font-bold hover:underline cursor-pointer"
+                    >
+                      + Pievienot vēl vienu kastīti
+                    </button>
+                    <span className="text-white/10 text-xs">|</span>
+                    <button
+                      onClick={() => { setSelectedBoxes([]); setEditingBoxId(null); setBox([]); }}
+                      className="text-[0.65rem] font-mono text-blush-deep hover:underline cursor-pointer"
+                    >
+                      Iztīrīt grozu
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-4 max-h-60 overflow-y-auto pr-1">
@@ -273,17 +328,31 @@ export default function BoxBuilder({ selectedBoxes = [], setSelectedBoxes }) {
                     return (
                       <div
                         key={addedBox.id}
-                        className="rounded-xl border border-white/5 bg-espresso-2/50 p-3 flex flex-col gap-2 relative group"
+                        className={`rounded-xl border p-3 flex flex-col gap-2 relative group ${
+                          editingBoxId === addedBox.id
+                            ? 'border-gold bg-gold/10 ring-1 ring-gold/25'
+                            : 'border-white/5 bg-espresso-2/50'
+                        }`}
                       >
                         <div className="flex items-center justify-between font-mono text-[0.65rem] text-gold font-bold">
-                          <span>KASTĪTE #{bIdx + 1} ({addedBox.size} gab.)</span>
-                          <button
-                            onClick={() => handleRemoveAddedBox(addedBox.id)}
-                            className="text-[0.65rem] text-blush hover:text-red-500 font-bold hover:underline cursor-pointer"
-                            title="Noņemt šo kastīti"
-                          >
-                            Noņemt
-                          </button>
+                          <span>KASTĪTE #{bIdx + 1} ({addedBox.size} gab.){editingBoxId === addedBox.id ? ' 🛠️ LABO' : ''}</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditAddedBox(addedBox)}
+                              className="text-[0.65rem] text-gold hover:underline cursor-pointer"
+                              title="Labot šo kastīti"
+                            >
+                              Labot
+                            </button>
+                            <span className="text-white/10">·</span>
+                            <button
+                              onClick={() => handleRemoveAddedBox(addedBox.id)}
+                              className="text-[0.65rem] text-blush hover:text-red-500 font-bold hover:underline cursor-pointer"
+                              title="Noņemt šo kastīti"
+                            >
+                              Noņemt
+                            </button>
+                          </div>
                         </div>
 
                         <div className="flex flex-wrap gap-1.5 text-[0.65rem] text-ivory-dim/90">
