@@ -18,8 +18,8 @@ export default function App() {
   useSmoothScroll()
   const { scrollYProgress } = useScroll()
 
-  // State shared from BoxBuilder to BookingForm
-  const [boxFlavors, setBoxFlavors] = useState([])
+  // Multi-box cart system state shared between BoxBuilder and BookingForm
+  const [selectedBoxes, setSelectedBoxes] = useState([])
 
   // Active flavor state lifted to synchronize background colors across Hero and Game iframe
   const [activeFlavor, setActiveFlavor] = useState(0)
@@ -93,10 +93,10 @@ export default function App() {
         <Flavours />
 
         {/* Interactive Box Builder (interactive 🎁 size picker and composition selector) */}
-        <BoxBuilder onBoxChange={setBoxFlavors} />
+        <BoxBuilder selectedBoxes={selectedBoxes} setSelectedBoxes={setSelectedBoxes} />
 
         {/* Supabase booking and interactive monthly calendar form */}
-        <BookingForm boxFlavors={boxFlavors} />
+        <BookingForm selectedBoxes={selectedBoxes} setSelectedBoxes={setSelectedBoxes} />
 
         {/* Embedded beautiful retro/procedural puzzle game */}
         <GameSection activeFlavor={activeFlavor} />

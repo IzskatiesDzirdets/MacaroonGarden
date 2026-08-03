@@ -44,3 +44,10 @@ If you intend to use the URL of that asset, use /game.html?url&raw.
 7:30:49 AM [vite] (client) page reload public/game.html
 7:36:01 AM [vite] (client) page reload index.html
 7:37:32 AM [vite] (client) page reload index.html
+7:55:42 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+7:55:47 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+7:56:51 AM [vite] (client) hmr update /src/components/BoxBuilder.jsx, /src/index.css
+7:58:03 AM [vite] (client) hmr update /src/components/BoxBuilder.jsx, /src/index.css
+8:00:25 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
+8:00:37 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
+8:01:55 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
