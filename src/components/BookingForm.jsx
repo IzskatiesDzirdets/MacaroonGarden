@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSupabase } from '../hooks/useSupabase'
+import { useCMS } from '../hooks/useCMS'
 
 const FLAVOURS = [
   { id: 'rose',  e: '🌹', n: 'Roze un Avenes' },
@@ -34,6 +35,7 @@ function fmtDate(y, m, d) {
 
 export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
   const { sb, user, profile } = useSupabase()
+  const { addInquiry } = useCMS()
 
   const [cal, setCal] = useState(new Date())
   const [bks, setBks] = useState([])
@@ -204,6 +206,16 @@ export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
       ])
 
       if (dbErr) throw dbErr
+
+      // Register inquiry locally inside CMSProvider as well!
+      addInquiry({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        qty: parseInt(qty),
+        flavours: emailFlavoursSummary,
+        notes: (address ? 'Adrese: ' + address + '. ' : '') + serializedNotes,
+      })
 
       // Dispatch EmailJS
       try {
@@ -707,13 +719,13 @@ export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
                     className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 font-body text-sm text-ivory outline-none transition-all focus:border-gold/50 resize-y"
-                    placeholder="Krāsu vēlmes, dāvanu kartīte, īpašs iepakojums..."
+                    placeholder="Krāsu vēlmes, dāvanu kartīte, īpašs iepakojums, vai dāvanu kods..."
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={submitting || !selDate || !selTime || selFlavs.length === 0}
+                  disabled={submitting || !selDate || !selTime || (selectedBoxes.length === 0 && selFlavs.length === 0)}
                   className="w-full mt-4 rounded-full bg-gold py-3.5 font-mono text-xs uppercase tracking-widest text-espresso font-bold shadow-[0_4px_24px_rgba(201,161,90,0.25)] transition-all hover:bg-gold-soft disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2"
                 >
                   {submitting ? (

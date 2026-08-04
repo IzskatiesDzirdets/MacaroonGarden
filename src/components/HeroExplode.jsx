@@ -4,6 +4,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import FeatureCard from './FeatureCard'
 import { FEATURES } from '../data/features'
+import { useCMS } from '../hooks/useCMS'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -42,6 +43,7 @@ const FLAVORS_DATA = [
 ]
 
 export default function HeroExplode({ activeFlavor, setActiveFlavor }) {
+  const { cmsContent } = useCMS()
   const sectionRef = useRef(null)
   const headingRef = useRef(null)
   const subRef = useRef(null)
@@ -144,8 +146,17 @@ export default function HeroExplode({ activeFlavor, setActiveFlavor }) {
             Macaroon Garden — Rīga
           </p>
           <h1 ref={headingRef} className="font-display text-[clamp(2.4rem,7vw,5.5rem)] leading-[0.98] text-ivory max-w-4xl">
-            Katrs makarūns <em className="italic text-blush">sadalās</em>,<br />lai parādītu, kas tajā ir.
+            {cmsContent.hero?.title || 'Ekskluzīvi rokām gatavoti'}<br />
+            <em className="italic text-blush">{cmsContent.hero?.subtitle || 'Franču makarūni'}</em><br />
+            <span className="text-3xl font-body block mt-4 font-normal text-ivory-dim max-w-2xl mx-auto leading-relaxed text-sm md:text-base">
+              {cmsContent.hero?.description || 'Svaigi, eleganti un radīti ar mīlestību.'}
+            </span>
           </h1>
+          <div className="mt-8">
+            <a href="#builder" className="rounded-full bg-gold px-8 py-3.5 font-mono text-xs uppercase tracking-widest text-espresso font-bold shadow-lg transition-transform hover:scale-105 inline-block cursor-pointer">
+              {cmsContent.hero?.ctaText || 'Izveidot savu kastīti'}
+            </a>
+          </div>
         </div>
 
         {/* Dynamic Flavor and Background Selector */}
