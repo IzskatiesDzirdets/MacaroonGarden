@@ -10,15 +10,6 @@ const FLAVOURS = [
   { id: 'pist',  e: '🥜', n: 'Pistācija un Vaniļa' },
 ]
 
-// Map BoxBuilder flavor IDs to BookingForm IDs
-const B2B = {
-  rose: 'rose',
-  pistachio: 'pist',
-  lavender: 'blue',
-  chocolate: 'choc',
-  lemon: 'lemon',
-}
-
 const TIMES = [
   '10:00 - 12:00',
   '12:00 - 14:00',
@@ -35,7 +26,7 @@ function fmtDate(y, m, d) {
 
 export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
   const { sb, user, profile } = useSupabase()
-  const { addInquiry } = useCMS()
+  const { gameConfig, addInquiry } = useCMS()
 
   const [cal, setCal] = useState(new Date())
   const [bks, setBks] = useState([])
@@ -51,6 +42,10 @@ export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
   const [qty, setQty] = useState(12)
   const [address, setAddress] = useState('')
   const [notes, setNotes] = useState('')
+
+  // Reward code and selections (gift/discount)
+  const [promoCode, setPromoCode] = useState('')
+  const [selectedRewardOption, setSelectedRewardOption] = useState('')
 
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -190,6 +185,10 @@ export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
         serializedNotes = `${boxDetailsArr.join('; ')}. ${notes}`
       }
 
+      if (promoCode) {
+        serializedNotes += ` [Kods: ${promoCode}, Izvēlētā balva: ${selectedRewardOption || 'nav norādīta'}]`
+      }
+
       // Save order to Supabase
       const { error: dbErr } = await sb.from('macaroon_orders').insert([
         {
@@ -295,6 +294,8 @@ export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
                 setSF([])
                 setBI(false)
                 setNotes('')
+                setPromoCode('')
+                setSelectedRewardOption('')
               }}
               className="rounded-full bg-gold/10 border border-gold/30 px-6 py-2.5 font-mono text-xs uppercase tracking-wider text-gold hover:bg-gold/25 transition-all"
             >
@@ -695,6 +696,43 @@ export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
                   </div>
                 </div>
 
+                {/* Claimed Game Reward Coupon input & dynamic options selectors */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-gold/80 mb-1" htmlFor="bk-promo">
+                      Dāvanu / Balvas kods
+                    </label>
+                    <input
+                      id="bk-promo"
+                      type="text"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                      className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 font-body text-sm text-ivory outline-none transition-all focus:border-gold/50"
+                      placeholder="Piem. GARDEN10"
+                    />
+                  </div>
+
+                  {promoCode && (
+                    <div>
+                      <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-gold/80 mb-1">
+                        Izvēlies savu balvu 🎁
+                      </label>
+                      <select
+                        value={selectedRewardOption}
+                        onChange={(e) => setSelectedRewardOption(e.target.value)}
+                        className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 font-body text-xs text-gold outline-none focus:border-gold/50"
+                      >
+                        <option value="">Izvēlies opciju...</option>
+                        {(gameConfig.rewardOptions || []).map(opt => (
+                          <option key={opt.id} value={opt.desc}>
+                            {opt.value} ({opt.desc})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-gold/80 mb-1" htmlFor="bk-address">
                     Piegādes adrese
@@ -719,7 +757,7 @@ export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
                     className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 font-body text-sm text-ivory outline-none transition-all focus:border-gold/50 resize-y"
-                    placeholder="Krāsu vēlmes, dāvanu kartīte, īpašs iepakojums, vai dāvanu kods..."
+                    placeholder="Krāsu vēlmes, dāvanu kartīte, īpašs iepakojums..."
                   />
                 </div>
 

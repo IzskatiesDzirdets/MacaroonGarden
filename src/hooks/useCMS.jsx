@@ -31,6 +31,15 @@ const DEFAULT_CMS_CONTENT = {
     italicWord: "iecienīto",
     subtitle: "Garšu kolekcija",
   },
+  boxBuilder: {
+    title: "Izveido savu",
+    italicWord: "sapņu kastīti",
+    subtitle: "Saldais konstruktors",
+    cartButton: "Pievienot pasūtījumam 🎁",
+    editSaveButton: "Saglabāt izmaiņas kastītē ✨",
+    addAnotherButton: "+ Pievienot vēl vienu kastīti",
+    description: "Izvēlies kastītes izmēru, saliec savas mīļākās garšas un dodies aizpildīt piegādes pieteikumu."
+  },
   process: {
     title: "Rūpīgs un elegants",
     italicWord: "tapšanas process",
@@ -143,23 +152,40 @@ const DEFAULT_MOOD_BUTTONS = [
 // Default Sections Management List (Visibility & Order)
 const DEFAULT_SECTIONS = [
   { id: 'hero', name: 'Hero (Sākums)', visible: true, order: 1 },
-  { id: 'mobile-features', name: 'Mobilās funkcijas / Reklāma', visible: true, order: 2 },
-  { id: 'story', name: 'Mūsu Stāsts (About Us)', visible: true, order: 3 },
-  { id: 'flavours', name: 'Garšas (Flavour Showcase)', visible: true, order: 4 },
-  { id: 'builder', name: 'Kastītes Būvētājs (Box Builder)', visible: true, order: 5 },
-  { id: 'booking', name: 'Rezervācijas Forma (Booking Form)', visible: true, order: 6 },
-  { id: 'game', name: 'Puzles Spēle (Game Section)', visible: true, order: 7 },
-  { id: 'contact', name: 'Kontakti & Sociālie tīkli', visible: true, order: 8 },
+  { id: 'gallery', name: 'Premium Galerija', visible: true, order: 2 },
+  { id: 'mobile-features', name: 'Mobilās funkcijas / Reklāma', visible: true, order: 3 },
+  { id: 'story', name: 'Mūsu Stāsts (About Us)', visible: true, order: 4 },
+  { id: 'flavours', name: 'Garšas (Flavour Showcase)', visible: true, order: 5 },
+  { id: 'builder', name: 'Kastītes Būvētājs (Box Builder)', visible: true, order: 6 },
+  { id: 'booking', name: 'Rezervācijas Forma (Booking Form)', visible: true, order: 7 },
+  { id: 'game', name: 'Puzles Spēle (Game Section)', visible: true, order: 8 },
+  { id: 'contact', name: 'Kontakti & Sociālie tīkli', visible: true, order: 9 },
+]
+
+// Default Gallery List
+const DEFAULT_GALLERY_LIST = [
+  { id: 'g1', caption: 'Svaigi cepti makarūni rožu nokrāsās 🌹', image: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=600&q=80' },
+  { id: 'g2', caption: 'Beļģu šokolādes un vaniļas harmonija ✨', image: 'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=600&q=80' },
+  { id: 'g3', caption: 'Franču dāvanu ateljē dārgumi 🎁', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80' },
 ]
 
 // Default Game Achievements & Rewards
 const DEFAULT_GAME_CONFIG = {
   quizMilestone: 3, // reach 3 correct answers to get reward
   scoreMilestone: 100, // reach 100 score in endless to get reward
+  levelMilestone: 15, // reach level 15 to get reward
+  useTimeLimit: false, // optional time constraint toggle
+  timeLimitSeconds: 60, // e.g. 60 seconds constraint
+  rewardOptions: [
+    { id: 'o1', type: 'discount', value: '10%', desc: '10% atlaide pirkumam' },
+    { id: 'o2', type: 'gift_ribbon', value: 'Bezmaksas lentīte', desc: 'Eleganta bezmaksas dāvanu lentīte komplektam' },
+    { id: 'o3', type: 'gift_box', value: 'Bezmaksas kastīte', desc: 'Ekskluzīva zīmola dāvanu kaste izvēlei' },
+    { id: 'o4', type: 'qty_discount', value: 'Dāvanu komplekts', desc: 'Īpašs pasūtījuma vienību skaits ar saldu atlaidi' }
+  ],
   rewards: [
-    { id: 'r1', type: 'discount', value: '10%', code: 'GARDEN10', desc: '10% atlaide nākamajam pasūtījumam' },
-    { id: 'r2', type: 'free_macaron', value: '1 bezmaksas', code: 'FREEPINK', desc: 'Bezmaksas Roze & Avenes makarūns dāvanā' },
-    { id: 'r3', type: 'vip_badge', value: 'Ekskluzīvs', code: 'VIPGARDEN', desc: 'VIP klienta statuss un salda dāvana' },
+    { id: 'r1', type: 'discount', value: '10%', code: 'GARDEN10', desc: '10% atlaide pirkumam' },
+    { id: 'r2', type: 'gift_ribbon', value: 'Bezmaksas lentīte', code: 'FREERIBBON', desc: 'Bezmaksas zīda dāvanu lentīte' },
+    { id: 'r3', type: 'gift_box', value: 'Bezmaksas kastīte', code: 'FREEBOX', desc: 'Bezmaksas ekskluzīvā kastīte' },
   ]
 }
 
@@ -178,6 +204,7 @@ export function CMSProvider({ children }) {
   const [flavoursList, setFlavoursList] = useState(DEFAULT_FLAVOURS)
   const [moodButtons, setMoodButtons] = useState(DEFAULT_MOOD_BUTTONS)
   const [sectionsList, setSectionsList] = useState(DEFAULT_SECTIONS)
+  const [galleryList, setGalleryList] = useState(DEFAULT_GALLERY_LIST)
   const [gameConfig, setGameConfig] = useState(DEFAULT_GAME_CONFIG)
   const [rewardCodes, setRewardCodes] = useState([])
   const [inquiries, setInquiries] = useState([])
@@ -197,19 +224,22 @@ export function CMSProvider({ children }) {
 
   // Load from LocalStorage
   useEffect(() => {
-    const storedCms = localStorage.getItem('mg_cms_content')
+    const storedCms = localStorage.getItem('mg_cms_content_v2')
     if (storedCms) setCmsContent(JSON.parse(storedCms))
 
-    const storedFlavours = localStorage.getItem('mg_cms_flavours')
+    const storedFlavours = localStorage.getItem('mg_cms_flavours_v2')
     if (storedFlavours) setFlavoursList(JSON.parse(storedFlavours))
 
-    const storedMoods = localStorage.getItem('mg_cms_moods')
+    const storedMoods = localStorage.getItem('mg_cms_moods_v2')
     if (storedMoods) setMoodButtons(JSON.parse(storedMoods))
 
-    const storedSections = localStorage.getItem('mg_cms_sections')
+    const storedSections = localStorage.getItem('mg_cms_sections_v2')
     if (storedSections) setSectionsList(JSON.parse(storedSections))
 
-    const storedGame = localStorage.getItem('mg_cms_game_config')
+    const storedGallery = localStorage.getItem('mg_cms_gallery_v2')
+    if (storedGallery) setGalleryList(JSON.parse(storedGallery))
+
+    const storedGame = localStorage.getItem('mg_cms_game_config_v2')
     if (storedGame) setGameConfig(JSON.parse(storedGame))
 
     const storedAdmins = localStorage.getItem('mg_cms_admins')
@@ -223,16 +253,12 @@ export function CMSProvider({ children }) {
       localStorage.setItem('mg_cms_admins', JSON.stringify(initialAdmins))
     }
 
-    const storedRewards = localStorage.getItem('mg_cms_rewards')
+    const storedRewards = localStorage.getItem('mg_cms_rewards_v2')
     if (storedRewards) {
       setRewardCodes(JSON.parse(storedRewards))
     } else {
-      const sampleRewards = [
-        { id: '1', code: 'GARDEN10', user: 'janis@example.com', reward: '10% Atlaide', date: '2026-03-01', claimed: true },
-        { id: '2', code: 'FREEPINK', user: 'liga@example.com', reward: 'Brīvs Makarūns', date: '2026-03-02', claimed: true },
-      ]
-      setRewardCodes(sampleRewards)
-      localStorage.setItem('mg_cms_rewards', JSON.stringify(sampleRewards))
+      setRewardCodes(DEFAULT_GAME_CONFIG.rewards)
+      localStorage.setItem('mg_cms_rewards_v2', JSON.stringify(DEFAULT_GAME_CONFIG.rewards))
     }
 
     const storedInquiries = localStorage.getItem('mg_cms_inquiries')
@@ -314,7 +340,7 @@ export function CMSProvider({ children }) {
       }
     }
     setCmsContent(updated)
-    localStorage.setItem('mg_cms_content', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_content_v2', JSON.stringify(updated))
   }
 
   // Product Flavour CRUD
@@ -327,13 +353,13 @@ export function CMSProvider({ children }) {
       updated = [...flavoursList, flavour]
     }
     setFlavoursList(updated)
-    localStorage.setItem('mg_cms_flavours', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_flavours_v2', JSON.stringify(updated))
   }
 
   const deleteFlavour = (id) => {
     const updated = flavoursList.filter(f => f.id !== id)
     setFlavoursList(updated)
-    localStorage.setItem('mg_cms_flavours', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_flavours_v2', JSON.stringify(updated))
   }
 
   // Mood Filters CRUD
@@ -347,32 +373,51 @@ export function CMSProvider({ children }) {
     }
     updated.sort((a, b) => a.order - b.order)
     setMoodButtons(updated)
-    localStorage.setItem('mg_cms_moods', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_moods_v2', JSON.stringify(updated))
   }
 
   const deleteMoodButton = (id) => {
     const updated = moodButtons.filter(m => m.id !== id)
     setMoodButtons(updated)
-    localStorage.setItem('mg_cms_moods', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_moods_v2', JSON.stringify(updated))
   }
 
   const reorderMoodButtons = (buttons) => {
     const updated = buttons.map((b, idx) => ({ ...b, order: idx + 1 }))
     setMoodButtons(updated)
-    localStorage.setItem('mg_cms_moods', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_moods_v2', JSON.stringify(updated))
+  }
+
+  // Gallery CRUD
+  const saveGalleryImage = (item) => {
+    let updated
+    const exists = galleryList.find(g => g.id === item.id)
+    if (exists) {
+      updated = galleryList.map(g => g.id === item.id ? item : g)
+    } else {
+      updated = [...galleryList, item]
+    }
+    setGalleryList(updated)
+    localStorage.setItem('mg_cms_gallery_v2', JSON.stringify(updated))
+  }
+
+  const deleteGalleryImage = (id) => {
+    const updated = galleryList.filter(g => g.id !== id)
+    setGalleryList(updated)
+    localStorage.setItem('mg_cms_gallery_v2', JSON.stringify(updated))
   }
 
   // Section Ordering and Toggles
   const saveSectionList = (newList) => {
     const sorted = [...newList].map((s, idx) => ({ ...s, order: idx + 1 }))
     setSectionsList(sorted)
-    localStorage.setItem('mg_cms_sections', JSON.stringify(sorted))
+    localStorage.setItem('mg_cms_sections_v2', JSON.stringify(sorted))
   }
 
   // Game Achievement Logic
   const saveGameConfig = (newConfig) => {
     setGameConfig(newConfig)
-    localStorage.setItem('mg_cms_game_config', JSON.stringify(newConfig))
+    localStorage.setItem('mg_cms_game_config_v2', JSON.stringify(newConfig))
   }
 
   const addRewardCode = (code, userEmail, rewardType) => {
@@ -386,7 +431,7 @@ export function CMSProvider({ children }) {
     }
     const updated = [newReward, ...rewardCodes]
     setRewardCodes(updated)
-    localStorage.setItem('mg_cms_rewards', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_rewards_v2', JSON.stringify(updated))
 
     // Increment metrics
     const updatedAnalytics = {
@@ -455,6 +500,7 @@ export function CMSProvider({ children }) {
         flavoursList,
         moodButtons,
         sectionsList,
+        galleryList,
         gameConfig,
         rewardCodes,
         inquiries,
@@ -470,6 +516,8 @@ export function CMSProvider({ children }) {
         saveMoodButton,
         deleteMoodButton,
         reorderMoodButtons,
+        saveGalleryImage,
+        deleteGalleryImage,
         saveSectionList,
         saveGameConfig,
         addRewardCode,

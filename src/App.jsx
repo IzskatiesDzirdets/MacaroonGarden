@@ -11,6 +11,7 @@ import BoxBuilder from './components/BoxBuilder'
 import BookingForm from './components/BookingForm'
 import GameSection from './components/GameSection'
 import ContactSection from './components/ContactSection'
+import GallerySection from './components/GallerySection'
 import Footer from './components/Footer'
 import AuthModal from './components/AuthModal'
 import AccountModal from './components/AccountModal'
@@ -80,6 +81,8 @@ export default function App() {
     switch (secId) {
       case 'hero':
         return <HeroExplode key="hero" activeFlavor={activeFlavor} setActiveFlavor={setActiveFlavor} />
+      case 'gallery':
+        return <GallerySection key="gallery" />
       case 'mobile-features':
         return <MobileFeatureList key="mobile-features" />
       case 'story':
@@ -134,7 +137,7 @@ export default function App() {
         onClose={() => setAccountModalOpen(false)}
       />
 
-      {/* Admin Panel Panel Modal */}
+      {/* Admin Panel Modal */}
       <AdminPanel
         isOpen={adminPanelOpen}
         onClose={() => setAdminPanelOpen(false)}

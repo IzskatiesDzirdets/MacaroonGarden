@@ -10,6 +10,7 @@ export default function AdminPanel({ isOpen, onClose }) {
     flavoursList,
     moodButtons,
     sectionsList,
+    galleryList,
     gameConfig,
     rewardCodes,
     inquiries,
@@ -24,14 +25,15 @@ export default function AdminPanel({ isOpen, onClose }) {
     deleteFlavour,
     saveMoodButton,
     deleteMoodButton,
-    reorderMoodButtons,
+    saveGalleryImage,
+    deleteGalleryImage,
     saveSectionList,
     saveGameConfig,
     updateInquiryStatus,
     deleteInquiry
   } = useCMS()
 
-  // Tab: 'login' | 'dashboard' | 'sections' | 'text' | 'flavours' | 'moods' | 'game' | 'inquiries' | 'admins'
+  // Tab: 'sections' | 'text' | 'flavours' | 'moods' | 'gallery_tab' | 'game' | 'inquiries' | 'admins'
   const [activeTab, setActiveTab] = useState('sections')
   const [loginUsername, setLoginUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -46,13 +48,22 @@ export default function AdminPanel({ isOpen, onClose }) {
   // CRUD Forms States
   const [editingFlavour, setEditingFlavour] = useState(null)
   const [editingMood, setEditingMood] = useState(null)
+  const [editingGallery, setEditingGallery] = useState(null)
   const [newAdminName, setNewAdminName] = useState('')
   const [newAdminEmail, setNewAdminEmail] = useState('')
   const [newAdminRole, setNewAdminRole] = useState('Editor')
 
   // Achievement Configuration state
-  const [quizMilestone, setQuizMilestone] = useState(gameConfig.quizMilestone)
-  const [scoreMilestone, setScoreMilestone] = useState(gameConfig.scoreMilestone)
+  const [quizMilestone, setQuizMilestone] = useState(gameConfig.quizMilestone || 3)
+  const [scoreMilestone, setScoreMilestone] = useState(gameConfig.scoreMilestone || 3500)
+  const [levelMilestone, setLevelMilestone] = useState(gameConfig.levelMilestone || 15)
+  const [useTimeLimit, setUseTimeLimit] = useState(gameConfig.useTimeLimit || false)
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState(gameConfig.timeLimitSeconds || 60)
+
+  // Custom Reward Options Builder
+  const [newRewardType, setNewRewardType] = useState('gift_ribbon')
+  const [newRewardValue, setNewRewardValue] = useState('')
+  const [newRewardDesc, setNewRewardDesc] = useState('')
 
   if (!isOpen) return null
 
@@ -117,6 +128,17 @@ export default function AdminPanel({ isOpen, onClose }) {
     saveSectionList(newList)
   }
 
+  // FileReader helper to convert uploaded files directly to Base64
+  const handleFileChange = (e, callback) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      callback(reader.result)
+    }
+    reader.readAsDataURL(file)
+  }
+
   // Flavour CRUD Helpers
   const handleSaveFlavourSubmit = (e) => {
     e.preventDefault()
@@ -137,6 +159,23 @@ export default function AdminPanel({ isOpen, onClose }) {
       image: '/images/flavours/rose-aveni.png',
       tone: 'gold',
       hidden: false
+    })
+  }
+
+  // Gallery CRUD Helpers
+  const handleSaveGallerySubmit = (e) => {
+    e.preventDefault()
+    if (!editingGallery.image) return alert('Lūdzu izvēlieties vai augšupielādējiet attēlu.')
+    saveGalleryImage(editingGallery)
+    setEditingGallery(null)
+    alert('✓ Galerijas attēls pievienots!')
+  }
+
+  const startNewGalleryImage = () => {
+    setEditingGallery({
+      id: 'gallery-' + Math.random().toString(36).substring(2, 5),
+      caption: '',
+      image: ''
     })
   }
 
@@ -163,9 +202,35 @@ export default function AdminPanel({ isOpen, onClose }) {
     saveGameConfig({
       ...gameConfig,
       quizMilestone: parseInt(quizMilestone),
-      scoreMilestone: parseInt(scoreMilestone)
+      scoreMilestone: parseInt(scoreMilestone),
+      levelMilestone: parseInt(levelMilestone),
+      useTimeLimit,
+      timeLimitSeconds: parseInt(timeLimitSeconds)
     })
     alert('✓ Spēles sasniegumu konfigurācija saglabāta!')
+  }
+
+  const handleAddRewardOption = (e) => {
+    e.preventDefault()
+    if (!newRewardValue || !newRewardDesc) return alert('Lūdzu aizpildiet visus laukus.')
+    const updatedOptions = [
+      ...(gameConfig.rewardOptions || []),
+      {
+        id: 'opt-' + Math.random().toString(36).substring(2, 5),
+        type: newRewardType,
+        value: newRewardValue,
+        desc: newRewardDesc
+      }
+    ]
+    saveGameConfig({ ...gameConfig, rewardOptions: updatedOptions })
+    setNewRewardValue('')
+    setNewRewardDesc('')
+    alert('✓ Jauna balvas opcija pievienota!')
+  }
+
+  const handleDeleteRewardOption = (id) => {
+    const updatedOptions = (gameConfig.rewardOptions || []).filter(o => o.id !== id)
+    saveGameConfig({ ...gameConfig, rewardOptions: updatedOptions })
   }
 
   // Export Utilities
@@ -364,6 +429,14 @@ export default function AdminPanel({ isOpen, onClose }) {
                   🌈 Noskaņu pogas
                 </button>
                 <button
+                  onClick={() => setActiveTab('gallery_tab')}
+                  className={`w-full text-left rounded-xl px-4 py-3 font-mono text-xs tracking-wider transition-all cursor-pointer ${
+                    activeTab === 'gallery_tab' ? 'bg-gold text-espresso font-bold' : 'text-ivory-dim hover:bg-white/5 hover:text-ivory'
+                  }`}
+                >
+                  🖼️ Galerijas tēli
+                </button>
+                <button
                   onClick={() => setActiveTab('game')}
                   className={`w-full text-left rounded-xl px-4 py-3 font-mono text-xs tracking-wider transition-all cursor-pointer ${
                     activeTab === 'game' ? 'bg-gold text-espresso font-bold' : 'text-ivory-dim hover:bg-white/5 hover:text-ivory'
@@ -400,7 +473,7 @@ export default function AdminPanel({ isOpen, onClose }) {
                   <div className="space-y-6">
                     <div>
                       <h2 className="font-display text-2xl font-bold text-ivory">Sadaļu izkārtojums un Redzamība</h2>
-                      <p className="text-xs text-ivory-dim mt-1">Reorganizējiet, kārtojiet vai noslēpiet landing page sadaļas. Izmaiņas ir uzreiz redzamas tiešsaistē.</p>
+                      <p className="text-xs text-ivory-dim mt-1 font-semibold">Reorganizējiet, kārtojiet vai noslēpiet landing page sadaļas. Izmaiņas ir uzreiz redzamas tiešsaistē.</p>
                     </div>
 
                     <div className="rounded-2xl border border-white/5 bg-espresso-2/50 overflow-hidden divide-y divide-white/5">
@@ -466,6 +539,7 @@ export default function AdminPanel({ isOpen, onClose }) {
                         <option value="hero">Hero (Galvene)</option>
                         <option value="about">Par Mums (Our Story)</option>
                         <option value="flavours">Garšas (Flavours Text)</option>
+                        <option value="boxBuilder">Kastīšu Konstruktors (Box Builder)</option>
                         <option value="process">Process (How it works)</option>
                         <option value="faq">FAQ (Biežākie jautājumi)</option>
                         <option value="contact">Kontakti</option>
@@ -476,7 +550,7 @@ export default function AdminPanel({ isOpen, onClose }) {
                     <div className="rounded-2xl border border-white/5 bg-espresso-2/30 p-6 space-y-4">
                       {Object.keys(cmsContent[cmsSection] || {}).map((fieldKey) => (
                         <div key={fieldKey}>
-                          <label htmlFor={fieldKey} className="block font-mono text-[10px] uppercase tracking-wider text-gold/80 mb-1.5">
+                          <label htmlFor={fieldKey} className="block font-mono text-[10px] uppercase tracking-wider text-gold/80 mb-1.5 font-bold">
                             {fieldKey.replace(/([A-Z])/g, ' $1')}
                           </label>
                           {cmsContent[cmsSection][fieldKey].length > 60 ? (
@@ -595,13 +669,19 @@ export default function AdminPanel({ isOpen, onClose }) {
                             </select>
                           </div>
                           <div>
-                            <label className="block font-mono text-[10px] uppercase text-gold/80 mb-1">Attēla ceļš / URL</label>
+                            <label className="block font-mono text-[10px] uppercase text-gold/80 mb-1">Attēla augšupielāde (no datora vai telefona) 📷</label>
                             <input
-                              type="text"
-                              value={editingFlavour.image}
-                              onChange={(e) => setEditingFlavour({ ...editingFlavour, image: e.target.value })}
-                              className="w-full rounded-xl border border-white/10 bg-espresso px-3 py-2 text-xs text-ivory"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleFileChange(e, (base64) => setEditingFlavour({ ...editingFlavour, image: base64 }))}
+                              className="w-full font-mono text-xs text-ivory"
                             />
+                            {editingFlavour.image && (
+                              <div className="mt-2 flex items-center gap-2">
+                                <span className="text-[10px] text-ivory-dim">Pašreizējā bilde:</span>
+                                <img src={editingFlavour.image} className="h-10 w-10 object-cover rounded border border-white/10" alt="Priekšskatījums" />
+                              </div>
+                            )}
                           </div>
 
                           <div className="sm:col-span-2 flex justify-end gap-2.5 pt-2">
@@ -634,9 +714,9 @@ export default function AdminPanel({ isOpen, onClose }) {
                               className="h-14 w-14 rounded-xl object-cover border border-white/5 bg-espresso flex-shrink-0"
                             />
                             <div>
-                              <h3 className="font-display font-semibold text-ivory leading-tight">{f.name}</h3>
-                              <span className="font-mono text-[10px] text-gold/80 uppercase">{f.price.toFixed(2)} €</span>
-                              {f.badge && <span className="ml-2 bg-gold/10 text-gold text-[8px] font-mono uppercase px-1.5 py-0.5 rounded border border-gold/25">{f.badge}</span>}
+                              <h3 className="font-display font-semibold text-ivory leading-tight font-bold">{f.name}</h3>
+                              <span className="font-mono text-[10px] text-gold/80 uppercase font-bold">{f.price.toFixed(2)} €</span>
+                              {f.badge && <span className="ml-2 bg-gold/10 text-gold text-[8px] font-mono uppercase px-1.5 py-0.5 rounded border border-gold/25 font-bold">{f.badge}</span>}
                               <p className="text-[10px] text-ivory-dim leading-snug mt-1.5">{f.note}</p>
                             </div>
                           </div>
@@ -710,11 +790,9 @@ export default function AdminPanel({ isOpen, onClose }) {
                               className="w-full rounded-xl border border-white/10 bg-espresso px-3 py-2 text-xs text-ivory"
                             >
                               <option value="all">Visi (all)</option>
-                              <option value="rose-aveni">Roze un avenes (rose-aveni)</option>
-                              <option value="chocolate">Beļģu šokolāde (chocolate)</option>
-                              <option value="lemon">Citronu kurds (lemon)</option>
-                              <option value="lavender">Mellenes un lavanda (lavender)</option>
-                              <option value="pistachio">Pistācija un vaniļa (pistachio)</option>
+                              {flavoursList.map(f => (
+                                <option key={f.id} value={f.id}>{f.name} ({f.id})</option>
+                              ))}
                             </select>
                           </div>
                           <div>
@@ -777,6 +855,104 @@ export default function AdminPanel({ isOpen, onClose }) {
                   </div>
                 )}
 
+                {/* TAB: GALLERY TAB (NEW) */}
+                {activeTab === 'gallery_tab' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="font-display text-2xl font-bold text-ivory font-bold">Mājaslapas Attēlu Galerija</h2>
+                        <p className="text-xs text-ivory-dim mt-1 font-semibold">Augšupielādējiet jaunas bildes no sava telefona vai datora ar pievilcīgiem aprakstiem.</p>
+                      </div>
+
+                      <button
+                        onClick={startNewGalleryImage}
+                        className="rounded-full bg-gold px-5 py-2 font-mono text-xs uppercase tracking-wider text-espresso font-bold transition-all hover:bg-gold-soft cursor-pointer"
+                      >
+                        + Pievienot Bildi
+                      </button>
+                    </div>
+
+                    {editingGallery && (
+                      <div className="rounded-2xl border border-gold/30 bg-gold/5 p-6 space-y-4">
+                        <h3 className="font-display text-lg font-bold text-gold">Pievienot bildi galerijai</h3>
+                        <form onSubmit={handleSaveGallerySubmit} className="grid gap-4 sm:grid-cols-2">
+                          <div>
+                            <label className="block font-mono text-[10px] uppercase text-gold/80 mb-1">ID</label>
+                            <input
+                              type="text"
+                              required
+                              value={editingGallery.id}
+                              onChange={(e) => setEditingGallery({ ...editingGallery, id: e.target.value })}
+                              className="w-full rounded-xl border border-white/10 bg-espresso px-3 py-2 text-xs text-ivory"
+                            />
+                          </div>
+                          <div>
+                            <label className="block font-mono text-[10px] uppercase text-gold/80 mb-1">Apraksts / Paraksts (Caption)</label>
+                            <input
+                              type="text"
+                              required
+                              value={editingGallery.caption}
+                              onChange={(e) => setEditingGallery({ ...editingGallery, caption: e.target.value })}
+                              className="w-full rounded-xl border border-white/10 bg-espresso px-3 py-2 text-xs text-ivory"
+                              placeholder="Kraukšķīgi augļu makarūni 🍓"
+                            />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block font-mono text-[10px] uppercase text-gold/80 mb-1">Augšupielādēt failu 📷</label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleFileChange(e, (base64) => setEditingGallery({ ...editingGallery, image: base64 }))}
+                              className="w-full font-mono text-xs text-ivory"
+                            />
+                            {editingGallery.image && (
+                              <img src={editingGallery.image} className="mt-2 h-32 w-32 object-cover rounded border border-white/10" alt="Priekšskatījums" />
+                            )}
+                          </div>
+
+                          <div className="sm:col-span-2 flex justify-end gap-2.5 pt-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditingGallery(null)}
+                              className="rounded-xl bg-white/5 px-4 py-2 font-mono text-xs text-ivory hover:bg-white/10 cursor-pointer"
+                            >
+                              Atcelt
+                            </button>
+                            <button
+                              type="submit"
+                              className="rounded-xl bg-gold px-5 py-2 font-mono text-xs text-espresso font-bold hover:bg-gold-soft cursor-pointer"
+                            >
+                              Pievienot Galerijai
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      {galleryList.map(item => (
+                        <div key={item.id} className="relative rounded-2xl border border-white/10 bg-espresso-2/40 p-4 flex flex-col justify-between">
+                          <img
+                            src={item.image}
+                            alt={item.caption}
+                            className="w-full aspect-video object-cover rounded-xl border border-white/5 bg-espresso mb-3"
+                            onError={(e) => { e.target.onerror = null; e.target.src = '/assets/logo.webp' }}
+                          />
+                          <p className="text-xs text-ivory-dim font-display italic font-semibold">{item.caption || 'Bez paraksta'}</p>
+                          <div className="flex justify-end mt-3 pt-2 border-t border-white/5">
+                            <button
+                              onClick={() => { if (confirm('Dzēst šo bildi no galerijas?')) deleteGalleryImage(item.id) }}
+                              className="rounded px-2.5 py-1 bg-red-500/10 text-[10px] font-mono text-red-400 hover:bg-red-500/20 cursor-pointer"
+                            >
+                              Dzēst
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* TAB: GAME ACHIEVEMENTS & REWARDS */}
                 {activeTab === 'game' && (
                   <div className="space-y-6">
@@ -809,6 +985,40 @@ export default function AdminPanel({ isOpen, onClose }) {
                           />
                         </div>
 
+                        <div>
+                          <label className="block font-mono text-[10px] uppercase text-gold/80 mb-1 font-bold">Līmeņu spēle (Līmeņu slieksnis, piemēram, 15 līmeņi)</label>
+                          <input
+                            type="number"
+                            value={levelMilestone}
+                            onChange={(e) => setLevelMilestone(e.target.value)}
+                            className="w-full rounded-xl border border-white/10 bg-espresso px-4 py-2.5 text-sm text-ivory"
+                          />
+                        </div>
+
+                        {/* Optional time limit constraints */}
+                        <div className="flex items-center gap-2.5 py-1.5">
+                          <input
+                            id="timeLimitToggle"
+                            type="checkbox"
+                            checked={useTimeLimit}
+                            onChange={(e) => setUseTimeLimit(e.target.checked)}
+                            className="h-4 w-4 text-gold border-white/10 bg-espresso rounded focus:ring-1 focus:ring-gold"
+                          />
+                          <label htmlFor="timeLimitToggle" className="font-mono text-xs text-ivory">Ierobežot laiku gājienam / viktorīnai</label>
+                        </div>
+
+                        {useTimeLimit && (
+                          <div>
+                            <label className="block font-mono text-[10px] uppercase text-gold/80 mb-1">Laika ierobežojums sekundēs</label>
+                            <input
+                              type="number"
+                              value={timeLimitSeconds}
+                              onChange={(e) => setTimeLimitSeconds(e.target.value)}
+                              className="w-full rounded-xl border border-white/10 bg-espresso px-4 py-2 text-xs text-ivory"
+                            />
+                          </div>
+                        )}
+
                         <button
                           onClick={handleSaveGameMilestones}
                           className="rounded-full bg-gold px-5 py-2.5 font-mono text-xs uppercase text-espresso font-bold hover:bg-gold-soft cursor-pointer"
@@ -817,20 +1027,65 @@ export default function AdminPanel({ isOpen, onClose }) {
                         </button>
                       </div>
 
+                      {/* Configurable rewards options list */}
                       <div className="rounded-2xl border border-white/5 bg-espresso-2/30 p-6 space-y-4">
-                        <h3 className="font-display text-lg font-bold text-gold flex items-center gap-2">🎁 Konfigurētās Balvas</h3>
-                        <div className="space-y-2.5">
-                          {gameConfig.rewards.map(reward => (
-                            <div key={reward.id} className="p-3 bg-espresso rounded-xl border border-white/5 text-xs">
-                              <div className="flex justify-between font-mono text-[10px] text-gold uppercase tracking-wider font-bold">
-                                <span>Kods: {reward.code}</span>
-                                <span>Tips: {reward.type}</span>
+                        <h3 className="font-display text-lg font-bold text-gold flex items-center gap-2">🎁 Konfigurētās Balvas & Opcijas</h3>
+
+                        <div className="space-y-2.5 max-h-48 overflow-y-auto">
+                          {(gameConfig.rewardOptions || []).map(opt => (
+                            <div key={opt.id} className="p-3 bg-espresso rounded-xl border border-white/5 text-xs flex justify-between items-center">
+                              <div>
+                                <span className="font-mono text-[9px] text-gold uppercase tracking-wider font-bold">[{opt.type}] · {opt.value}</span>
+                                <p className="font-bold text-ivory mt-0.5">{opt.desc}</p>
                               </div>
-                              <p className="font-bold text-ivory mt-1">{reward.desc}</p>
-                              <p className="text-[10px] text-ivory-dim/60 mt-0.5">Vērtība: {reward.value}</p>
+                              <button
+                                onClick={() => handleDeleteRewardOption(opt.id)}
+                                className="text-[10px] font-mono text-red-400 hover:underline cursor-pointer"
+                              >
+                                Dzēst
+                              </button>
                             </div>
                           ))}
                         </div>
+
+                        {/* Add Reward Option Form */}
+                        <form onSubmit={handleAddRewardOption} className="border-t border-white/5 pt-3 space-y-2.5">
+                          <p className="font-mono text-[10px] uppercase text-gold font-bold">Pievienot jaunu balvas opciju mājaslapai</p>
+                          <div className="grid gap-2 grid-cols-2">
+                            <select
+                              value={newRewardType}
+                              onChange={(e) => setNewRewardType(e.target.value)}
+                              className="rounded-lg border border-white/10 bg-espresso p-2 text-xs text-ivory"
+                            >
+                              <option value="discount">Atlaide % / summas apmērā</option>
+                              <option value="gift_ribbon">Dāvanu lentīte bezmaksas</option>
+                              <option value="gift_box">Bezmaksas dāvanu kaste</option>
+                              <option value="qty_discount">Samazināts vienību skaits ar atlaidi</option>
+                            </select>
+                            <input
+                              type="text"
+                              required
+                              value={newRewardValue}
+                              onChange={(e) => setNewRewardValue(e.target.value)}
+                              placeholder="Vērtība (piem. Bezmaksas lentīte)"
+                              className="rounded-lg border border-white/10 bg-espresso p-2 text-xs text-ivory"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            value={newRewardDesc}
+                            onChange={(e) => setNewRewardDesc(e.target.value)}
+                            placeholder="Īss balvas apraksts klientam"
+                            className="w-full rounded-lg border border-white/10 bg-espresso p-2 text-xs text-ivory"
+                          />
+                          <button
+                            type="submit"
+                            className="rounded bg-gold/15 text-gold border border-gold/25 px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider font-bold cursor-pointer"
+                          >
+                            Pievienot Opciju
+                          </button>
+                        </form>
                       </div>
                     </div>
 
