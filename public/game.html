@@ -290,6 +290,110 @@ body.pseudo-fs .wrap{
   padding:.55rem 1.1rem;border-radius:999px;font-size:.76rem;font-weight:600;z-index:700;opacity:0;
   transition:opacity .3s, transform .3s;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(6px);}
+
+@media (orientation: landscape) {
+  .wrap {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    grid-template-rows: auto 1fr auto;
+    max-width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: .3rem .6rem env(safe-area-inset-bottom, .3rem);
+    gap: .3rem;
+  }
+  header {
+    grid-column: 1 / -1;
+    padding: .1rem;
+    gap: .2rem;
+  }
+  .back span {
+    display: none;
+  }
+  .scores {
+    gap: .25rem;
+  }
+  .score-box {
+    padding: .2rem .4rem;
+    border-radius: 8px;
+  }
+  .score-box .sl {
+    font-size: .48rem;
+  }
+  .score-box .sn {
+    font-size: .95rem;
+  }
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    font-size: .8rem;
+    border-radius: 8px;
+  }
+  .mode-tabs {
+    grid-column: 1;
+    grid-row: 2;
+    flex-direction: column;
+    margin-bottom: 0;
+    gap: .2rem;
+  }
+  .mode-tab {
+    padding: .35rem;
+    font-size: .68rem;
+    border-radius: 8px;
+  }
+  .objectives {
+    grid-column: 1;
+    grid-row: 3;
+    margin-bottom: 0;
+    padding: .4rem .5rem;
+    gap: .25rem;
+    border-radius: 10px;
+  }
+  .obj-row {
+    font-size: .64rem;
+    gap: .3rem;
+  }
+  .obj-row .bar {
+    width: 45px;
+    height: 4px;
+  }
+  .board-wrap {
+    grid-column: 2;
+    grid-row: 2;
+    padding: 0;
+  }
+  #board {
+    padding: 4px;
+    gap: 2px;
+    border-radius: 10px;
+  }
+  .tray {
+    grid-column: 2;
+    grid-row: 3;
+    padding: 0;
+    min-height: 52px;
+    gap: .25rem;
+  }
+  .tray-slot {
+    min-height: 48px;
+    border-radius: 8px;
+  }
+  .piece-grid {
+    transform: scale(0.68);
+    transform-origin: center;
+  }
+  .hint {
+    display: none;
+  }
+  .sheet {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  .sheet h2 {
+    font-size: 1.25rem;
+    margin-bottom: .6rem;
+  }
+}
 </style>
 </head>
 <body>

@@ -110,17 +110,17 @@ export default function HeroExplode({ activeFlavor, setActiveFlavor }) {
   return (
     <section
       ref={sectionRef}
-      className={`relative w-full overflow-hidden transition-all duration-1000 ${isDesktop ? 'h-screen' : 'min-h-[105vh]'}`}
+      className={`relative w-full overflow-hidden transition-all duration-1000 ${isDesktop ? 'h-screen' : 'min-h-[105vh] landscape:min-h-screen'}`}
       style={{ background: GRADIENTS[activeFlavor] }}
     >
       {/* Dynamic 2D Macaron Hero Visual replacing WebGL to optimize performance and restore original 2D asset behavior */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 landscape:opacity-20 md:landscape:opacity-40">
         <motion.div
           key={activeFlavor}
           initial={{ scale: 0.85, opacity: 0, rotate: -10 }}
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-[min(80vw,380px)] aspect-square rounded-full shadow-[0_24px_70px_rgba(61,35,20,0.18)] border-4 border-white overflow-hidden"
+          className="relative w-[min(80vw,380px)] landscape:w-[240px] aspect-square rounded-full shadow-[0_24px_70px_rgba(61,35,20,0.18)] border-4 border-white overflow-hidden"
         >
           <motion.img
             src={FLAVOR_IMAGES[activeFlavor]}
@@ -138,18 +138,18 @@ export default function HeroExplode({ activeFlavor, setActiveFlavor }) {
         </motion.div>
       </div>
 
-      <div className="absolute inset-0 flex flex-col items-center justify-between text-center px-6 py-24 md:py-28">
+      <div className="relative z-10 flex min-h-screen landscape:min-h-[120vh] md:landscape:min-h-screen flex-col items-center justify-between text-center px-6 py-24 landscape:py-12 md:py-28">
         <div className="flex flex-col items-center justify-center flex-1 max-w-4xl">
           <p ref={subRef} className="font-mono text-xs tracking-[0.3em] uppercase text-gold/80 mb-4">
             Macaroon Garden — Rīga
           </p>
-          <h1 ref={headingRef} className="font-display text-[clamp(2.4rem,7vw,5.5rem)] leading-[0.98] text-ivory max-w-4xl">
+          <h1 ref={headingRef} className="font-display text-[clamp(2.4rem,7vw,5.5rem)] landscape:text-[clamp(1.8rem,5vw,3rem)] md:landscape:text-[clamp(2.4rem,7vw,5.5rem)] leading-[0.98] text-ivory max-w-4xl">
             Katrs makarūns <em className="italic text-blush">sadalās</em>,<br />lai parādītu, kas tajā ir.
           </h1>
         </div>
 
         {/* Dynamic Flavor and Background Selector */}
-        <div className="z-10 w-full max-w-lg mb-8 md:mb-12">
+        <div className="z-10 w-full max-w-lg mb-8 landscape:mb-4 md:mb-12">
           <div className="flex justify-center gap-3 md:gap-4 flex-wrap">
             {FLAVORS_DATA.map((f, i) => (
               <button

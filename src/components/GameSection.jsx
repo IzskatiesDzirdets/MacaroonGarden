@@ -47,7 +47,7 @@ export default function GameSection({ activeFlavor = 0 }) {
         </div>
 
         {/* Frame container */}
-        <div className="mx-auto max-w-[480px] overflow-hidden rounded-3xl border border-white/10 bg-espresso-3 shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-gold/15 h-[min(78vh,680px)]">
+        <div className="mx-auto max-w-[480px] landscape:max-w-[780px] overflow-hidden rounded-3xl border border-white/10 bg-espresso-3 shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-gold/15 h-[min(78vh,680px)] landscape:h-[min(92vh,480px)] transition-all duration-300">
           <iframe
             srcDoc={customGameHtml}
             title="Makarūnu Mozaīka"

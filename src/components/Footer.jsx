@@ -1,4 +1,4 @@
-export default function Footer({ onAdminOpen }) {
+export default function Footer() {
   return (
     <footer className="border-t border-white/8 bg-espresso px-6 py-12 text-center">
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-4">
@@ -13,17 +13,6 @@ export default function Footer({ onAdminOpen }) {
           <a href="https://www.facebook.com/macarongardenlv" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">Facebook</a>
           <span>·</span>
           <a href="https://www.instagram.com/macarongardenlv" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">Instagram</a>
-          {onAdminOpen && (
-            <>
-              <span>·</span>
-              <button
-                onClick={onAdminOpen}
-                className="hover:text-gold transition-colors cursor-pointer"
-              >
-                Admin Panelis
-              </button>
-            </>
-          )}
         </div>
       </div>
     </footer>

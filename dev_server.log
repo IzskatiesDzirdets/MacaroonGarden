@@ -3,9 +3,7 @@
 > vite
 
 
-  VITE v8.1.5  ready in 366 ms
+  VITE v8.1.5  ready in 376 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-3:30:18 PM [vite] (client) page reload src/main.jsx
-3:50:56 PM [vite] (client) hmr update /src/components/Footer.jsx, /src/index.css
