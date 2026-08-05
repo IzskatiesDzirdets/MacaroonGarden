@@ -8,7 +8,7 @@ export default function GlassCard({ children, className = '', tone = 'default' }
   return (
     <div
       className={[
-        'rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl',
+        'rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md transform-gpu will-change-transform',
         'shadow-[0_8px_40px_rgba(0,0,0,0.45)] ring-1', toneRing,
         'p-6',
         className,
