@@ -16,7 +16,46 @@ const FLAVOR_THEMES = [
   { primary: '#C8C038', secondary: '#EEE880' }, // Lemon
 ]
 
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useCMS } from '../hooks/useCMS'
+
 export default function GameSection({ activeFlavor = 0 }) {
+  const { gameConfig } = useCMS()
+  const [promoOpen, setPromoOpen] = useState(false)
+  const [levelCounter, setLevelCounter] = useState(0)
+
+  // Listen to message events from Game iframe
+  useEffect(() => {
+    const handleGameMessage = (event) => {
+      const data = event.data
+      if (!data) return
+
+      if (data.type === 'mg_level_complete') {
+        const nextCount = levelCounter + 1
+        setLevelCounter(nextCount)
+
+        // Trigger promo ad modal according to frequency
+        const freq = gameConfig?.promoFrequency || 3
+        if (nextCount > 0 && nextCount % freq === 0) {
+          setTimeout(() => {
+            setPromoOpen(true)
+          }, 800)
+        }
+      } else if (data.type === 'mg_life_lost') {
+        // Trigger offer when lives are depleted/lost
+        if (data.livesLeft === 0) {
+          setTimeout(() => {
+            setPromoOpen(true)
+          }, 800)
+        }
+      }
+    }
+
+    window.addEventListener('message', handleGameMessage)
+    return () => window.removeEventListener('message', handleGameMessage)
+  }, [levelCounter, gameConfig])
+
   // Dynamically override css variables and body background inside gameHtml so the game
   // skin completely matches the selected pastry flavor.
   const customGameHtml = gameHtml.replace(
@@ -32,8 +71,14 @@ export default function GameSection({ activeFlavor = 0 }) {
     </style></head>`
   )
 
+  const handlePromoRedirect = () => {
+    setPromoOpen(false)
+    const target = gameConfig?.promoRedirectSection || '#builder'
+    document.querySelector(target)?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
-    <section id="game" className="bg-espresso-2 px-6 py-24 md:px-16 md:py-32">
+    <section id="game" className="bg-espresso-2 px-6 py-24 md:px-16 md:py-32 relative">
       <div className="mx-auto max-w-4xl text-center">
         {/* Header */}
         <div className="mb-14">
@@ -56,6 +101,56 @@ export default function GameSection({ activeFlavor = 0 }) {
           />
         </div>
       </div>
+
+      {/* Promotional special offer ad modal for players */}
+      <AnimatePresence>
+        {promoOpen && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-espresso/90 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-espresso-2 border border-white/10 rounded-3xl p-8 shadow-2xl relative text-center space-y-6"
+            >
+              <button
+                onClick={() => setPromoOpen(false)}
+                className="absolute top-4 right-4 rounded-full bg-white/5 p-2 text-ivory-dim hover:bg-white/10 hover:text-white transition-colors cursor-pointer text-xs"
+              >
+                ✕
+              </button>
+
+              <div>
+                <span className="text-4xl block mb-2">🎁</span>
+                <span className="font-mono text-[10px] text-gold uppercase tracking-wider font-bold">
+                  Spēlētāju Ekskluzīvais Piedāvājums
+                </span>
+                <h3 className="font-display text-xl font-bold text-white mt-1">
+                  Sveiciens, Mozaīkas Meistar!
+                </h3>
+              </div>
+
+              <p className="text-sm text-ivory-dim leading-relaxed font-body">
+                {gameConfig?.promoOfferText || 'Īpašs dāvanu kods spēles faniem! Izmanto kodu "GARDEN10" pirkuma grozā un baudi saldu atlaidi.'}
+              </p>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handlePromoRedirect}
+                  className="w-full rounded-full bg-gold py-3 font-mono text-xs uppercase tracking-widest text-espresso font-bold transition-all hover:bg-gold-soft cursor-pointer"
+                >
+                  Izmantot Piedāvājumu 🌸
+                </button>
+                <button
+                  onClick={() => setPromoOpen(false)}
+                  className="w-full rounded-full bg-white/5 py-3 font-mono text-xs uppercase tracking-widest text-ivory-dim hover:bg-white/10 cursor-pointer"
+                >
+                  Turpināt Spēli
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

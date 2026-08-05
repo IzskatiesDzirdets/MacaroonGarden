@@ -1065,13 +1065,25 @@ function GameTab({ gameConfig, saveGameConfig, rewardCodes }) {
   const [quizMilestone, setQuizMilestone] = useState(gameConfig.quizMilestone)
   const [scoreMilestone, setScoreMilestone] = useState(gameConfig.scoreMilestone)
   const [levelMilestone, setLevelMilestone] = useState(gameConfig.levelMilestone)
+  const [coloredMacaroonTarget, setColoredMacaroonTarget] = useState(gameConfig.coloredMacaroonTarget || 100)
+  const [coloredMacaroonType, setColoredMacaroonType] = useState(gameConfig.coloredMacaroonType || 'rose-aveni')
+  const [winnersCount, setWinnersCount] = useState(gameConfig.winnersCount || 3)
+  const [promoFrequency, setPromoFrequency] = useState(gameConfig.promoFrequency || 3)
+  const [promoOfferText, setPromoOfferText] = useState(gameConfig.promoOfferText || '')
+  const [promoRedirectSection, setPromoRedirectSection] = useState(gameConfig.promoRedirectSection || '#builder')
 
   const handleSave = () => {
     saveGameConfig({
       ...gameConfig,
       quizMilestone: parseInt(quizMilestone),
       scoreMilestone: parseInt(scoreMilestone),
-      levelMilestone: parseInt(levelMilestone)
+      levelMilestone: parseInt(levelMilestone),
+      coloredMacaroonTarget: parseInt(coloredMacaroonTarget),
+      coloredMacaroonType,
+      winnersCount: parseInt(winnersCount),
+      promoFrequency: parseInt(promoFrequency),
+      promoOfferText,
+      promoRedirectSection
     })
     alert('Spēles uzstādījumi veiksmīgi saglabāti!')
   }
@@ -1080,10 +1092,11 @@ function GameTab({ gameConfig, saveGameConfig, rewardCodes }) {
     <div className="space-y-6">
       <div>
         <h3 className="font-display text-lg font-bold text-gold">Spēles uzstādījumi & Balvas</h3>
-        <p className="text-xs text-ivory-dim/60 mt-1">Konfigurē puzles spēles atskaites punktus un balvu atslēgas.</p>
+        <p className="text-xs text-ivory-dim/60 mt-1">Konfigurē puzles spēles atskaites punktus, balvu atslēgas, krāsu mērķus un reklāmas biežumu.</p>
       </div>
 
       <div className="rounded-2xl border border-white/5 bg-espresso/45 p-6 space-y-4">
+        <h4 className="font-mono text-xs uppercase tracking-wider text-gold font-bold">1. Balvu Sliekšņi & Mērķi</h4>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1">
             <label className="block font-mono text-[10px] uppercase text-gold/80">Viktorīnas slieksnis (Correct answers)</label>
@@ -1112,6 +1125,79 @@ function GameTab({ gameConfig, saveGameConfig, rewardCodes }) {
               className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2 text-xs text-ivory outline-none"
             />
           </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3 border-t border-white/5 pt-4">
+          <div className="space-y-1">
+            <label className="block font-mono text-[10px] uppercase text-gold/80">Krāsaino Makarūnu Mērķis (Skaits)</label>
+            <input
+              type="number"
+              value={coloredMacaroonTarget}
+              onChange={(e) => setColoredMacaroonTarget(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2 text-xs text-ivory outline-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="block font-mono text-[10px] uppercase text-gold/80">Mērķa Makarūna Tips</label>
+            <select
+              value={coloredMacaroonType}
+              onChange={(e) => setColoredMacaroonType(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2 text-xs text-white outline-none"
+            >
+              <option value="rose-aveni">Rozā (Roze un avenes)</option>
+              <option value="chocolate">Šokolāde</option>
+              <option value="lemon">Dzeltenā (Citronu kurds)</option>
+              <option value="lavender">Lavandas</option>
+              <option value="pistachio">Zaļā (Pistācija un vaniļa)</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="block font-mono text-[10px] uppercase text-gold/80">Uzvarētāju Skaits (Top x)</label>
+            <input
+              type="number"
+              value={winnersCount}
+              onChange={(e) => setWinnersCount(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2 text-xs text-ivory outline-none"
+            />
+          </div>
+        </div>
+
+        <h4 className="font-mono text-xs uppercase tracking-wider text-gold font-bold border-t border-white/5 pt-4">2. Spēles Reklāmas & Īpašie piedāvājumi</h4>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1">
+            <label className="block font-mono text-[10px] uppercase text-gold/80">Reklāmas Biežums (Ik pēc x līmeņiem/runs)</label>
+            <input
+              type="number"
+              value={promoFrequency}
+              onChange={(e) => setPromoFrequency(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2 text-xs text-ivory outline-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="block font-mono text-[10px] uppercase text-gold/80">Novirzīšanas Sadaļa (Redirect anchor)</label>
+            <select
+              value={promoRedirectSection}
+              onChange={(e) => setPromoRedirectSection(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2 text-xs text-white outline-none"
+            >
+              <option value="#builder">Kastīšu Konstruktors</option>
+              <option value="#booking">Rezervācijas Kalendārs</option>
+              <option value="#flavours">Garšu Ateljē</option>
+              <option value="#gallery">Zīmola Galerija</option>
+              <option value="#story">Mūsu Stāsts</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="block font-mono text-[10px] uppercase text-gold/80">Īpašā piedāvājuma teksts spēlētājiem *</label>
+          <textarea
+            value={promoOfferText}
+            onChange={(e) => setPromoOfferText(e.target.value)}
+            rows={2}
+            className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2 text-xs text-ivory outline-none resize-y"
+            placeholder="Piem. Īpašs piedāvājums spēlētājiem! Izmanto kodu..."
+          />
         </div>
 
         <button

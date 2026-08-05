@@ -180,8 +180,12 @@ const DEFAULT_GAME_CONFIG = {
   quizMilestone: 3, // reach 3 correct answers to get reward
   scoreMilestone: 100, // reach 100 score in endless to get reward
   levelMilestone: 15, // reach level 15 to get reward
-  useTimeLimit: false, // optional time constraint toggle
-  timeLimitSeconds: 60, // e.g. 60 seconds constraint
+  coloredMacaroonTarget: 100, // total colored macarons target (e.g. 100 pink macarons)
+  coloredMacaroonType: 'rose-aveni', // target macaroon type ID
+  winnersCount: 3, // e.g. top 1, 3, 5 winners can win manual positions
+  promoFrequency: 3, // show ad modal every 3 levels completed or on loss/runs
+  promoOfferText: 'Īpašais piedāvājums spēlētājiem! Izmanto kodu "SUPERMACARON" un saņem 15% atlaidi!',
+  promoRedirectSection: '#builder', // random page section to navigate to
   rewardOptions: [
     { id: 'o1', type: 'discount', value: '10%', desc: '10% atlaide pirkumam' },
     { id: 'o2', type: 'gift_ribbon', value: 'Bezmaksas lentīte', desc: 'Eleganta bezmaksas dāvanu lentīte komplektam' },

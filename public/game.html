@@ -1029,7 +1029,13 @@ body.pseudo-fs .wrap{
       if(o.k === 'color') return (levelProgress.colorCounts[o.hex]||0) >= o.n;
       return false;
     });
-    if(allDone) showWin();
+    if(allDone) {
+      // Emit event to parent application so that promotional ad modals can trigger
+      try {
+        window.parent.postMessage({ type: 'mg_level_complete', level: currentLevelIdx + 1 }, '*');
+      } catch(e) {}
+      showWin();
+    }
   }
 
   /* ================= Juice helpers ================= */
@@ -1339,12 +1345,15 @@ body.pseudo-fs .wrap{
   // Vertical lift so the piece is visible above the fingertip instead of hidden under it.
   // Both the ghost rendering and the placement anchor use this same offset, so what you
   // see is exactly where it lands.
-  var FINGER_LIFT = 70;
+  function getFingerLift() {
+    // Reduce FINGER_LIFT in landscape mode to ensure pieces don't clip off the top screen boundary
+    return (window.innerHeight < 500 || window.matchMedia('(orientation: landscape)').matches) ? 32 : 70;
+  }
   function positionGhost(x, y, piece, ghostCell){
     var w = piece.shape[0].length * (ghostCell+3);
     var h = piece.shape.length * (ghostCell+3);
     dragGhost.style.left = (x - w/2) + 'px';
-    dragGhost.style.top = (y - h/2 - FINGER_LIFT) + 'px';
+    dragGhost.style.top = (y - h/2 - getFingerLift()) + 'px';
   }
 
   var lastHover = null;
@@ -1358,7 +1367,7 @@ body.pseudo-fs .wrap{
     var step = cellSize + cellGap;
     var rows = shape.length, cols = shape[0].length;
     var localX = x - rect.left - boardPad - (cols*step)/2;
-    var localY = (y - FINGER_LIFT) - rect.top - boardPad - (rows*step)/2;
+    var localY = (y - getFingerLift()) - rect.top - boardPad - (rows*step)/2;
     var c0 = Math.round(localX/step);
     var r0 = Math.round(localY/step);
     return {r:r0, c:c0};
@@ -1433,7 +1442,7 @@ body.pseudo-fs .wrap{
       var badge = ensureComboBadge();
       badge.textContent = '×' + total;
       badge.style.left = x + 'px';
-      badge.style.top = (y - FINGER_LIFT - 60) + 'px';
+      badge.style.top = (y - getFingerLift() - 60) + 'px';
       badge.classList.add('show');
     }
   }
@@ -1860,7 +1869,7 @@ body.pseudo-fs .wrap{
       showNoLives();
       return;
     }
-    spendLife();
+    // Lives are NO LONGER spent upfront when starting a level.
     startLevel(idx);
   }
 
@@ -1912,7 +1921,16 @@ body.pseudo-fs .wrap{
     sfxGameOver();
     document.getElementById('goScore').textContent = score;
 
+    // Deduct a life ONLY when a level is failed or game over / no moves left state is reached.
     var d = getLives();
+    if(d.lives > 0) {
+      d.lives--;
+      saveLivesData(d);
+      renderLivesBar();
+      try {
+        window.parent.postMessage({ type: 'mg_life_lost', livesLeft: d.lives }, '*');
+      } catch(e) {}
+    }
     var livesLeft = d.lives;
 
     // Update lives display inside game-over sheet
@@ -1955,8 +1973,7 @@ body.pseudo-fs .wrap{
   document.getElementById('goRestart').addEventListener('click', function(){
     document.getElementById('gameOverOverlay').classList.remove('show');
     clearSavedState();
-    // A fresh board — in EITHER mode — always costs a life now. Previously Endless
-    // mode never called spendLife() at all, so losing never actually reduced lives.
+    // A restart only spends a life if it was a game over / failure state!
     var d = getLives();
     if(d.lives <= 0){ showNoLives(); return; }
     spendLife();
