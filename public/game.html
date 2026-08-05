@@ -27,6 +27,9 @@ html,body{margin:0;height:100%;background:radial-gradient(120% 90% at 50% -10%, 
    the piece "floating" between the two zones. */
 .wrap{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;padding:.6rem .7rem env(safe-area-inset-bottom, .6rem);touch-action:none;}
 
+.main-layout-landscape{display:contents;}
+.right-panel-landscape{display:contents;}
+
 header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:.2rem .1rem .5rem;gap:.35rem;row-gap:.3rem;}
 .back{display:flex;align-items:center;gap:.35rem;text-decoration:none;color:var(--text-m);font-size:.72rem;font-weight:600;flex-shrink:0;}
 .back img{width:24px;height:24px;border-radius:50%;object-fit:cover;}
@@ -293,17 +296,30 @@ body.pseudo-fs .wrap{
 
 @media (orientation: landscape) {
   .wrap {
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    grid-template-rows: auto 1fr auto;
+    display: flex;
+    flex-direction: column;
     max-width: 100%;
     height: 100vh;
     height: 100dvh;
     padding: .3rem .6rem env(safe-area-inset-bottom, .3rem);
     gap: .3rem;
+    overflow: hidden;
+  }
+  .main-layout-landscape {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: .6rem;
+    flex: 1;
+    min-height: 0;
+  }
+  .right-panel-landscape {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    justify-content: center;
+    min-height: 0;
   }
   header {
-    grid-column: 1 / -1;
     padding: .1rem;
     gap: .2rem;
   }
@@ -330,9 +346,7 @@ body.pseudo-fs .wrap{
     border-radius: 8px;
   }
   .mode-tabs {
-    grid-column: 1;
-    grid-row: 2;
-    flex-direction: column;
+    flex-direction: row;
     margin-bottom: 0;
     gap: .2rem;
   }
@@ -342,8 +356,6 @@ body.pseudo-fs .wrap{
     border-radius: 8px;
   }
   .objectives {
-    grid-column: 1;
-    grid-row: 3;
     margin-bottom: 0;
     padding: .4rem .5rem;
     gap: .25rem;
@@ -358,9 +370,11 @@ body.pseudo-fs .wrap{
     height: 4px;
   }
   .board-wrap {
-    grid-column: 2;
-    grid-row: 2;
     padding: 0;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   #board {
     padding: 4px;
@@ -368,8 +382,6 @@ body.pseudo-fs .wrap{
     border-radius: 10px;
   }
   .tray {
-    grid-column: 2;
-    grid-row: 3;
     padding: 0;
     min-height: 52px;
     gap: .25rem;
@@ -413,17 +425,21 @@ body.pseudo-fs .wrap{
     <button class="icon-btn" id="openLb" aria-label="Līderu saraksts">🏆</button>
   </header>
 
-  <div class="mode-tabs">
-    <button class="mode-tab" id="tabEndless">Bezgalīgais</button>
-    <button class="mode-tab" id="tabLevels">Līmeņi</button>
+  <div class="main-layout-landscape">
+    <div class="board-wrap"><div id="board"></div></div>
+
+    <div class="right-panel-landscape">
+      <div class="mode-tabs">
+        <button class="mode-tab" id="tabEndless">Bezgalīgais</button>
+        <button class="mode-tab" id="tabLevels">Līmeņi</button>
+      </div>
+
+      <div class="objectives" id="objectives" style="display:none"></div>
+
+      <div class="tray" id="tray"></div>
+      <p class="hint" id="hint">Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸</p>
+    </div>
   </div>
-
-  <div class="objectives" id="objectives" style="display:none"></div>
-
-  <div class="board-wrap"><div id="board"></div></div>
-
-  <div class="tray" id="tray"></div>
-  <p class="hint" id="hint">Velc makarūnu uz laukumu — aizpildi rindu vai kolonnu, lai to notīrītu 🌸</p>
 </div>
 
 <!-- ===== LIVES BAR (injected into header via JS) ===== -->
