@@ -14,3 +14,17 @@
 9:25:02 AM [vite] (client) page reload public/game.html
 9:25:19 AM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
 9:29:15 AM [vite] (client) page reload public/game.html
+11:29:33 AM [vite] (client) page reload src/main.jsx
+11:29:43 AM [vite] (client) hmr update /src/index.css
+11:29:50 AM [vite] (client) hmr update /src/index.css
+11:29:59 AM [vite] (client) hmr update /src/index.css
+11:34:04 AM [vite] (client) hmr update /src/index.css
+11:34:12 AM [vite] (client) hmr update /src/index.css
+11:58:10 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+11:58:16 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+11:58:31 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+11:58:45 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+12:04:48 PM [vite] (client) hmr update /src/components/Nav.jsx, /src/index.css
+12:04:55 PM [vite] (client) hmr update /src/components/Nav.jsx, /src/index.css
+12:08:55 PM [vite] (client) hmr update /src/components/Nav.jsx, /src/index.css
+12:09:06 PM [vite] (client) hmr update /src/components/Footer.jsx, /src/index.css

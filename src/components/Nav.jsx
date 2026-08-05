@@ -10,7 +10,7 @@ const LINKS = [
   { href: '#contact', label: 'Kontakti' },
 ]
 
-export default function Nav({ onAuthOpen, onAccountOpen }) {
+export default function Nav({ onAuthOpen, onAccountOpen, onAdminOpen }) {
   const [open, setOpen] = useState(false)
   const { user, logout } = useSupabase()
 
@@ -54,6 +54,13 @@ export default function Nav({ onAuthOpen, onAccountOpen }) {
               {l.label}
             </a>
           ))}
+
+          <button
+            onClick={onAdminOpen}
+            className="font-mono text-xs uppercase tracking-[0.15em] text-gold/80 transition-colors hover:text-gold cursor-pointer"
+          >
+            Admin
+          </button>
 
           <span className="h-4 w-px bg-white/10" />
 
@@ -130,6 +137,13 @@ export default function Nav({ onAuthOpen, onAccountOpen }) {
                 {l.label}
               </a>
             ))}
+
+            <button
+              onClick={() => { setOpen(false); onAdminOpen(); }}
+              className="font-display text-2xl text-gold hover:text-gold-soft transition-colors cursor-pointer"
+            >
+              Admin Panelis
+            </button>
 
             <span className="h-px w-16 bg-white/10" />
 

@@ -1,8 +1,8 @@
-export default function Footer() {
+export default function Footer({ onAdminOpen }) {
   return (
     <footer className="border-t border-white/8 bg-espresso px-6 py-12 text-center">
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-4">
-        <img src="/logo.webp" alt="Macaroon Garden - ekskluzīvu franču makarūnu salons Rīgā" className="h-8 w-8 rounded-full object-cover" />
+        <img src="/logo.webp" alt="Macaroon Garden - ekskluzīvu franču makarūnu salons Rīgā" className="h-8 w-8 rounded-full object-cover cursor-pointer" onClick={onAdminOpen} />
         <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-ivory">
           Macaroon Garden · Rīga · © {new Date().getFullYear()}
         </p>
@@ -13,6 +13,8 @@ export default function Footer() {
           <a href="https://www.facebook.com/macarongardenlv" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">Facebook</a>
           <span>·</span>
           <a href="https://www.instagram.com/macarongardenlv" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">Instagram</a>
+          <span>·</span>
+          <button onClick={onAdminOpen} className="hover:text-gold transition-colors cursor-pointer uppercase font-mono">CMS Administrators</button>
         </div>
       </div>
     </footer>

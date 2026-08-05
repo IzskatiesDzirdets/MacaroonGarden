@@ -164,9 +164,15 @@ const DEFAULT_SECTIONS = [
 
 // Default Gallery List
 const DEFAULT_GALLERY_LIST = [
-  { id: 'g1', caption: 'Svaigi cepti makarūni rožu nokrāsās 🌹', image: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=600&q=80' },
-  { id: 'g2', caption: 'Beļģu šokolādes un vaniļas harmonija ✨', image: 'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=600&q=80' },
-  { id: 'g3', caption: 'Franču dāvanu ateljē dārgumi 🎁', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80' },
+  { id: 'g1', caption: 'Svaigi cepti makarūni rožu nokrāsās 🌹', image: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=600&q=80', active: true, order: 1, type: 'image' },
+  { id: 'g2', caption: 'Beļģu šokolādes un vaniļas harmonija ✨', image: 'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=600&q=80', active: true, order: 2, type: 'image' },
+  { id: 'g3', caption: 'Franču dāvanu ateljē dārgumi 🎁', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80', active: true, order: 3, type: 'image' },
+]
+
+// Default Blog List
+const DEFAULT_BLOG_LIST = [
+  { id: 'b1', title: 'Makarūnu gatavošanas noslēpumi 🌸', excerpt: 'Uzzini, kāpēc mēs žāvējam katru makarūna čaumalu tieši 24 stundas pirms cepšanas konditorejā.', content: 'Katrs izsmalcināts franču makarūns prasa absolūtu pacietību. Čaumalu žāvēšana palīdz tām izveidot klasisko \"kājiņu\" un kraukšķīgo virsmu, kas ir katra gardēža sapnis. Mūsu konditorejas komanda izmanto tikai dabīgus miltus un pigmentus.', date: '2026-03-01', image: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=600&q=80', active: true, order: 1, type: 'image' },
+  { id: 'b2', title: 'Šokolādes temperēšanas māksla 🍫', excerpt: 'Kā mēs iegūstam zīdaini gludu pildījumu mūsu klasiskajai Beļģu šokolādes garšai.', content: 'Mūsu klasiskā šokolādes garša izmanto izcilu 70% Beļģu šokolādi, kas tiek rūpīgi temperēta noteiktā temperatūrā, lai radītu mutē kūstošu, spīdīgu krēmu bez konservantiem.', date: '2026-03-04', image: 'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=600&q=80', active: true, order: 2, type: 'image' }
 ]
 
 // Default Game Achievements & Rewards
@@ -205,6 +211,7 @@ export function CMSProvider({ children }) {
   const [moodButtons, setMoodButtons] = useState(DEFAULT_MOOD_BUTTONS)
   const [sectionsList, setSectionsList] = useState(DEFAULT_SECTIONS)
   const [galleryList, setGalleryList] = useState(DEFAULT_GALLERY_LIST)
+  const [blogList, setBlogList] = useState(DEFAULT_BLOG_LIST)
   const [gameConfig, setGameConfig] = useState(DEFAULT_GAME_CONFIG)
   const [rewardCodes, setRewardCodes] = useState([])
   const [inquiries, setInquiries] = useState([])
@@ -236,8 +243,19 @@ export function CMSProvider({ children }) {
     const storedSections = localStorage.getItem('mg_cms_sections_v2')
     if (storedSections) setSectionsList(JSON.parse(storedSections))
 
-    const storedGallery = localStorage.getItem('mg_cms_gallery_v2')
-    if (storedGallery) setGalleryList(JSON.parse(storedGallery))
+    const storedGallery = localStorage.getItem('mg_cms_gallery_v3')
+    if (storedGallery) {
+      setGalleryList(JSON.parse(storedGallery))
+    } else {
+      localStorage.setItem('mg_cms_gallery_v3', JSON.stringify(DEFAULT_GALLERY_LIST))
+    }
+
+    const storedBlog = localStorage.getItem('mg_cms_blog_v3')
+    if (storedBlog) {
+      setBlogList(JSON.parse(storedBlog))
+    } else {
+      localStorage.setItem('mg_cms_blog_v3', JSON.stringify(DEFAULT_BLOG_LIST))
+    }
 
     const storedGame = localStorage.getItem('mg_cms_game_config_v2')
     if (storedGame) setGameConfig(JSON.parse(storedGame))
@@ -397,19 +415,47 @@ export function CMSProvider({ children }) {
     } else {
       updated = [...galleryList, item]
     }
+    updated.sort((a, b) => a.order - b.order)
     setGalleryList(updated)
-    localStorage.setItem('mg_cms_gallery_v2', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_gallery_v3', JSON.stringify(updated))
   }
 
   const deleteGalleryImage = (id) => {
     const updated = galleryList.filter(g => g.id !== id)
     setGalleryList(updated)
-    localStorage.setItem('mg_cms_gallery_v2', JSON.stringify(updated))
+    localStorage.setItem('mg_cms_gallery_v3', JSON.stringify(updated))
+  }
+
+  // Blog CRUD
+  const saveBlogPost = (post) => {
+    let updated
+    const exists = blogList.find(b => b.id === post.id)
+    if (exists) {
+      updated = blogList.map(b => b.id === post.id ? post : b)
+    } else {
+      updated = [...blogList, post]
+    }
+    updated.sort((a, b) => a.order - b.order)
+    setBlogList(updated)
+    localStorage.setItem('mg_cms_blog_v3', JSON.stringify(updated))
+  }
+
+  const deleteBlogPost = (id) => {
+    const updated = blogList.filter(b => b.id !== id)
+    setBlogList(updated)
+    localStorage.setItem('mg_cms_blog_v3', JSON.stringify(updated))
   }
 
   // Section Ordering and Toggles
   const saveSectionList = (newList) => {
     const sorted = [...newList].map((s, idx) => ({ ...s, order: idx + 1 }))
+    // Automatically inject default gallery and blog into sections list if missing
+    if (!sorted.find(s => s.id === 'gallery')) {
+      sorted.push({ id: 'gallery', name: 'Premium Galerija', visible: true, order: sorted.length + 1 })
+    }
+    if (!sorted.find(s => s.id === 'blog')) {
+      sorted.push({ id: 'blog', name: 'Zīmola Blogs & Padomi', visible: true, order: sorted.length + 1 })
+    }
     setSectionsList(sorted)
     localStorage.setItem('mg_cms_sections_v2', JSON.stringify(sorted))
   }
@@ -501,6 +547,7 @@ export function CMSProvider({ children }) {
         moodButtons,
         sectionsList,
         galleryList,
+        blogList,
         gameConfig,
         rewardCodes,
         inquiries,
@@ -518,6 +565,8 @@ export function CMSProvider({ children }) {
         reorderMoodButtons,
         saveGalleryImage,
         deleteGalleryImage,
+        saveBlogPost,
+        deleteBlogPost,
         saveSectionList,
         saveGameConfig,
         addRewardCode,
