@@ -491,6 +491,7 @@ function FlavoursTab({
       label: '',
       category: '',
       highlightColor: '#D9A441',
+      image: '',
       order: moodButtons.length + 1
     })
   }
@@ -691,14 +692,42 @@ function FlavoursTab({
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="block font-mono text-[10px] uppercase text-gold/80">Izcēluma Krāsa (Hex) *</label>
-              <input
-                type="color"
-                value={editingMood.highlightColor}
-                onChange={(e) => setEditingMood({ ...editingMood, highlightColor: e.target.value })}
-                className="h-8 w-16 rounded border border-white/10 cursor-pointer"
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="block font-mono text-[10px] uppercase text-gold/80">Izcēluma Krāsa (Hex) *</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={editingMood.highlightColor || '#D9A441'}
+                    onChange={(e) => setEditingMood({ ...editingMood, highlightColor: e.target.value })}
+                    className="h-9 w-12 rounded border border-white/10 bg-transparent cursor-pointer shrink-0"
+                  />
+                  <input
+                    type="text"
+                    value={editingMood.highlightColor || ''}
+                    onChange={(e) => setEditingMood({ ...editingMood, highlightColor: e.target.value })}
+                    className="w-full rounded-xl border border-white/10 bg-espresso-2 px-3 py-2 text-xs text-ivory outline-none"
+                    placeholder="#D9A441"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-mono text-[10px] uppercase text-gold/80">Noskaņas Attēls / Ikona</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, (b64) => setEditingMood({ ...editingMood, image: b64 }))}
+                  className="w-full text-[10px] text-ivory-dim"
+                />
+                <input
+                  type="text"
+                  value={editingMood.image || ''}
+                  onChange={(e) => setEditingMood({ ...editingMood, image: e.target.value })}
+                  className="w-full rounded-xl border border-white/10 bg-espresso-2 px-3 py-2 text-xs text-ivory outline-none mt-1"
+                  placeholder="Saites (URL) adrese..."
+                />
+              </div>
             </div>
 
             <div className="flex gap-2">
