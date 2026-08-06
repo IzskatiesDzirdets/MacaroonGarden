@@ -250,7 +250,7 @@ export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
   const m = cal.getMonth()
 
   return (
-    <section id="booking" className="bg-espresso px-6 py-24 md:px-16 md:py-32">
+    <section id="booking" className="relative z-10 bg-espresso px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <div className="text-center mb-14">

@@ -10,7 +10,7 @@ export default function GallerySection() {
   if (activeGallery.length === 0) return null
 
   return (
-    <section id="gallery" className="bg-espresso py-24 px-6 md:px-16 overflow-hidden">
+    <section id="gallery" className="relative z-10 bg-espresso py-24 px-6 md:px-16 overflow-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-14">

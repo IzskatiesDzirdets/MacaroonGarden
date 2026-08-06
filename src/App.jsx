@@ -35,6 +35,13 @@ export default function App() {
   const [accountModalOpen, setAccountModalOpen] = useState(false)
   const [adminPanelOpen, setAdminPanelOpen] = useState(false)
 
+  // Route interception for /admin and #admin
+  useEffect(() => {
+    if (window.location.pathname === '/admin' || window.location.hash === '#admin') {
+      setAdminPanelOpen(true)
+    }
+  }, [])
+
   const handleAuthOpen = (tab = 'login') => {
     setAuthModalTab(tab)
     setAuthModalOpen(true)

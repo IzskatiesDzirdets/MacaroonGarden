@@ -8,7 +8,7 @@ const TONE_BY_PIECE = {
 
 export default function MobileFeatureList() {
   return (
-    <section className="md:hidden bg-espresso px-5 py-14">
+    <section className="relative z-10 md:hidden bg-espresso px-5 py-14">
       <p className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-gold/80 mb-6 text-center">
         Kas ir katrā makarūnā
       </p>

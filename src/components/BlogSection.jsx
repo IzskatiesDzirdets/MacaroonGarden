@@ -11,7 +11,7 @@ export default function BlogSection() {
   if (activePosts.length === 0) return null
 
   return (
-    <section id="blog" className="bg-espresso-2 py-24 px-6 md:px-16 overflow-hidden">
+    <section id="blog" className="relative z-10 bg-espresso-2 py-24 px-6 md:px-16 overflow-hidden">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-14">

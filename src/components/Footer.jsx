@@ -1,6 +1,6 @@
 export default function Footer({ onAdminOpen }) {
   return (
-    <footer className="border-t border-white/8 bg-espresso px-6 py-12 text-center">
+    <footer className="relative z-10 border-t border-white/8 bg-espresso px-6 py-12 text-center">
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-4">
         <img src="/logo.webp" alt="Macaroon Garden - ekskluzīvu franču makarūnu salons Rīgā" className="h-8 w-8 rounded-full object-cover cursor-pointer" onClick={onAdminOpen} />
         <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-ivory">

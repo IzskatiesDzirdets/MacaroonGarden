@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { supabase as sb } from '../lib/supabaseClient'
 
 const CMSContext = createContext()
 
@@ -23,7 +24,7 @@ const DEFAULT_CMS_CONTENT = {
   about: {
     title: "Katrs makarūns ir",
     italicWord: "mazs mākslas darbs",
-    description1: "Macaroon Garden dzima no aizrautības ar franču konditorejas mākslu. Ticam, ka katrs makarūns ir mazs prieka brīdis — kraukšķīgs apvalks, maiga pildīšana, perfekts balanss.",
+    description1: "Macaroon Garden dzima no aizrautības ar franču konditorejas mākslu. Ticam, ka katrs makarūns ir mazs prieka brīdim — kraukšķīgs apvalks, maiga pildīšana, perfekts balanss.",
     description2: "Visi makarūni tiek gatavoti pēc pasūtījuma — svaigi, rokām, no dabīgām sastāvdaļām, Rīgā.",
   },
   flavours: {
@@ -177,15 +178,15 @@ const DEFAULT_BLOG_LIST = [
 
 // Default Game Achievements & Rewards
 const DEFAULT_GAME_CONFIG = {
-  quizMilestone: 3, // reach 3 correct answers to get reward
-  scoreMilestone: 100, // reach 100 score in endless to get reward
-  levelMilestone: 15, // reach level 15 to get reward
-  coloredMacaroonTarget: 100, // total colored macarons target (e.g. 100 pink macarons)
-  coloredMacaroonType: 'rose-aveni', // target macaroon type ID
-  winnersCount: 3, // e.g. top 1, 3, 5 winners can win manual positions
-  promoFrequency: 3, // show ad modal every 3 levels completed or on loss/runs
+  quizMilestone: 3,
+  scoreMilestone: 100,
+  levelMilestone: 15,
+  coloredMacaroonTarget: 100,
+  coloredMacaroonType: 'rose-aveni',
+  winnersCount: 3,
+  promoFrequency: 3,
   promoOfferText: 'Īpašais piedāvājums spēlētājiem! Izmanto kodu "SUPERMACARON" un saņem 15% atlaidi!',
-  promoRedirectSection: '#builder', // random page section to navigate to
+  promoRedirectSection: '#builder',
   rewardOptions: [
     { id: 'o1', type: 'discount', value: '10%', desc: '10% atlaide pirkumam' },
     { id: 'o2', type: 'gift_ribbon', value: 'Bezmaksas lentīte', desc: 'Eleganta bezmaksas dāvanu lentīte komplektam' },
@@ -200,10 +201,9 @@ const DEFAULT_GAME_CONFIG = {
 }
 
 // Initial super admin credential hashes for comparison
-// Username: janiszacs, Password: VissIzdosies2026 (SHA-256: 4474a6c3ba5b22aac...)
 const SUPER_ADMIN_HASHES = {
   username: "janiszacs",
-  passwordHash: "4474a6c3ba5b22aac9a9ae1b3a2a1551fb65ca2215280418188986ea0e7831d4", // SHA-256 for VissIzdosies2026
+  passwordHash: "4474a6c3ba5b22aac9a9ae1b3a2a1551fb65ca2215280418188986ea0e7831d4",
   email: "janiszacs@gmail.com",
 }
 
@@ -233,8 +233,9 @@ export function CMSProvider({ children }) {
     }
   })
 
-  // Load from LocalStorage
-  useEffect(() => {
+  // Load from Supabase DB or LocalStorage as Fallback
+  const loadAllData = async () => {
+    // 1. Local Fallbacks
     const storedCms = localStorage.getItem('mg_cms_content_v2')
     if (storedCms) setCmsContent(JSON.parse(storedCms))
 
@@ -248,18 +249,10 @@ export function CMSProvider({ children }) {
     if (storedSections) setSectionsList(JSON.parse(storedSections))
 
     const storedGallery = localStorage.getItem('mg_cms_gallery_v3')
-    if (storedGallery) {
-      setGalleryList(JSON.parse(storedGallery))
-    } else {
-      localStorage.setItem('mg_cms_gallery_v3', JSON.stringify(DEFAULT_GALLERY_LIST))
-    }
+    if (storedGallery) setGalleryList(JSON.parse(storedGallery))
 
     const storedBlog = localStorage.getItem('mg_cms_blog_v3')
-    if (storedBlog) {
-      setBlogList(JSON.parse(storedBlog))
-    } else {
-      localStorage.setItem('mg_cms_blog_v3', JSON.stringify(DEFAULT_BLOG_LIST))
-    }
+    if (storedBlog) setBlogList(JSON.parse(storedBlog))
 
     const storedGame = localStorage.getItem('mg_cms_game_config_v2')
     if (storedGame) setGameConfig(JSON.parse(storedGame))
@@ -272,7 +265,6 @@ export function CMSProvider({ children }) {
         { email: 'janiszacs@gmail.com', name: 'Jānis Začs', role: 'Super-Admin', active: true }
       ]
       setAdminList(initialAdmins)
-      localStorage.setItem('mg_cms_admins', JSON.stringify(initialAdmins))
     }
 
     const storedRewards = localStorage.getItem('mg_cms_rewards_v2')
@@ -280,27 +272,48 @@ export function CMSProvider({ children }) {
       setRewardCodes(JSON.parse(storedRewards))
     } else {
       setRewardCodes(DEFAULT_GAME_CONFIG.rewards)
-      localStorage.setItem('mg_cms_rewards_v2', JSON.stringify(DEFAULT_GAME_CONFIG.rewards))
     }
 
     const storedInquiries = localStorage.getItem('mg_cms_inquiries')
-    if (storedInquiries) {
-      setInquiries(JSON.parse(storedInquiries))
-    } else {
-      const sampleInquiries = [
-        { id: 'i1', name: 'Laura Bērziņa', email: 'laura@inbox.lv', phone: '29111222', qty: 12, flavours: 'Roze un avenes x6, Beļģu šokolāde x6', notes: 'Gatavs kāzu dāvanai', date: '2026-03-05', status: 'Completed' },
-        { id: 'i2', name: 'Kārlis Ozols', email: 'karlis.ozols@gmail.com', phone: '26444555', qty: 24, flavours: 'Citronu kurds x12, Pistācija un vaniļa x12', notes: 'Lūdzu zaļu dāvanu lenti', date: '2026-03-06', status: 'Pending' }
-      ]
-      setInquiries(sampleInquiries)
-      localStorage.setItem('mg_cms_inquiries', JSON.stringify(sampleInquiries))
-    }
+    if (storedInquiries) setInquiries(JSON.parse(storedInquiries))
 
-    const storedAnalytics = localStorage.getItem('mg_cms_analytics')
-    if (storedAnalytics) setAnalytics(JSON.parse(storedAnalytics))
+    // 2. Query Supabase Tables Dynamically
+    try {
+      const { data: dbMoods, error: moodsErr } = await sb.from('moods').select('*').order('order')
+      if (!moodsErr && dbMoods && dbMoods.length > 0) {
+        setMoodButtons(dbMoods)
+      }
+    } catch (e) { console.warn('Supabase moods load fallback:', e.message) }
+
+    try {
+      const { data: dbBlogs, error: blogsErr } = await sb.from('blogs').select('*').order('date', { ascending: false })
+      if (!blogsErr && dbBlogs && dbBlogs.length > 0) {
+        setBlogList(dbBlogs)
+      }
+    } catch (e) { console.warn('Supabase blogs load fallback:', e.message) }
+
+    try {
+      const { data: dbFlavours, error: flavoursErr } = await sb.from('flavours').select('*')
+      if (!flavoursErr && dbFlavours && dbFlavours.length > 0) {
+        setFlavoursList(dbFlavours)
+      }
+    } catch (e) { console.warn('Supabase flavours load fallback:', e.message) }
+
+    try {
+      const { data: dbGallery, error: galleryErr } = await sb.from('gallery').select('*').order('order')
+      if (!galleryErr && dbGallery && dbGallery.length > 0) {
+        setGalleryList(dbGallery)
+      }
+    } catch (e) { console.warn('Supabase gallery load fallback:', e.message) }
+  }
+
+  useEffect(() => {
+    loadAllData()
   }, [])
 
-  // Admin login check
+  // Admin login check with Supabase Auth integration
   const loginAdmin = async (username, password) => {
+    // 1. Try local credential hash matching for fallbacks
     const pwHash = await sha256(password)
     if (username === SUPER_ADMIN_HASHES.username && pwHash === SUPER_ADMIN_HASHES.passwordHash) {
       const sAdmin = { name: 'Jānis Začs', username, email: SUPER_ADMIN_HASHES.email, role: 'Super-Admin' }
@@ -308,7 +321,35 @@ export function CMSProvider({ children }) {
       return { success: true, user: sAdmin }
     }
 
-    // Check custom admins from adminList if hashed password matches standard recovery
+    // 2. Try Supabase Auth standard sign in
+    try {
+      const emailToUse = username.includes('@') ? username : `${username}@macaroongarden.lv`
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: emailToUse,
+        password: password,
+      })
+      if (!error && data?.user) {
+        // Authenticated successfully via Supabase Auth!
+        const emailLower = data.user.email.toLowerCase()
+        const adminMatch = adminList.find(a => a.email.toLowerCase() === emailLower) ||
+                           (emailLower === SUPER_ADMIN_HASHES.email.toLowerCase() ? { name: 'Jānis Začs', role: 'Super-Admin' } : null)
+
+        if (adminMatch) {
+          const sAdmin = {
+            name: adminMatch.name || data.user.user_metadata?.full_name || 'Admin',
+            username: emailLower,
+            email: emailLower,
+            role: adminMatch.role || 'Administrator'
+          }
+          setAdminUser(sAdmin)
+          return { success: true, user: sAdmin }
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase Auth admin login attempt error:', e.message)
+    }
+
+    // 3. Fallback to adminList default credentials
     const adminMatch = adminList.find(a => a.email.toLowerCase() === username.toLowerCase() || a.name.toLowerCase() === username.toLowerCase())
     if (adminMatch && password === 'VissIzdosies2026') {
       const customAdmin = { name: adminMatch.name, username: adminMatch.email, email: adminMatch.email, role: adminMatch.role }
@@ -365,8 +406,8 @@ export function CMSProvider({ children }) {
     localStorage.setItem('mg_cms_content_v2', JSON.stringify(updated))
   }
 
-  // Product Flavour CRUD
-  const saveFlavour = (flavour) => {
+  // Product Flavour CRUD with DB sync
+  const saveFlavour = async (flavour) => {
     let updated
     const exists = flavoursList.find(f => f.id === flavour.id)
     if (exists) {
@@ -376,16 +417,34 @@ export function CMSProvider({ children }) {
     }
     setFlavoursList(updated)
     localStorage.setItem('mg_cms_flavours_v2', JSON.stringify(updated))
+
+    try {
+      await sb.from('flavours').upsert({
+        id: flavour.id,
+        tone: flavour.tone,
+        name: flavour.name,
+        note: flavour.note,
+        ingredients: flavour.ingredients,
+        price: flavour.price,
+        badge: flavour.badge,
+        image: flavour.image,
+        hidden: flavour.hidden
+      })
+    } catch (e) { console.warn('Supabase flavours sync err:', e.message) }
   }
 
-  const deleteFlavour = (id) => {
+  const deleteFlavour = async (id) => {
     const updated = flavoursList.filter(f => f.id !== id)
     setFlavoursList(updated)
     localStorage.setItem('mg_cms_flavours_v2', JSON.stringify(updated))
+
+    try {
+      await sb.from('flavours').delete().eq('id', id)
+    } catch (e) { console.warn('Supabase flavours delete err:', e.message) }
   }
 
-  // Mood Filters CRUD
-  const saveMoodButton = (btn) => {
+  // Mood Filters CRUD with DB sync
+  const saveMoodButton = async (btn) => {
     let updated
     const exists = moodButtons.find(m => m.id === btn.id)
     if (exists) {
@@ -396,12 +455,27 @@ export function CMSProvider({ children }) {
     updated.sort((a, b) => a.order - b.order)
     setMoodButtons(updated)
     localStorage.setItem('mg_cms_moods_v2', JSON.stringify(updated))
+
+    try {
+      await sb.from('moods').upsert({
+        id: btn.id,
+        label: btn.label,
+        category: btn.category,
+        highlightColor: btn.highlightColor,
+        image: btn.image,
+        order: btn.order
+      })
+    } catch (e) { console.warn('Supabase moods sync err:', e.message) }
   }
 
-  const deleteMoodButton = (id) => {
+  const deleteMoodButton = async (id) => {
     const updated = moodButtons.filter(m => m.id !== id)
     setMoodButtons(updated)
     localStorage.setItem('mg_cms_moods_v2', JSON.stringify(updated))
+
+    try {
+      await sb.from('moods').delete().eq('id', id)
+    } catch (e) { console.warn('Supabase moods delete err:', e.message) }
   }
 
   const reorderMoodButtons = (buttons) => {
@@ -410,8 +484,8 @@ export function CMSProvider({ children }) {
     localStorage.setItem('mg_cms_moods_v2', JSON.stringify(updated))
   }
 
-  // Gallery CRUD
-  const saveGalleryImage = (item) => {
+  // Gallery CRUD with DB sync
+  const saveGalleryImage = async (item) => {
     let updated
     const exists = galleryList.find(g => g.id === item.id)
     if (exists) {
@@ -422,16 +496,31 @@ export function CMSProvider({ children }) {
     updated.sort((a, b) => a.order - b.order)
     setGalleryList(updated)
     localStorage.setItem('mg_cms_gallery_v3', JSON.stringify(updated))
+
+    try {
+      await sb.from('gallery').upsert({
+        id: item.id,
+        caption: item.caption,
+        image: item.image,
+        type: item.type,
+        active: item.active,
+        order: item.order
+      })
+    } catch (e) { console.warn('Supabase gallery sync err:', e.message) }
   }
 
-  const deleteGalleryImage = (id) => {
+  const deleteGalleryImage = async (id) => {
     const updated = galleryList.filter(g => g.id !== id)
     setGalleryList(updated)
     localStorage.setItem('mg_cms_gallery_v3', JSON.stringify(updated))
+
+    try {
+      await sb.from('gallery').delete().eq('id', id)
+    } catch (e) { console.warn('Supabase gallery delete err:', e.message) }
   }
 
-  // Blog CRUD
-  const saveBlogPost = (post) => {
+  // Blog CRUD with DB sync
+  const saveBlogPost = async (post) => {
     let updated
     const exists = blogList.find(b => b.id === post.id)
     if (exists) {
@@ -442,18 +531,35 @@ export function CMSProvider({ children }) {
     updated.sort((a, b) => a.order - b.order)
     setBlogList(updated)
     localStorage.setItem('mg_cms_blog_v3', JSON.stringify(updated))
+
+    try {
+      await sb.from('blogs').upsert({
+        id: post.id,
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        date: post.date,
+        image: post.image,
+        type: post.type,
+        active: post.active,
+        order: post.order
+      })
+    } catch (e) { console.warn('Supabase blogs sync err:', e.message) }
   }
 
-  const deleteBlogPost = (id) => {
+  const deleteBlogPost = async (id) => {
     const updated = blogList.filter(b => b.id !== id)
     setBlogList(updated)
     localStorage.setItem('mg_cms_blog_v3', JSON.stringify(updated))
+
+    try {
+      await sb.from('blogs').delete().eq('id', id)
+    } catch (e) { console.warn('Supabase blogs delete err:', e.message) }
   }
 
   // Section Ordering and Toggles
   const saveSectionList = (newList) => {
     const sorted = [...newList].map((s, idx) => ({ ...s, order: idx + 1 }))
-    // Automatically inject default gallery and blog into sections list if missing
     if (!sorted.find(s => s.id === 'gallery')) {
       sorted.push({ id: 'gallery', name: 'Premium Galerija', visible: true, order: sorted.length + 1 })
     }
@@ -483,7 +589,6 @@ export function CMSProvider({ children }) {
     setRewardCodes(updated)
     localStorage.setItem('mg_cms_rewards_v2', JSON.stringify(updated))
 
-    // Increment metrics
     const updatedAnalytics = {
       ...analytics,
       claimedRewards: analytics.claimedRewards + 1

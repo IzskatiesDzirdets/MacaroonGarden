@@ -78,7 +78,7 @@ export default function GameSection({ activeFlavor = 0 }) {
   }
 
   return (
-    <section id="game" className="bg-espresso-2 px-6 py-24 md:px-16 md:py-32 relative">
+    <section id="game" className="bg-espresso-2 px-6 py-24 md:px-16 md:py-32 relative z-10">
       <div className="mx-auto max-w-4xl text-center">
         {/* Header */}
         <div className="mb-14">

@@ -98,7 +98,7 @@ export default function BoxBuilder({ selectedBoxes = [], setSelectedBoxes }) {
   const cols = gCols(sz)
 
   return (
-    <section id="builder" className="bg-espresso-2 px-6 py-24 md:px-16 md:py-32">
+    <section id="builder" className="relative z-10 bg-espresso-2 px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-14">

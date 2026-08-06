@@ -12,7 +12,7 @@ const TEXT_TONE = { blush: 'text-blush', gold: 'text-gold', sage: 'text-sage' }
 
 export default function AboutStory() {
   return (
-    <section id="story" className="relative bg-espresso-2 px-6 py-24 md:px-16 md:py-32">
+    <section id="story" className="relative z-10 bg-espresso-2 px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto grid max-w-6xl gap-14 md:grid-cols-2 md:items-center md:gap-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

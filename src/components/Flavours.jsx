@@ -24,7 +24,7 @@ export default function Flavours() {
   })
 
   return (
-    <section id="flavours" className="bg-espresso px-6 py-24 md:px-16 md:py-32">
+    <section id="flavours" className="relative z-10 bg-espresso px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto max-w-6xl">
         <div className="text-center mb-10">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-gold/80">Garšu kolekcija</p>
