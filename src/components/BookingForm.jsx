@@ -32,7 +32,7 @@ function fmtDate(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
-export default function BookingForm({ boxFlavors }) {
+export default function BookingForm({ selectedBoxes = [], setSelectedBoxes }) {
   const { sb, user, profile } = useSupabase()
 
   const [cal, setCal] = useState(new Date())
@@ -88,17 +88,17 @@ export default function BookingForm({ boxFlavors }) {
     }
   }, [user, profile])
 
-  // Process box updates from BoxBuilder
+  // Dynamically compute sum of box sizes when custom boxes are built
+  const totalBoxQty = selectedBoxes.reduce((acc, b) => acc + b.size, 0)
+
   useEffect(() => {
-    if (boxFlavors && boxFlavors.length > 0) {
-      const conv = [...new Set(boxFlavors.map((b) => B2B[b.id]).filter(Boolean))]
-      if (conv.length > 0) {
-        setSF(conv)
-        setBI(true)
-        setQty(boxFlavors.length)
-      }
+    if (selectedBoxes.length > 0) {
+      setQty(totalBoxQty)
+      setBI(true)
+    } else {
+      setBI(false)
     }
-  }, [boxFlavors])
+  }, [selectedBoxes, totalBoxQty])
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -112,7 +112,6 @@ export default function BookingForm({ boxFlavors }) {
   }, [])
 
   const onDay = (d) => bks.filter((b) => b.delivery_date === d)
-  const timesOn = (d) => bks.filter((b) => b.delivery_date === d).map((b) => b.delivery_time)
 
   const avail = (day) => {
     const y = cal.getFullYear()
@@ -152,7 +151,7 @@ export default function BookingForm({ boxFlavors }) {
   const validate = () => {
     if (!selDate) return 'Lūdzu izvēlieties piegādes datumu!'
     if (!selTime) return 'Lūdzu izvēlieties piegādes laiku!'
-    if (selFlavs.length === 0) return 'Lūdzu izvēlieties vismaz vienu garšu!'
+    if (selectedBoxes.length === 0 && selFlavs.length === 0) return 'Lūdzu izvēlieties vismaz vienu garšu!'
     if (!name.trim()) return 'Lūdzu ievadiet savu vārdu!'
     if (!email.includes('@')) return 'Lūdzu ievadiet pareizu e-pastu!'
     if (phone.trim().length < 7) return 'Lūdzu ievadiet tālruņa numuru!'
@@ -168,6 +167,27 @@ export default function BookingForm({ boxFlavors }) {
     setError(null)
 
     try {
+      // Serialize customized box content details for database record and transactional email receipt
+      let serializedFlavours = selFlavs.join(',')
+      let emailFlavoursSummary = selFlavs.map((id) => FLAVOURS.find((f) => f.id === id)?.n || id).join(', ')
+      let serializedNotes = notes
+
+      if (selectedBoxes.length > 0) {
+        const boxDetailsArr = selectedBoxes.map((boxItem, idx) => {
+          const grouped = boxItem.flavors.reduce((acc, f) => {
+            acc[f.nm] = (acc[f.nm] || 0) + 1
+            return acc
+          }, {})
+          const breakdownText = Object.entries(grouped)
+            .map(([nm, cnt]) => `${nm} x${cnt}`)
+            .join(', ')
+          return `Kastīte #${idx + 1} (${boxItem.size} gab.): ${breakdownText}`
+        })
+        serializedFlavours = boxDetailsArr.join(' | ')
+        emailFlavoursSummary = boxDetailsArr.join(' | ')
+        serializedNotes = `${boxDetailsArr.join('; ')}. ${notes}`
+      }
+
       // Save order to Supabase
       const { error: dbErr } = await sb.from('macaroon_orders').insert([
         {
@@ -176,10 +196,10 @@ export default function BookingForm({ boxFlavors }) {
           client_name: name.trim(),
           client_email: email.trim().toLowerCase(),
           client_phone: phone.trim(),
-          flavours: selFlavs.join(','),
+          flavours: serializedFlavours,
           quantity: parseInt(qty),
           user_id: user?.id || null,
-          notes: (address ? 'Adrese: ' + address + '. ' : '') + notes,
+          notes: (address ? 'Adrese: ' + address + '. ' : '') + serializedNotes,
         },
       ])
 
@@ -195,9 +215,7 @@ export default function BookingForm({ boxFlavors }) {
             client_phone: phone.trim(),
             booking_date: selDate,
             host_name: 'Macaroon Garden',
-            event_type: selFlavs
-              .map((id) => FLAVOURS.find((f) => f.id === id)?.n || id)
-              .join(', '),
+            event_type: emailFlavoursSummary,
             guest_count: qty,
             notes: `Piegāde: ${selTime}. ${address ? 'Adrese: ' + address : ''} ${notes}`,
           })
@@ -207,6 +225,8 @@ export default function BookingForm({ boxFlavors }) {
       }
 
       await loadBookings()
+      // Success triggers, clear current box cart state as well on successful order submit!
+      setSelectedBoxes([])
       setSuccess(true)
     } catch (err) {
       console.error('Submit error:', err)
@@ -228,20 +248,9 @@ export default function BookingForm({ boxFlavors }) {
   const { total, start } = calInfo()
   const y = cal.getFullYear()
   const m = cal.getMonth()
-  const takenTimes = selDate ? timesOn(selDate) : []
-
-  const selectedFlavoursText =
-    selFlavs.length > 0
-      ? selFlavs
-          .map((id) => {
-            const f = FLAVOURS.find((x) => x.id === id)
-            return f ? `${f.e} ${f.n}` : id
-          })
-          .join(', ')
-      : 'Izvēlēties garšas...'
 
   return (
-    <section id="booking" className="bg-espresso px-6 py-24 md:px-16 md:py-32">
+    <section id="booking" className="relative z-10 bg-espresso px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <div className="text-center mb-14">
@@ -326,10 +335,29 @@ export default function BookingForm({ boxFlavors }) {
                   </div>
                 ))}
 
-                {Array.from({ length: start }).map((_, i) => (
-                  <div key={`empty-${i}`} className="aspect-square" />
-                ))}
+                {/* Preceding month trailing days */}
+                {Array.from({ length: start }).map((_, i) => {
+                  const prevM = m === 0 ? 11 : m - 1
+                  const prevY = m === 0 ? y - 1 : y
+                  const prevDaysTotal = new Date(prevY, prevM + 1, 0).getDate()
+                  const day = prevDaysTotal - start + i + 1
 
+                  return (
+                    <div
+                      key={`prev-${day}`}
+                      className="cal-day aspect-square flex flex-col items-center justify-center rounded-lg text-[10px] sm:text-xs font-semibold text-ivory/20 hover:text-gold hover:scale-105 cursor-pointer transition-all"
+                      onClick={() => {
+                        const nextCal = new Date(cal)
+                        nextCal.setMonth(m - 1)
+                        setCal(nextCal)
+                      }}
+                    >
+                      <span>{day}</span>
+                    </div>
+                  )
+                })}
+
+                {/* Current month days */}
                 {Array.from({ length: total }).map((_, i) => {
                   const day = i + 1
                   const d = fmtDate(y, m, day)
@@ -371,6 +399,25 @@ export default function BookingForm({ boxFlavors }) {
                     </div>
                   )
                 })}
+
+                {/* Succeeding month leading days */}
+                {Array.from({ length: (7 - ((start + total) % 7)) % 7 }).map((_, i) => {
+                  const day = i + 1
+
+                  return (
+                    <div
+                      key={`next-${day}`}
+                      className="cal-day aspect-square flex flex-col items-center justify-center rounded-lg text-[10px] sm:text-xs font-semibold text-ivory/20 hover:text-gold hover:scale-105 cursor-pointer transition-all"
+                      onClick={() => {
+                        const nextCal = new Date(cal)
+                        nextCal.setMonth(m + 1)
+                        setCal(nextCal)
+                      }}
+                    >
+                      <span>{day}</span>
+                    </div>
+                  )
+                })}
               </div>
 
               {/* Legend */}
@@ -389,15 +436,17 @@ export default function BookingForm({ boxFlavors }) {
                 </div>
               </div>
 
-              {/* Hourly Time chips */}
+              {/* Hourly Time chips - divided into 2-hour blocks with capacity for multiple bookings */}
               {selDate && (
                 <div className="mt-8">
                   <label className="block font-mono text-xs uppercase tracking-wider text-gold/80 mb-3">
-                    Pieejamie piegādes laiki
+                    Pieejamie piegādes laiki (2 stundu posmi)
                   </label>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {TIMES.map((t) => {
-                      const isTaken = takenTimes.includes(t)
+                      // Allow up to 3 orders per 2-hour block
+                      const count = onDay(selDate).filter((b) => b.delivery_time === t).length
+                      const isTaken = count >= MAX_ORDERS_PER_BLOCK
                       return (
                         <button
                           key={t}
@@ -412,7 +461,10 @@ export default function BookingForm({ boxFlavors }) {
                               : 'bg-white/5 border border-white/5 text-ivory hover:border-gold/40'
                           }`}
                         >
-                          {t}
+                          <span>{t}</span>
+                          {count > 0 && !isTaken && (
+                            <span className="block text-[9px] opacity-75 mt-0.5 text-gold">Rezervēts x{count}</span>
+                          )}
                         </button>
                       )
                     })}
@@ -428,10 +480,39 @@ export default function BookingForm({ boxFlavors }) {
                 <h3 className="font-display text-lg font-bold">2. Pasūtījuma detaļas</h3>
               </div>
 
-              {boxImported && selFlavs.length > 0 && (
+              {selectedBoxes.length > 0 && (
                 <div className="mb-4 rounded-xl border border-gold/20 bg-gold/5 p-3.5 text-xs text-gold flex items-center gap-2">
                   <span>🎁</span>
-                  <span>Sastāvs veiksmīgi importēts no kastīšu veidotāja!</span>
+                  <span>Pasūtījuma saturs automātiski ielādēts no kastīšu veidotāja groza!</span>
+                </div>
+              )}
+
+              {/* Detailed custom boxes breakdown review card */}
+              {selectedBoxes.length > 0 && (
+                <div className="mb-4 rounded-2xl border border-gold/25 bg-espresso-2/50 p-4 space-y-3">
+                  <p className="font-mono text-xs uppercase tracking-wider text-gold font-bold flex items-center gap-1.5">
+                    <span>🎁</span>
+                    <span>Tavu izvēlēto kastīšu sastāvs ({selectedBoxes.length}):</span>
+                  </p>
+                  <div className="space-y-3">
+                    {selectedBoxes.map((boxItem, idx) => {
+                      // Group and format flavors inside this box
+                      const grouped = boxItem.flavors.reduce((acc, f) => {
+                        acc[f.nm] = (acc[f.nm] || 0) + 1
+                        return acc
+                      }, {})
+                      const breakdownText = Object.entries(grouped)
+                        .map(([nm, cnt]) => `${nm} x${cnt}`)
+                        .join(', ')
+
+                      return (
+                        <div key={boxItem.id} className="text-xs text-ivory-dim leading-relaxed flex flex-col gap-0.5 border-b border-white/5 pb-2.5 last:border-0 last:pb-0">
+                          <span className="font-mono text-[9px] text-gold font-bold uppercase">Kastīte #{idx + 1} ({boxItem.size} gab.)</span>
+                          <span className="font-medium text-ivory">{breakdownText}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -507,7 +588,7 @@ export default function BookingForm({ boxFlavors }) {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-gold/80 mb-1" htmlFor="bk-qty">
-                      Skaits (gab.)
+                      {selectedBoxes.length > 0 ? 'Skaits (bloķēts no groza) 🔒' : 'Skaits (gab.)'}
                     </label>
                     <input
                       id="bk-qty"
@@ -515,51 +596,89 @@ export default function BookingForm({ boxFlavors }) {
                       min="4"
                       max="200"
                       value={qty}
+                      disabled={selectedBoxes.length > 0}
                       onChange={(e) => setQty(e.target.value)}
-                      className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 font-body text-sm text-ivory outline-none transition-all focus:border-gold/50"
+                      className={`w-full rounded-xl border px-4 py-2.5 font-body text-sm outline-none transition-all focus:border-gold/50 ${
+                        selectedBoxes.length > 0
+                          ? 'border-white/5 bg-espresso-2/50 text-ivory/60 cursor-not-allowed'
+                          : 'border-white/10 bg-espresso-2 text-ivory'
+                      }`}
                     />
                   </div>
 
-                  {/* Multi-select Dropdown for Flavours */}
+                  {/* Multi-select Dropdown for Flavours with self-wrapping compact chips */}
                   <div className="relative" ref={dropdownRef}>
                     <label className="block font-mono text-[0.65rem] uppercase tracking-wider text-gold/80 mb-1">
                       Garšas *
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 text-left font-body text-sm text-ivory outline-none transition-all focus:border-gold/50 flex items-center justify-between"
-                    >
-                      <span className="block truncate opacity-85">
-                        {selectedFlavoursText}
-                      </span>
-                      <span className="text-[0.6rem] text-gold/60">&#9660;</span>
-                    </button>
-
-                    {dropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-xl border border-white/10 bg-espresso-3 p-2 shadow-2xl space-y-1 max-h-56 overflow-y-auto">
-                        {FLAVOURS.map((f) => {
-                          const isSelected = selFlavs.includes(f.id)
-                          return (
-                            <button
-                              key={f.id}
-                              type="button"
-                              onClick={() => handleDropdownToggle(f.id)}
-                              className={`w-full text-left rounded-lg p-2.5 text-xs font-semibold flex items-center gap-2.5 transition-all ${
-                                isSelected
-                                  ? 'bg-gold/15 text-gold font-bold'
-                                  : 'text-ivory-dim hover:bg-white/5 hover:text-ivory'
-                              }`}
-                            >
-                              <span className="flex h-4 w-4 items-center justify-center rounded border border-white/20 text-[0.6rem]">
-                                {isSelected ? '✓' : ''}
-                              </span>
-                              <span>{f.e}</span>
-                              <span>{f.n}</span>
-                            </button>
-                          )
-                        })}
+                    {selectedBoxes.length > 0 ? (
+                      <div className="w-full rounded-xl border border-white/5 bg-espresso-2/50 px-4 py-2.5 text-left font-body text-xs text-ivory/60 min-h-[42px] flex items-center justify-between cursor-not-allowed">
+                        <span>Automātiski konfigurēts no groza 🎁</span>
+                        <span className="text-[0.65rem] text-gold/50">🔒</span>
                       </div>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setDropdownOpen(!dropdownOpen)}
+                          className="w-full rounded-xl border border-white/10 bg-espresso-2 px-4 py-2.5 text-left font-body text-sm text-ivory outline-none transition-all focus:border-gold/50 flex items-center justify-between min-h-[42px] cursor-pointer"
+                        >
+                          {selFlavs.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5 py-0.5 max-w-[90%]">
+                              {selFlavs.map((id) => {
+                                const f = FLAVOURS.find((x) => x.id === id)
+                                if (!f) return null
+                                const pillColor = {
+                                  rose: 'bg-blush/10 text-gold border-blush/20',
+                                  choc: 'bg-gold/10 text-gold border-gold/20',
+                                  lemon: 'bg-gold/10 text-gold border-gold/20',
+                                  blue: 'bg-sage/10 text-gold border-sage/20',
+                                  pist: 'bg-sage/10 text-gold border-sage/20',
+                                }[id] || 'bg-white/5 border-white/10'
+
+                                return (
+                                  <span
+                                    key={id}
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${pillColor}`}
+                                  >
+                                    <span>{f.e}</span>
+                                    <span className="font-semibold text-[10px] tracking-wide uppercase">{f.n}</span>
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <span className="opacity-50 text-xs">Izvēlēties garšas...</span>
+                          )}
+                          <span className="text-[0.6rem] text-gold/60 ml-2 flex-shrink-0">&#9660;</span>
+                        </button>
+
+                        {dropdownOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-xl border border-white/10 bg-espresso-3 p-2 shadow-2xl space-y-1 max-h-56 overflow-y-auto">
+                            {FLAVOURS.map((f) => {
+                              const isSelected = selFlavs.includes(f.id)
+                              return (
+                                <button
+                                  key={f.id}
+                                  type="button"
+                                  onClick={() => handleDropdownToggle(f.id)}
+                                  className={`w-full text-left rounded-lg p-2.5 text-xs font-semibold flex items-center gap-2.5 transition-all ${
+                                    isSelected
+                                      ? 'bg-gold/15 text-gold font-bold'
+                                      : 'text-ivory-dim hover:bg-white/5 hover:text-ivory'
+                                  }`}
+                                >
+                                  <span className="flex h-4 w-4 items-center justify-center rounded border border-white/20 text-[0.6rem]">
+                                    {isSelected ? '✓' : ''}
+                                  </span>
+                                  <span>{f.e}</span>
+                                  <span>{f.n}</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

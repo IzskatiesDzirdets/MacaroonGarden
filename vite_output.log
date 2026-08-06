@@ -3,11 +3,7 @@
 > vite
 
 
-  VITE v8.1.5  ready in 901 ms
+  VITE v8.1.5  ready in 1343 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-5:55:42 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
-6:03:14 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
-6:12:14 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
-6:35:43 AM [vite] (client) page reload public/game.html

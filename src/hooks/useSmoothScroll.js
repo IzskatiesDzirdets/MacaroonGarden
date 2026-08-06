@@ -13,6 +13,15 @@ gsap.registerPlugin(ScrollTrigger)
  */
 export function useSmoothScroll() {
   useEffect(() => {
+    // Check if the user is on a touch device
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    // On touch devices, do not initialize custom smooth-scrolling as it fights
+    // browser inertial scrolling and causes lag. Let the browser scroll natively.
+    if (isTouchDevice) {
+      return;
+    }
+
     const lenis = new Lenis({
       duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

@@ -21,12 +21,32 @@ const IDLE_SPEED = {
   crumbRose: 1.4, crumbPistachio: 1.3, crumbCocoa: 1.5,
 }
 
-export default function MacaronScene({ progressRef, static: isStatic = false }) {
+const FLAVOR_COLORS = [
+  { shell: '#E3A6B4', filling: '#FFF5E4' }, // Rose (Rozūdens)
+  { shell: '#8CA37C', filling: '#FFFDF9' }, // Pistachio (Pistācija)
+  { shell: '#B4A5CC', filling: '#FDF6EE' }, // Lavender (Lavanda)
+  { shell: '#6B4A32', filling: '#E4C98A' }, // Chocolate (Šokolāde)
+  { shell: '#E4C98A', filling: '#FFFDF9' }, // Lemon (Citrons)
+]
+
+export default function MacaronScene({ progressRef, static: isStatic = false, flavorIndex = 0 }) {
+  const activeColors = FLAVOR_COLORS[flavorIndex] || FLAVOR_COLORS[0]
+
+  const getPieceColor = (pieceName, defaultColor) => {
+    if (pieceName === 'shellTop' || pieceName === 'shellBottom') {
+      return activeColors.shell
+    }
+    if (pieceName === 'filling') {
+      return activeColors.filling
+    }
+    return defaultColor
+  }
+
   return (
     <Canvas
       dpr={[1, isStatic ? 1.5 : 1.8]}
       camera={{ position: [0, 0.6, 5.2], fov: 38 }}
-      gl={{ antialias: true }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
       shadows={!isStatic}
     >
       <ambientLight intensity={0.5} />
@@ -40,7 +60,7 @@ export default function MacaronScene({ progressRef, static: isStatic = false }) 
             <group key={f.piece} rotation={v.rotY}>
               <MacaronPiece
                 geometry={v.geometry}
-                color={v.color}
+                color={getPieceColor(f.piece, v.color)}
                 direction={f.direction}
                 window={f.window}
                 idleSpeed={IDLE_SPEED[f.piece]}

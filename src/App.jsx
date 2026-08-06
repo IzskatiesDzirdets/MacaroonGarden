@@ -13,18 +13,34 @@ import ContactSection from './components/ContactSection'
 import Footer from './components/Footer'
 import AuthModal from './components/AuthModal'
 import AccountModal from './components/AccountModal'
+import GallerySection from './components/GallerySection'
+import BlogSection from './components/BlogSection'
+import AdminPanel from './components/AdminPanel'
+import { useCMS } from './hooks/useCMS'
 
 export default function App() {
+  const { sectionsList } = useCMS()
   useSmoothScroll()
   const { scrollYProgress } = useScroll()
 
-  // State shared from BoxBuilder to BookingForm
-  const [boxFlavors, setBoxFlavors] = useState([])
+  // Multi-box cart system state shared between BoxBuilder and BookingForm
+  const [selectedBoxes, setSelectedBoxes] = useState([])
+
+  // Active flavor state lifted to synchronize background colors across Hero and Game iframe
+  const [activeFlavor, setActiveFlavor] = useState(0)
 
   // Modal states
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authModalTab, setAuthModalTab] = useState('login')
   const [accountModalOpen, setAccountModalOpen] = useState(false)
+  const [adminPanelOpen, setAdminPanelOpen] = useState(false)
+
+  // Route interception for /admin and #admin
+  useEffect(() => {
+    if (window.location.pathname === '/admin' || window.location.hash === '#admin') {
+      setAdminPanelOpen(true)
+    }
+  }, [])
 
   const handleAuthOpen = (tab = 'login') => {
     setAuthModalTab(tab)
@@ -63,6 +79,39 @@ export default function App() {
     }
   }, [])
 
+  // Render landing sections according to custom order & visibility preferences
+  const renderSection = (id) => {
+    switch (id) {
+      case 'hero':
+        return <HeroExplode key={id} activeFlavor={activeFlavor} setActiveFlavor={setActiveFlavor} />
+      case 'gallery':
+        return <GallerySection key={id} />
+      case 'blog':
+        return <BlogSection key={id} />
+      case 'mobile-features':
+        return <MobileFeatureList key={id} />
+      case 'story':
+        return <AboutStory key={id} />
+      case 'flavours':
+        return <Flavours key={id} />
+      case 'builder':
+        return <BoxBuilder key={id} selectedBoxes={selectedBoxes} setSelectedBoxes={setSelectedBoxes} />
+      case 'booking':
+        return <BookingForm key={id} selectedBoxes={selectedBoxes} setSelectedBoxes={setSelectedBoxes} />
+      case 'game':
+        return <GameSection key={id} activeFlavor={activeFlavor} />
+      case 'contact':
+        return <ContactSection key={id} />
+      default:
+        return null
+    }
+  }
+
+  // Sort sections list by order index
+  const sortedSections = [...sectionsList]
+    .sort((a, b) => a.order - b.order)
+    .filter(s => s.visible !== false)
+
   return (
     <div id="top" className="bg-espresso min-h-screen text-ivory relative">
       {/* Luxury Scroll Progress Bar */}
@@ -74,35 +123,14 @@ export default function App() {
       <Nav
         onAuthOpen={handleAuthOpen}
         onAccountOpen={() => setAccountModalOpen(true)}
+        onAdminOpen={() => setAdminPanelOpen(true)}
       />
 
       <main>
-        {/* Cinematic 3D Hero Explosion Section */}
-        <HeroExplode />
-
-        {/* Responsive Mobile Layout features list */}
-        <MobileFeatureList />
-
-        {/* Our Story section */}
-        <AboutStory />
-
-        {/* Flavour gallery showcase */}
-        <Flavours />
-
-        {/* Interactive Box Builder (interactive 🎁 size picker and composition selector) */}
-        <BoxBuilder onBoxChange={setBoxFlavors} />
-
-        {/* Supabase booking and interactive monthly calendar form */}
-        <BookingForm boxFlavors={boxFlavors} />
-
-        {/* Embedded beautiful retro/procedural puzzle game */}
-        <GameSection />
-
-        {/* WhatsApp/Email details and styled Instagram CTA box */}
-        <ContactSection />
+        {sortedSections.map(s => renderSection(s.id))}
       </main>
 
-      <Footer />
+      <Footer onAdminOpen={() => setAdminPanelOpen(true)} />
 
       {/* Auth Modals */}
       <AuthModal
@@ -114,6 +142,11 @@ export default function App() {
       <AccountModal
         isOpen={accountModalOpen}
         onClose={() => setAccountModalOpen(false)}
+      />
+
+      <AdminPanel
+        isOpen={adminPanelOpen}
+        onClose={() => setAdminPanelOpen(false)}
       />
     </div>
   )

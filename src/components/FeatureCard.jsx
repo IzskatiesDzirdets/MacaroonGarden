@@ -19,7 +19,14 @@ export default function FeatureCard({ feature, innerRef }) {
 
   return (
     <div ref={innerRef} className="pointer-events-none w-[min(78vw,20rem)] opacity-0">
-      <GlassCard tone={tone} className="pointer-events-auto">
+      <GlassCard tone={tone} className="pointer-events-auto overflow-hidden">
+        {feature.imageUrl && (
+          <img
+            src={feature.imageUrl}
+            alt={feature.title}
+            className="w-full h-36 object-cover rounded-2xl mb-4 shadow-[0_6px_16px_rgba(61,35,20,0.12)] border border-white/5"
+          />
+        )}
         <p className={`font-mono text-[0.68rem] tracking-[0.18em] uppercase ${accentText}`}>
           {feature.eyebrow}
         </p>

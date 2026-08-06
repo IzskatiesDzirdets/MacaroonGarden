@@ -1,0 +1,65 @@
+
+> macaron-premium@0.0.0 dev
+> vite
+
+
+  VITE v8.1.5  ready in 376 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+5:29:28 AM [vite] (client) hmr update /src/index.css, /src/components/GlassCard.jsx
+9:22:51 AM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+9:22:58 AM [vite] (client) page reload public/game.html
+9:24:55 AM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+9:25:02 AM [vite] (client) page reload public/game.html
+9:25:19 AM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+9:29:15 AM [vite] (client) page reload public/game.html
+11:29:33 AM [vite] (client) page reload src/main.jsx
+11:29:43 AM [vite] (client) hmr update /src/index.css
+11:29:50 AM [vite] (client) hmr update /src/index.css
+11:29:59 AM [vite] (client) hmr update /src/index.css
+11:34:04 AM [vite] (client) hmr update /src/index.css
+11:34:12 AM [vite] (client) hmr update /src/index.css
+11:58:10 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+11:58:16 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+11:58:31 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+11:58:45 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+12:04:48 PM [vite] (client) hmr update /src/components/Nav.jsx, /src/index.css
+12:04:55 PM [vite] (client) hmr update /src/components/Nav.jsx, /src/index.css
+12:08:55 PM [vite] (client) hmr update /src/components/Nav.jsx, /src/index.css
+12:09:06 PM [vite] (client) hmr update /src/components/Footer.jsx, /src/index.css
+4:26:46 PM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+4:27:01 PM [vite] (client) page reload public/game.html
+4:27:06 PM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+4:27:11 PM [vite] (client) page reload public/game.html
+4:29:05 PM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+4:29:10 PM [vite] (client) page reload public/game.html
+4:29:20 PM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+4:32:23 PM [vite] (client) page reload public/game.html
+4:32:28 PM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+4:32:33 PM [vite] (client) page reload public/game.html
+4:32:38 PM [vite] (client) hmr update /src/index.css, /src/components/GameSection.jsx
+4:32:42 PM [vite] (client) page reload public/game.html
+4:40:04 PM [vite] (client) hmr update /src/index.css, /src/hooks/useCMS.jsx
+4:40:21 PM [vite] (client) hmr update /src/index.css, /src/components/AdminPanel.jsx
+4:41:59 PM [vite] (client) hmr update /src/components/GameSection.jsx, /src/index.css
+4:42:07 PM [vite] (client) hmr update /src/components/GameSection.jsx, /src/index.css
+6:22:20 PM [vite] (client) hmr update /src/index.css, /src/components/AdminPanel.jsx
+6:22:26 PM [vite] (client) hmr update /src/index.css, /src/components/AdminPanel.jsx
+6:24:11 PM [vite] (client) hmr update /src/components/Flavours.jsx, /src/index.css
+6:24:14 PM [vite] (client) hmr update /src/index.css, /src/components/Flavours.jsx
+10:18:43 AM [vite] (client) hmr update /src/index.css, /src/components/GallerySection.jsx
+10:18:52 AM [vite] (client) hmr update /src/index.css, /src/components/BlogSection.jsx
+10:18:56 AM [vite] (client) hmr update /src/components/MobileFeatureList.jsx, /src/index.css
+10:19:20 AM [vite] (client) hmr update /src/components/AboutStory.jsx, /src/index.css
+10:19:25 AM [vite] (client) hmr update /src/components/Flavours.jsx, /src/index.css
+10:21:53 AM [vite] (client) hmr update /src/components/BoxBuilder.jsx, /src/index.css
+10:21:59 AM [vite] (client) hmr update /src/components/BookingForm.jsx, /src/index.css
+10:22:06 AM [vite] (client) hmr update /src/components/GameSection.jsx, /src/index.css
+10:22:11 AM [vite] (client) hmr update /src/components/ContactSection.jsx, /src/index.css
+10:22:17 AM [vite] (client) hmr update /src/components/Footer.jsx, /src/index.css
+10:29:12 AM [vite] (client) hmr update /src/hooks/useSupabase.jsx, /src/index.css
+5:28:44 PM [vite] (client) hmr update /src/index.css, /src/hooks/useCMS.jsx
+5:28:53 PM [vite] (client) hmr update /src/index.css, /src/hooks/useCMS.jsx
+5:29:00 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+5:41:41 PM [vite] (client) hmr update /src/index.css, /src/hooks/useCMS.jsx

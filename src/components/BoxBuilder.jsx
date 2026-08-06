@@ -15,16 +15,11 @@ function gCols(s) {
   return s <= 4 ? 2 : s <= 9 ? 3 : s <= 12 ? 4 : s <= 18 ? 6 : 6
 }
 
-export default function BoxBuilder({ onBoxChange }) {
+export default function BoxBuilder({ selectedBoxes = [], setSelectedBoxes }) {
   const [sz, setSz] = useState(12)
   const [box, setBox] = useState([])
   const [hint, setHint] = useState('')
-
-  useEffect(() => {
-    if (onBoxChange) {
-      onBoxChange(box)
-    }
-  }, [box, onBoxChange])
+  const [editingBoxId, setEditingBoxId] = useState(null)
 
   const chgSz = (s) => {
     setSz(s)
@@ -32,6 +27,53 @@ export default function BoxBuilder({ onBoxChange }) {
       setBox(box.slice(0, s))
     }
     setHint('')
+  }
+
+  const handleAddBoxToOrder = () => {
+    if (box.length === 0) return
+
+    if (editingBoxId) {
+      // Save changes to the existing custom box
+      setSelectedBoxes(
+        selectedBoxes.map((b) =>
+          b.id === editingBoxId ? { ...b, size: sz, flavors: [...box] } : b
+        )
+      )
+      setEditingBoxId(null)
+      setBox([]) // clear workspace
+      setHint('🎉 Izmaiņas kastītē veiksmīgi saglabātas! 🌸')
+    } else {
+      // Add a new custom box to order
+      const newBox = {
+        id: Date.now(),
+        size: sz,
+        flavors: [...box],
+      }
+      setSelectedBoxes([...selectedBoxes, newBox])
+      setBox([]) // clear workspace for building the next box
+      setHint('🎉 Kastīte pievienota pasūtījumam! Saliec nākamo vai dodies lejā uz pasūtījuma formu. 🌸')
+    }
+  }
+
+  const handleEditAddedBox = (addedBox) => {
+    setEditingBoxId(addedBox.id)
+    setSz(addedBox.size)
+    setBox([...addedBox.flavors])
+    setHint('🛠️ Tagad tu labo kastītes sastāvu. Veic izmaiņas un saglabā tās zemāk!')
+  }
+
+  const handleStartNewBox = () => {
+    setEditingBoxId(null)
+    setBox([])
+    setHint('🌸 Sāc veidot jaunu kastīti! Izvēlies izmēru un pievieno garšas.')
+  }
+
+  const handleRemoveAddedBox = (boxId) => {
+    if (editingBoxId === boxId) {
+      setEditingBoxId(null)
+      setBox([])
+    }
+    setSelectedBoxes(selectedBoxes.filter((b) => b.id !== boxId))
   }
 
   const add = (f) => {
@@ -56,7 +98,7 @@ export default function BoxBuilder({ onBoxChange }) {
   const cols = gCols(sz)
 
   return (
-    <section id="builder" className="bg-espresso-2 px-6 py-24 md:px-16 md:py-32">
+    <section id="builder" className="relative z-10 bg-espresso-2 px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-14">
@@ -150,7 +192,11 @@ export default function BoxBuilder({ onBoxChange }) {
           <div className="lg:col-span-5">
             <div className="rounded-2xl border border-white/10 bg-espresso-3 p-6 shadow-2xl ring-1 ring-white/5">
               <div className="text-center pb-4 border-b border-white/5">
-                <h3 className="font-display text-lg font-bold text-gold">🎁 {sz}-Makarūnu Kastīte</h3>
+                <h3 className="font-display text-lg font-bold text-gold">
+                  {editingBoxId
+                    ? `🛠️ Labot kastīti #${selectedBoxes.findIndex(b => b.id === editingBoxId) + 1}`
+                    : `🎁 ${sz}-Makarūnu Kastīte`}
+                </h3>
                 <p className="text-[0.7rem] text-ivory-dim/60 mt-0.5">
                   {box.length === 0
                     ? 'Kastīte pagaidām ir tukša'
@@ -219,23 +265,131 @@ export default function BoxBuilder({ onBoxChange }) {
 
               <button
                 disabled={box.length === 0}
-                onClick={() => {
-                  document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })
-                }}
-                className="w-full rounded-full bg-gold py-3.5 font-mono text-xs uppercase tracking-widest text-espresso font-bold shadow-[0_4px_24px_rgba(201,161,90,0.25)] transition-all hover:bg-gold-soft hover:shadow-[0_8px_32px_rgba(201,161,90,0.35)] disabled:opacity-40 disabled:pointer-events-none"
+                onClick={handleAddBoxToOrder}
+                className="w-full rounded-full bg-gold py-3.5 font-mono text-xs uppercase tracking-widest text-espresso font-bold shadow-[0_4px_24px_rgba(201,161,90,0.25)] transition-all hover:bg-gold-soft hover:shadow-[0_8px_32px_rgba(201,161,90,0.35)] disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-2"
               >
-                {box.length === 0 ? 'Pievieno garšas' : `Pasūtīt kastīti (${box.length}/${sz}) →`}
+                <span>{editingBoxId ? '💾' : '🎁'}</span>
+                <span>{editingBoxId ? 'Saglabāt izmaiņas kastītē' : `Pievienot šo kastīti pasūtījumam (${box.length}/${sz})`}</span>
               </button>
 
-              {box.length > 0 && (
-                <button
-                  onClick={clear}
-                  className="w-full mt-3 text-center text-[0.7rem] font-mono text-ivory-dim/60 underline hover:text-ivory"
-                >
-                  Iztīrīt kastīti
-                </button>
-              )}
+              <div className="flex justify-center gap-4 mt-3">
+                {box.length > 0 && (
+                  <button
+                    onClick={clear}
+                    className="text-[0.7rem] font-mono text-ivory-dim/60 underline hover:text-ivory cursor-pointer"
+                  >
+                    Iztīrīt kastīti
+                  </button>
+                )}
+                {editingBoxId && (
+                  <button
+                    onClick={handleStartNewBox}
+                    className="text-[0.7rem] font-mono text-gold font-bold underline hover:text-gold-soft cursor-pointer"
+                  >
+                    Atcelt labošanu (Sākt jaunu)
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* List of currently added customized boxes */}
+            {selectedBoxes.length > 0 && (
+              <div className="mt-6 rounded-2xl border border-gold/15 bg-espresso-3 p-6 shadow-xl ring-1 ring-gold/10">
+                <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
+                  <h4 className="font-display text-sm font-bold text-gold flex items-center gap-1.5">
+                    <span>🛍️</span>
+                    <span>Tavs iepirkumu grozs ({selectedBoxes.length} kastīt{selectedBoxes.length === 1 ? 'e' : 'es'})</span>
+                  </h4>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleStartNewBox}
+                      className="text-[0.65rem] font-mono text-gold font-bold hover:underline cursor-pointer"
+                    >
+                      + Pievienot vēl vienu kastīti
+                    </button>
+                    <span className="text-white/10 text-xs">|</span>
+                    <button
+                      onClick={() => { setSelectedBoxes([]); setEditingBoxId(null); setBox([]); }}
+                      className="text-[0.65rem] font-mono text-blush-deep hover:underline cursor-pointer"
+                    >
+                      Iztīrīt grozu
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-4 max-h-60 overflow-y-auto pr-1">
+                  {selectedBoxes.map((addedBox, bIdx) => {
+                    // Count flavor totals for this specific box
+                    const fCounts = FLS.reduce((acc, f) => ({
+                      ...acc,
+                      [f.id]: addedBox.flavours ? addedBox.flavours.filter(x => x.id === f.id).length : addedBox.flavors.filter(x => x.id === f.id).length
+                    }), {})
+
+                    return (
+                      <div
+                        key={addedBox.id}
+                        className={`rounded-xl border p-3 flex flex-col gap-2 relative group ${
+                          editingBoxId === addedBox.id
+                            ? 'border-gold bg-gold/10 ring-1 ring-gold/25'
+                            : 'border-white/5 bg-espresso-2/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between font-mono text-[0.65rem] text-gold font-bold">
+                          <span>KASTĪTE #{bIdx + 1} ({addedBox.size} gab.){editingBoxId === addedBox.id ? ' 🛠️ LABO' : ''}</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditAddedBox(addedBox)}
+                              className="text-[0.65rem] text-gold hover:underline cursor-pointer"
+                              title="Labot šo kastīti"
+                            >
+                              Labot
+                            </button>
+                            <span className="text-white/10">·</span>
+                            <button
+                              onClick={() => handleRemoveAddedBox(addedBox.id)}
+                              className="text-[0.65rem] text-blush hover:text-red-500 font-bold hover:underline cursor-pointer"
+                              title="Noņemt šo kastīti"
+                            >
+                              Noņemt
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 text-[0.65rem] text-ivory-dim/90">
+                          {FLS.filter(f => fCounts[f.id] > 0).map(f => (
+                            <span key={f.id} className="bg-espresso-3 border border-white/5 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span>{f.e}</span>
+                              <span>{f.nm}</span>
+                              <span className="font-bold text-gold">x{fCounts[f.id]}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Go to booking CTA */}
+                <div className="mt-5 pt-4 border-t border-white/5 space-y-3">
+                  <div className="flex justify-between text-xs font-mono font-bold text-ivory">
+                    <span>KOPĒJAIS DAUDZUMS:</span>
+                    <span className="text-gold font-body text-sm">
+                      {selectedBoxes.reduce((acc, b) => acc + b.size, 0)} gab.
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })
+                    }}
+                    className="w-full rounded-full bg-gold/10 border border-gold/40 py-2.5 font-mono text-xs uppercase tracking-wider text-gold font-bold hover:bg-gold/20 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <span>🌸</span>
+                    <span>Doties uz pasūtīšanas formu</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,14 +1,21 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import FeatureCard from './FeatureCard'
 import { FEATURES } from '../data/features'
 
-const MacaronScene = lazy(() => import('../three/MacaronScene'))
-
 gsap.registerPlugin(ScrollTrigger)
 
 const TL_DURATION = 10
+
+const FLAVOR_IMAGES = [
+  'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=800&q=80', // Rose
+  'https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=800&q=80', // Pistachio (isolated single green)
+  'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=800&q=80', // Lavender (isolated single purple)
+  'https://images.unsplash.com/photo-1501747315-124a0eaca060?auto=format&fit=crop&w=800&q=80', // Chocolate (isolated single chocolate)
+  'https://images.unsplash.com/photo-1612201142855-7873bc1661b4?auto=format&fit=crop&w=800&q=80', // Lemon (isolated single yellow)
+]
 const CARD_POSITION_CLASS = [
   'absolute left-[4%] top-[16%]',
   'absolute right-[4%] top-[18%]',
@@ -18,7 +25,23 @@ const CARD_POSITION_CLASS = [
   'absolute left-1/2 -translate-x-1/2 top-[8%]',
 ]
 
-export default function HeroExplode() {
+const GRADIENTS = [
+  'linear-gradient(160deg, #FFFDF9 0%, #FAEDF0 50%, #F5D5E0 100%)', // Rose
+  'linear-gradient(160deg, #FFFDF9 0%, #EBF4EE 50%, #D4EDE6 100%)', // Pistachio
+  'linear-gradient(160deg, #FFFDF9 0%, #F2EBF7 50%, #E8E0F0 100%)', // Lavender
+  'linear-gradient(160deg, #FFFDF9 0%, #FAF3EC 50%, #F0E6D8 100%)', // Chocolate
+  'linear-gradient(160deg, #FFFDF9 0%, #FAFAEC 50%, #F5F2D8 100%)', // Lemon
+]
+
+const FLAVORS_DATA = [
+  { name: 'Rozūdens',  c1: '#F2B8CB', c2: '#D4748E' },
+  { name: 'Pistācija', c1: '#A8D4B0', c2: '#6FA87A' },
+  { name: 'Lavanda',   c1: '#C8B8DC', c2: '#9A85BE' },
+  { name: 'Šokolāde',  c1: '#C4956A', c2: '#8B5E3C' },
+  { name: 'Citrons',   c1: '#EEE880', c2: '#C8C038' },
+]
+
+export default function HeroExplode({ activeFlavor, setActiveFlavor }) {
   const sectionRef = useRef(null)
   const headingRef = useRef(null)
   const subRef = useRef(null)
@@ -27,6 +50,7 @@ export default function HeroExplode() {
   const progressRef = useRef(0)
   const [isDesktop, setIsDesktop] = useState(true)
   const [isTestMode, setIsTestMode] = useState(false)
+  const [isSectionVisible, setIsSectionVisible] = useState(true)
 
   useEffect(() => {
     setIsDesktop(window.matchMedia('(min-width: 768px)').matches)
@@ -34,6 +58,19 @@ export default function HeroExplode() {
       window.location.search.includes('test=true') ||
       /headless/i.test(navigator.userAgent)
     )
+  }, [])
+
+  // Viewport visibility observer to completely pause/unmount WebGL canvas when off-screen
+  useEffect(() => {
+    if (!sectionRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsSectionVisible(entry.isIntersecting)
+      },
+      { threshold: 0.01 }
+    )
+    observer.observe(sectionRef.current)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -73,29 +110,77 @@ export default function HeroExplode() {
   return (
     <section
       ref={sectionRef}
-      className={`relative w-full overflow-hidden bg-espresso ${isDesktop ? 'h-screen' : 'min-h-[92vh]'}`}
+      className={`relative w-full overflow-hidden transition-all duration-1000 ${isDesktop ? 'h-screen' : 'min-h-[105vh] landscape:min-h-screen'}`}
+      style={{ background: GRADIENTS[activeFlavor] }}
     >
-      <div className="absolute inset-0">
-        {!isTestMode ? (
-          <Suspense
-            fallback={
-              <div className="h-full w-full animate-pulse bg-[radial-gradient(circle_at_50%_50%,#2A1E19,#140F0D)]" />
-            }
-          >
-            <MacaronScene progressRef={progressRef} static={!isDesktop} />
-          </Suspense>
-        ) : (
-          <div className="h-full w-full bg-[radial-gradient(circle_at_50%_50%,#2A1E19,#140F0D)]" />
-        )}
+      {/* Dynamic 2D Macaron Hero Visual replacing WebGL to optimize performance and restore original 2D asset behavior */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 landscape:opacity-20 md:landscape:opacity-40">
+        <motion.div
+          key={activeFlavor}
+          initial={{ scale: 0.85, opacity: 0, rotate: -10 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative w-[min(80vw,380px)] landscape:w-[240px] aspect-square rounded-full shadow-[0_24px_70px_rgba(61,35,20,0.18)] border-4 border-white overflow-hidden"
+        >
+          <motion.img
+            src={FLAVOR_IMAGES[activeFlavor]}
+            alt="Macaroon Garden dāvanu ateljē"
+            className="w-full h-full object-cover"
+            animate={{
+              y: [0, -10, 0],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        </motion.div>
       </div>
 
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-        <p ref={subRef} className="font-mono text-xs tracking-[0.3em] uppercase text-gold/80 mb-4">
-          Macaroon Garden — Rīga
-        </p>
-        <h1 ref={headingRef} className="font-display text-[clamp(2.4rem,7vw,5.5rem)] leading-[0.98] text-ivory max-w-4xl">
-          Katrs makarūns <em className="italic text-blush">sadalās</em>,<br />lai parādītu, kas tajā ir.
-        </h1>
+      <div className="relative z-10 flex min-h-screen landscape:min-h-[120vh] md:landscape:min-h-screen flex-col items-center justify-between text-center px-6 py-24 landscape:py-12 md:py-28">
+        <div className="flex flex-col items-center justify-center flex-1 max-w-4xl">
+          <p ref={subRef} className="font-mono text-xs tracking-[0.3em] uppercase text-gold/80 mb-4">
+            Macaroon Garden — Rīga
+          </p>
+          <h1 ref={headingRef} className="font-display text-[clamp(2.4rem,7vw,5.5rem)] landscape:text-[clamp(1.8rem,5vw,3rem)] md:landscape:text-[clamp(2.4rem,7vw,5.5rem)] leading-[0.98] text-ivory max-w-4xl">
+            Katrs makarūns <em className="italic text-blush">sadalās</em>,<br />lai parādītu, kas tajā ir.
+          </h1>
+        </div>
+
+        {/* Dynamic Flavor and Background Selector */}
+        <div className="z-10 w-full max-w-lg mb-8 landscape:mb-4 md:mb-12">
+          <div className="flex justify-center gap-3 md:gap-4 flex-wrap">
+            {FLAVORS_DATA.map((f, i) => (
+              <button
+                key={f.name}
+                onClick={() => setActiveFlavor(i)}
+                className="flex flex-col items-center gap-1.5 focus:outline-none group cursor-pointer"
+              >
+                <div
+                  className={`h-11 w-11 rounded-full shadow-[inset_0_-2px_4px_rgba(0,0,0,0.15),0_3px_10px_rgba(0,0,0,0.25)] transition-all duration-300 group-hover:scale-105 ${
+                    activeFlavor === i
+                      ? 'ring-2 ring-gold scale-110 shadow-[0_4px_15px_rgba(201,122,150,0.35)]'
+                      : 'ring-1 ring-white/10'
+                  }`}
+                  style={{
+                    background: `radial-gradient(circle at 35% 35%, #ffffff66, transparent), ${f.c1}`,
+                  }}
+                />
+                <span
+                  className={`font-mono text-[9px] uppercase tracking-wider transition-colors ${
+                    activeFlavor === i ? 'text-gold font-bold' : 'text-ivory-dim/75 group-hover:text-ivory'
+                  }`}
+                >
+                  {f.name}
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 font-mono text-[9px] uppercase tracking-widest text-ivory-dim/50">
+            Maini garšas noskaņu un vēro, kā mainās makarūna krāsa
+          </p>
+        </div>
       </div>
 
       {isDesktop && (
